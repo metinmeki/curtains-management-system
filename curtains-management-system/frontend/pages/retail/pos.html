@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS - Curtains ERP</title>
+    <style>
+        /* General Layout */
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; }
+        .dashboard-layout { display: flex; height: 100vh; }
+        
+        /* Sidebar (Same as Dashboard) */
+        .sidebar { width: 250px; background: #343a40; color: white; padding: 20px; }
+        .sidebar a { display: block; color: white; text-decoration: none; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+        .sidebar a:hover { background: #495057; }
+        
+        /* Main POS Area */
+        .pos-container { flex: 1; display: flex; padding: 20px; gap: 20px; }
+        .left-panel { flex: 2; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .right-panel { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        
+        /* Inputs & Buttons */
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        .row { display: flex; gap: 10px; }
+        .row .input-group { flex: 1; }
+        
+        .btn-add { background: #28a745; color: white; padding: 10px; border: none; width: 100%; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-add:hover { background: #218838; }
+        
+        .btn-checkout { background: #007bff; color: white; padding: 15px; border: none; width: 100%; border-radius: 4px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: auto; }
+        .btn-checkout:hover { background: #0056b3; }
+
+        /* Cart Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid #eee; }
+        th, td { padding: 10px; text-align: left; }
+        th { background: #f8f9fa; }
+        
+        .total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; padding: 15px 0; border-top: 2px solid #eee; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <h2 style="margin-bottom: 30px;">Curtains ERP</h2>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="pos.html" style="background: #007bff;">🛒 Point of Sale (POS)</a>
+            <a href="clients.html">👥 Clients & Debts</a>
+            <a href="#" onclick="logout()">🚪 Logout</a>
+        </div>
+
+        <div class="pos-container">
+            
+            <div class="left-panel">
+                <h3>Add Material to Invoice</h3>
+                
+                <div class="input-group">
+                    <label>Material Category</label>
+                    <select id="materialType">
+                        <option value="Fabric">قماش (Fabric)</option>
+                        <option value="Tulle">تول (Tulle)</option>
+                        <option value="Sewing">خياطة (Sewing)</option>
+                        <option value="Installation">تركيب (Installation)</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <label>Width (Meters)</label>
+                        <input type="number" id="width" placeholder="e.g. 4.5" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Quantity</label>
+                        <input type="number" id="qty" value="1" min="1">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Unit Price (IQD)</label>
+                    <input type="number" id="price" placeholder="e.g. 30000">
+                </div>
+
+                <button class="btn-add" onclick="addItem()">+ Add to Invoice</button>
+
+                <table id="invoiceTable">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Width</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartBody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="right-panel">
+                <h3>Checkout Details</h3>
+                
+                <div class="input-group">
+                    <label>Select Client</label>
+                    <select id="clientSelect">
+                        <option value="null">Walk-in Customer (No Name)</option>
+                        <option value="1">أحمد الدوسكي</option>
+                        <option value="2">سيروان زاخولي</option>
+                    </select>
+                </div>
+
+                <div class="total-row">
+                    <span>Grand Total:</span>
+                    <span id="grandTotalDisplay">0 IQD</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Amount Paid Now (IQD)</label>
+                    <input type="number" id="paidAmount" value="0" onkeyup="calculateDebt()">
+                </div>
+
+                <div class="total-row" style="color: #dc3545;">
+                    <span>Remaining Debt:</span>
+                    <span id="debtDisplay">0 IQD</span>
+                </div>
+
+                <button class="btn-checkout" onclick="submitInvoice()">Complete Sale</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store our invoice items in an array
+        let cart = [];
+        let grandTotal = 0;
+
+        // Function to add an item to the table
+        function addItem() {
+            const type = document.getElementById('materialType').value;
+            const width = document.getElementById('width').value || 1; // Default to 1 if empty
+            const qty = document.getElementById('qty').value;
+            const price = document.getElementById('price').value;
+
+            if(!price) { alert("Please enter a price!"); return; }
+
+            // Calculate item total (Width * Qty * Price)
+            const itemTotal = parseFloat(width) * parseInt(qty) * parseFloat(price);
+
+            // Add to our cart array
+            cart.push({
+                material_category: type,
+                width: width,
+                quantity: qty,
+                unit_price: price,
+                total_price: itemTotal
+            });
+
+            // Update Grand Total
+            grandTotal += itemTotal;
+            document.getElementById('grandTotalDisplay').innerText = grandTotal.toLocaleString() + " IQD";
+            
+            // Auto-fill paid amount to be the full total (assuming they pay in full)
+            document.getElementById('paidAmount').value = grandTotal;
+            calculateDebt();
+
+            // Refresh the table UI
+            renderCart();
+        }
+
+        // Function to draw the items in the HTML table
+        function renderCart() {
+            const tbody = document.getElementById('cartBody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            cart.forEach(item => {
+                const row = `<tr>
+                    <td>${item.material_category}</td>
+                    <td>${item.width}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.unit_price}</td>
+                    <td>${item.total_price}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Function to calculate debt if they don't pay the full amount
+        function calculateDebt() {
+            const paid = document.getElementById('paidAmount').value || 0;
+            const debt = grandTotal - parseFloat(paid);
+            
+            // Prevent negative debt
+            const finalDebt = debt > 0 ? debt : 0;
+            document.getElementById('debtDisplay').innerText = finalDebt.toLocaleString() + " IQD";
+        }
+
+        // We will build this function in the next step to send to Laravel!
+        function submitInvoice() {
+            if(cart.length === 0) { alert("Invoice is empty!"); return; }
+            alert("Invoice ready! Next step: Send this to Laravel API!");
+            console.log("Cart Data:", cart);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "../../index.html";
+        }
+    </script>
+</body>
+</html>

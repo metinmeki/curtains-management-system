@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Workspace - Curtains Management System</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="dashboard-body">
+
+    <nav class="top-nav">
+        <div class="nav-brand">Curtains ERP</div>
+        <div class="nav-user">
+            <span id="userNameDisplay">Welcome, User</span>
+            <button id="logoutBtn" class="btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>Select Your Workspace</h2>
+            <p>Choose a store or the inventory module to continue.</p>
+        </div>
+
+        <div class="store-grid">
+            
+            <div class="store-card" onclick="selectStore(1, 'retail')">
+                <div class="store-icon">🏪</div>
+                <h3>Store 1</h3>
+                <p>Retail & POS</p>
+            </div>
+
+            <div class="store-card" onclick="selectStore(2, 'retail')">
+                <div class="store-icon">🏪</div>
+                <h3>Store 2</h3>
+                <p>Retail & POS</p>
+            </div>
+
+            <div class="store-card" onclick="selectStore(3, 'retail')">
+                <div class="store-icon">🏪</div>
+                <h3>Store 3</h3>
+                <p>Retail & POS</p>
+            </div>
+
+            <div class="store-card" onclick="selectStore(4, 'retail')">
+                <div class="store-icon">🏪</div>
+                <h3>Store 4</h3>
+                <p>Retail & POS</p>
+            </div>
+
+            <div class="store-card inventory-card" onclick="selectStore(5, 'inventory')">
+                <div class="store-icon">📦</div>
+                <h3>Main Warehouse</h3>
+                <p>Wholesale & Inventory</p>
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <div id="loginModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle">Login Required</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <form id="storeLoginForm">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary">Enter Store</button>
+                <div id="loginError" class="error-text" style="display: none;">Access Denied.</div>
+            </form>
+        </div>
+    </div>
+
+<script src="assets/js/app.js"></script>
+
+</body>
+</html>
