@@ -1,4 +1,5 @@
 *.log
+composer.phar
 .DS_Store
 .env
 .env.backup
