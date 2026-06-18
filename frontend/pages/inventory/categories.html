@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - Curtains ERP</title>
+    <style>
+        body { margin: 0; font-family: Tahoma, sans-serif; background: #f4f7f6; }
+        .dashboard-layout { display: flex; height: 100vh; }
+        .sidebar { width: 250px; background: #1f2937; color: white; padding: 20px; }
+        .sidebar a { display: block; color: white; text-decoration: none; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+        .sidebar a:hover { background: #374151; }
+        .sidebar a.active { background: #10b981; }
+        .main-content { flex: 1; padding: 30px; display: flex; gap: 20px; overflow-y: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 50%; height: fit-content;}
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
+        button { width: 100%; padding: 10px; background: #10b981; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;}
+        .cat-list { list-style: none; padding: 0; }
+        .cat-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #10b981; }
+        .sub-cat-list { margin-top: 10px; padding-left: 20px; color: #555; font-size: 14px;}
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <div class="sidebar">
+            <h2>Warehouse (Main)</h2>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="products.html">📦 Inventory Products</a>
+            <a href="categories.html" class="active">⚙️ Manage Categories</a>
+            <a href="#" onclick="logout()" style="margin-top: 30px; color: #ef4444;">🚪 Logout</a>
+        </div>
+        <div class="main-content">
+            <div class="card">
+                <h3>1. Add Main Category (الفئة الرئيسية)</h3>
+                <form id="addMainForm">
+                    <div class="input-group">
+                        <input type="text" id="mainCatName" placeholder="e.g., قماش, تول, خياطة" required>
+                    </div>
+                    <button type="submit">Save Category</button>
+                </form>
+                <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+                <h3>2. Add Subcategory (الماركة / النوع)</h3>
+                <form id="addSubForm">
+                    <div class="input-group">
+                        <label>Select Main Category</label>
+                        <select id="mainCatSelect" required></select>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="subCatName" placeholder="e.g., مخمل تركي" required>
+                    </div>
+                    <button type="submit" style="background: #3b82f6;">Save Subcategory</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3>Current Categories in System</h3>
+                <ul class="cat-list" id="categoriesList"><li>Loading...</li></ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", loadCategories);
+        function loadCategories() {
+            fetch('http://127.0.0.1:8000/api/settings/categories')
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('categoriesList');
+                    const select = document.getElementById('mainCatSelect');
+                    list.innerHTML = '';
+                    select.innerHTML = '<option value="">-- Select --</option>';
+                    data.data.forEach(cat => {
+                        select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+                        let subsHTML = cat.sub_categories.map(sub => `<li>- ${sub.name}</li>`).join('');
+                        list.innerHTML += `<li class="cat-item"><strong>${cat.name}</strong><ul class="sub-cat-list">${subsHTML || "<li>No subcategories yet.</li>"}</ul></li>`;
+                    });
+                });
+        }
+        document.getElementById('addMainForm').addEventListener('submit', e => {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8000/api/settings/categories/main', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name: document.getElementById('mainCatName').value })
+            }).then(() => { document.getElementById('mainCatName').value = ''; loadCategories(); });
+        });
+        document.getElementById('addSubForm').addEventListener('submit', e => {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8000/api/settings/categories/sub', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    category_id: document.getElementById('mainCatSelect').value,
+                    name: document.getElementById('subCatName').value
+                })
+            }).then(() => { document.getElementById('subCatName').value = ''; loadCategories(); });
+        });
+        function logout() { localStorage.clear(); window.location.href = "../../index.html"; }
+    </script>
+</body>
+</html>
