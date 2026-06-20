@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Workspace - Curtains Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="ltr">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span class="navbar-brand-logo">CMS</span>
+            <span class="navbar-brand-text">Curtains Management System</span>
+        </div>
+        <div class="user-section">
+            <span class="scope-pill">Owner/Admin view</span>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <span class="user-name" id="userName">Admin</span>
+            </div>
+            <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <main style="max-width: 1180px; margin: 0 auto; padding: 34px 24px;">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Choose a store or inventory workspace</h1>
+                <p class="page-subtitle">Each retail store keeps its own sales, clients, debts, expenses, and reports. Inventory has a separate wholesale workflow.</p>
+            </div>
+        </div>
+
+        <div class="app-shell-note">
+            Data separation is the main rule of this system: retail store records do not mix with other stores or with inventory records.
+        </div>
+
+        <div id="storeCardsContainer" class="store-cards-grid"></div>
+
+        <section class="module-grid">
+            <div class="module-card">
+                <h3>Retail store modules</h3>
+                <p>Dashboard, POS sales, debts, clients, expenses, discounts, payment status, and date-based filters.</p>
+            </div>
+            <div class="module-card">
+                <h3>Inventory modules</h3>
+                <p>Warehouse dashboard, wholesale sales, clients, balances, debts, categories, product types, and reports.</p>
+            </div>
+            <div class="module-card">
+                <h3>Frontend scope</h3>
+                <p>This prototype shows the user flow and screens while backend/database work remains separate.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        if (!checkAuth()) {
+            window.location.href = 'index.html';
+        }
+
+        const storesList = [
+            { id: 1, name: 'Store 1', description: 'Independent retail workspace for POS, debts, clients, expenses, and store reports.', icon: 'S1', type: 'retail' },
+            { id: 2, name: 'Store 2', description: 'Separate sales and client records for the second retail branch.', icon: 'S2', type: 'retail' },
+            { id: 3, name: 'Store 3', description: 'Dedicated dashboard and transactions for the third retail branch.', icon: 'S3', type: 'retail' },
+            { id: 4, name: 'Store 4', description: 'Standalone retail workspace for the fourth branch.', icon: 'S4', type: 'retail' },
+            { id: null, name: 'Inventory / Warehouse', description: 'Wholesale workflow for categories, product types, clients, balances, sales, debts, and reports.', icon: 'INV', type: 'inventory' }
+        ];
+
+        function loadUserInfo() {
+            const user = getUser();
+            if (user && user.name) {
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            }
+        }
+
+        function renderStoreCards() {
+            const container = document.getElementById('storeCardsContainer');
+            container.innerHTML = storesList.map(store => `
+                <a href="#" class="store-card" onclick="selectStore(${store.id}, '${store.name}', '${store.type}'); return false;">
+                    <div class="store-card-icon">${store.icon}</div>
+                    <div class="store-card-body">
+                        <div>
+                            <div class="store-card-title">${store.name}</div>
+                            <div class="store-card-description">${store.description}</div>
+                        </div>
+                        <div class="store-card-footer">Enter workspace</div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function selectStore(storeId, storeName, type) {
+            if (storeId) {
+                setStoreSelection(storeId, storeName);
+            } else {
+                removeStoreSelection();
+                localStorage.setItem('store_name', storeName);
+                localStorage.setItem('inventory_unit_id', '1');
+            }
+
+            window.location.href = type === 'inventory'
+                ? 'inventory/dashboard.html'
+                : 'retail/dashboard.html';
+        }
+
+        async function handleLogout() {
+            if (confirm('Logout from the system?')) {
+                await logout();
+                window.location.href = 'index.html';
+            }
+        }
+
+        window.addEventListener('load', () => {
+            loadUserInfo();
+            renderStoreCards();
+            if (window.applyLanguage) applyLanguage();
+        });
+    </script>
+    <script src="js/i18n.js?v=arabic-en-2"></script>
+</body>
+</html>

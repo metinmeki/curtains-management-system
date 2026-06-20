@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS System - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .receipt-card {
+            --receipt-ink: #245f49;
+            --receipt-line: rgba(36, 95, 73, 0.46);
+            --receipt-soft: #f4f1e6;
+            --receipt-soft-green: #eaf3e5;
+            background:
+                linear-gradient(180deg, rgba(255, 253, 246, 0.98), rgba(250, 247, 237, 0.98)),
+                repeating-linear-gradient(0deg, transparent 0, transparent 53px, rgba(36, 95, 73, 0.05) 54px);
+            border: 1px solid rgba(36, 95, 73, 0.28);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(33, 66, 56, 0.14);
+        }
+
+        .receipt-head {
+            position: relative;
+            text-align: center;
+            color: var(--receipt-ink);
+            padding: 24px 18px 16px;
+            border-bottom: 2px solid var(--receipt-ink);
+            background: #fffdf6;
+        }
+
+        .receipt-head::after {
+            content: "";
+            display: block;
+            width: min(420px, 70%);
+            height: 2px;
+            margin: 12px auto 0;
+            background: linear-gradient(90deg, transparent, var(--receipt-ink), transparent);
+            opacity: 0.7;
+        }
+
+        .receipt-brand {
+            font-size: clamp(24px, 4vw, 38px);
+            letter-spacing: 3px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .receipt-subbrand {
+            font-size: clamp(18px, 3vw, 28px);
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .receipt-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            padding: 14px 18px 16px;
+            background: var(--receipt-soft);
+            border-bottom: 1px solid var(--receipt-line);
+        }
+
+        .receipt-meta .form-group {
+            margin-bottom: 0;
+        }
+
+        .receipt-meta label {
+            color: var(--receipt-ink);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .receipt-meta input {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--receipt-line);
+            border-radius: 0;
+            padding: 7px 2px 5px;
+            box-shadow: none;
+            color: var(--receipt-ink);
+        }
+
+        .receipt-table {
+            direction: rtl;
+            table-layout: fixed;
+            width: 100%;
+            min-width: 0;
+            border-collapse: collapse;
+            color: var(--receipt-ink);
+        }
+
+        .receipt-table th,
+        .receipt-table td {
+            border: 1px solid var(--receipt-line);
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .receipt-table th {
+            background: var(--receipt-soft-green);
+            font-weight: 800;
+            font-size: 12px;
+            padding: 10px 5px;
+            color: var(--receipt-ink);
+            white-space: normal;
+            word-break: keep-all;
+        }
+
+        .receipt-table td {
+            height: 58px;
+            padding: 0;
+        }
+
+        .receipt-table tbody tr:nth-child(even) td {
+            background: rgba(244, 241, 230, 0.34);
+        }
+
+        .receipt-table tbody tr.is-added-row td {
+            background: rgba(234, 243, 229, 0.5);
+        }
+
+        .receipt-table input,
+        .receipt-table select {
+            border: 0;
+            box-shadow: none;
+            border-radius: 0;
+            min-width: 0;
+            width: 100%;
+            height: 100%;
+            padding: 8px 5px;
+            background: transparent;
+            color: var(--receipt-ink);
+            text-align: center;
+            font-weight: 650;
+            font-size: 13px;
+        }
+
+        .receipt-table input:focus,
+        .receipt-table select:focus {
+            outline: 2px solid rgba(47, 125, 91, 0.2);
+            outline-offset: -2px;
+            background: #fffdf6;
+        }
+
+        .receipt-table input::placeholder {
+            color: rgba(36, 95, 73, 0.36);
+            font-weight: 500;
+        }
+
+        .receipt-table .row-note {
+            text-align: center;
+            font-weight: 500;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        .receipt-actions-head,
+        .receipt-action-cell {
+            width: 48px;
+            background: var(--receipt-soft);
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .receipt-row-actions {
+            direction: ltr;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            height: 58px;
+            width: 100%;
+            padding: 4px;
+        }
+
+        .receipt-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 0;
+        }
+
+        .receipt-action-btn.delete-row-btn {
+            background: #fff3ef;
+            color: #b4534a;
+            border: 1px solid rgba(180, 83, 74, 0.28);
+        }
+
+        .receipt-bottom {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1px;
+            border-top: 2px solid var(--receipt-ink);
+            background: var(--receipt-line);
+        }
+
+        .receipt-bottom-item {
+            background: #fffdf6;
+            padding: 12px 14px;
+            color: var(--receipt-ink);
+        }
+
+        .receipt-bottom-item span {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            opacity: 0.72;
+        }
+
+        .receipt-bottom-item strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 17px;
+        }
+
+        @media (max-width: 900px) {
+            .receipt-table {
+                min-width: 0;
+            }
+
+            .receipt-bottom {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .sidebar,
+            .navbar,
+            .page-header,
+            .two-column > aside,
+            .receipt-action-cell,
+            .receipt-actions-head {
+                display: none !important;
+            }
+
+            .layout,
+            .main-content,
+            .content,
+            .two-column {
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .receipt-card {
+                width: 100% !important;
+                max-width: none !important;
+                border: 2px solid #245f49 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+            }
+
+            .card-body.table-wrapper {
+                overflow: visible !important;
+                padding: 0 !important;
+            }
+
+            .receipt-table {
+                min-width: 0 !important;
+                font-size: 12px;
+            }
+
+            .receipt-table th,
+            .receipt-table td {
+                border-color: #245f49 !important;
+            }
+
+            .receipt-table input,
+            .receipt-table select {
+                color: #153d30 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="ltr">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+            <ul class="sidebar-menu">
+                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+                <li class="menu-item"><a href="pos.html" class="active"><span class="menu-icon">P</span><span>POS System</span></a></li>
+                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
+                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
+                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
+                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            </ul>
+            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+        </aside>
+
+        <div class="main-content">
+            <nav class="navbar">
+                <div class="navbar-title">Retail POS</div>
+                <div class="navbar-actions"><span class="scope-pill">invoice sale</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
+            </nav>
+
+            <main class="content">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Dlovan Parda POS</h1>
+                        <p class="page-subtitle">Select materials, enter meters or windows, calculate totals, and record paid/debt amounts.</p>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <section class="card receipt-card">
+                        <div class="receipt-head">
+                            <div class="receipt-brand">DLOVAN PARDA</div>
+                            <div class="receipt-subbrand">دلوفان للستائر</div>
+                        </div>
+
+                        <div class="receipt-meta">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="saleDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Client name</label>
+                                <input id="clientName" list="clientNameSuggestions" placeholder="Search saved client name" oninput="selectSavedClient('name')">
+                                <datalist id="clientNameSuggestions"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone number</label>
+                                <input id="clientPhone" list="clientPhoneSuggestions" placeholder="07xx xxx xxxx" oninput="selectSavedClient('phone')">
+                                <datalist id="clientPhoneSuggestions"></datalist>
+                            </div>
+                        </div>
+
+                        <div class="card-body table-wrapper">
+                            <table class="receipt-table">
+                                <colgroup>
+                                    <col style="width: 13%;">
+                                    <col style="width: 12%;">
+                                    <col style="width: 12%;">
+                                    <col style="width: 13%;">
+                                    <col style="width: 13%;">
+                                    <col style="width: 31%;">
+                                    <col style="width: 6%;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>المواد</th>
+                                        <th>متر / نافذة</th>
+                                        <th>سعر المتر</th>
+                                        <th>المجموع</th>
+                                        <th>الحساب</th>
+                                        <th>ملاحظات</th>
+                                        <th class="receipt-actions-head">إضافة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceRows"></tbody>
+                            </table>
+                        </div>
+                        <div class="receipt-bottom">
+                            <div class="receipt-bottom-item">
+                                <span>Subtotal</span>
+                                <strong id="receiptSubtotal">0 IQD</strong>
+                            </div>
+                            <div class="receipt-bottom-item">
+                                <span>Discount</span>
+                                <strong id="receiptDiscount">0 IQD</strong>
+                            </div>
+                            <div class="receipt-bottom-item">
+                                <span>Total</span>
+                                <strong id="receiptFinalTotal">0 IQD</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside class="card">
+                        <div class="card-header"><h2 class="card-title">Payment and accounts</h2></div>
+                        <div class="card-body">
+                            <div class="summary-line"><span>Customer sale subtotal</span><strong id="saleSubtotal">0 IQD</strong></div>
+                            <div class="form-grid" style="margin-top:14px;">
+                                <div class="form-group">
+                                    <label>Discount amount</label>
+                                    <input id="discountAmount" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Discount note</label>
+                                    <input id="discountNote" placeholder="Reason for discount">
+                                </div>
+                            </div>
+                            <div class="summary-line"><span>Customer sale total</span><strong id="saleTotal">0 IQD</strong></div>
+                            <div class="summary-line"><span>خياطة account</span><strong id="sewingTotal">0 IQD</strong></div>
+                            <div class="summary-line"><span>تركيب account</span><strong id="installationTotal">0 IQD</strong></div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Paid amount</label>
+                                    <input id="paidAmount" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Remaining debt</label>
+                                    <input id="remainingDebt" readonly value="0 IQD">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Debt note</label>
+                                <textarea id="debtNote" placeholder="Optional note for unpaid amount"></textarea>
+                            </div>
+
+                            <button class="btn btn-success btn-block" onclick="submitSale()">Add sale</button>
+                            <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printReceipt()">Print receipt</button>
+                            <div id="submitMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/demo-data.js?v=arabic-en-1"></script>
+    <script>
+        if (!checkAuth()) throw new Error('Not authenticated');
+        if (!getStoreId()) window.location.href = '../landing.html';
+        loadShell(getStoreName());
+
+        function todayInputValue() {
+            const now = new Date();
+            const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 10);
+        }
+
+        document.getElementById('saleDate').value = todayInputValue();
+
+        function savedClientKey(name, phone) {
+            const cleanPhone = phone && phone !== '-' ? phone : '';
+            return cleanPhone || String(name || '').toLowerCase();
+        }
+
+        function getSavedClients() {
+            const clients = new Map();
+
+            getStoreSales().forEach(sale => {
+                const name = sale.clientName || '';
+                const phone = sale.clientPhone || '';
+                if (!name || name === 'One-time customer') return;
+
+                const key = savedClientKey(name, phone);
+                if (!clients.has(key)) {
+                    clients.set(key, {
+                        name,
+                        phone: phone && phone !== '-' ? phone : '',
+                        lastDate: sale.date || ''
+                    });
+                    return;
+                }
+
+                const existing = clients.get(key);
+                if (!existing.phone && phone && phone !== '-') existing.phone = phone;
+                if ((sale.date || '') > (existing.lastDate || '')) existing.lastDate = sale.date;
+            });
+
+            retailDemo.clients.forEach(client => {
+                const key = savedClientKey(client.name, client.phone);
+                if (!clients.has(key)) {
+                    clients.set(key, {
+                        name: client.name,
+                        phone: client.phone && client.phone !== '-' ? client.phone : '',
+                        lastDate: client.lastDate || ''
+                    });
+                }
+            });
+
+            return [...clients.values()].sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || '') || a.name.localeCompare(b.name));
+        }
+
+        function escapeOptionText(value) {
+            return String(value || '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function renderClientSuggestions() {
+            const clients = getSavedClients();
+            document.getElementById('clientNameSuggestions').innerHTML = clients.map(client => `
+                <option value="${escapeOptionText(client.name)}" label="${escapeOptionText(client.phone || 'No phone')}"></option>
+            `).join('');
+            document.getElementById('clientPhoneSuggestions').innerHTML = clients
+                .filter(client => client.phone)
+                .map(client => `<option value="${escapeOptionText(client.phone)}" label="${escapeOptionText(client.name)}"></option>`)
+                .join('');
+            window.savedClients = clients;
+        }
+
+        function selectSavedClient(source) {
+            const clients = window.savedClients || getSavedClients();
+            const nameInput = document.getElementById('clientName');
+            const phoneInput = document.getElementById('clientPhone');
+            const query = (source === 'phone' ? phoneInput.value : nameInput.value).trim().toLowerCase();
+            if (!query) return;
+
+            const match = clients.find(client => {
+                const name = String(client.name || '').toLowerCase();
+                const phone = String(client.phone || '').toLowerCase();
+                return source === 'phone' ? phone === query : name === query;
+            });
+
+            if (!match) return;
+            nameInput.value = match.name;
+            phoneInput.value = match.phone || '';
+        }
+
+        function materialOptions() {
+            return retailDemo.materials.map(item => `
+                <option value="${item.name}" data-price="${item.price}" data-unit="${item.unit}" data-affects-total="${item.affectsSaleTotal}" data-worker="${item.workerAccount || ''}">
+                    ${item.name}
+                </option>
+            `).join('');
+        }
+
+        function addInvoiceRow(materialName = 'قماش', afterRow = null) {
+            const wrapper = document.createElement('tr');
+            wrapper.className = afterRow ? 'invoice-row is-added-row' : 'invoice-row';
+            wrapper.innerHTML = `
+                <td><select class="material-select" onchange="syncRow(this); calculateInvoice()">${materialOptions()}</select></td>
+                <td><input class="row-qty quick-number" type="number" min="0" step="0.1" onfocus="selectNumber(this)" oninput="calculateInvoice()"></td>
+                <td><input class="row-price quick-number" type="number" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()"></td>
+                <td><input class="row-sale-total" readonly></td>
+                <td><input class="row-account-total" readonly></td>
+                <td><input class="row-note"></td>
+                <td class="receipt-action-cell">
+                    <div class="receipt-row-actions">
+                        <button class="btn btn-primary btn-small receipt-action-btn" title="Add another line below" onclick="duplicateInvoiceRow(this)">+</button>
+                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete this added line" onclick="deleteInvoiceRow(this)">×</button>
+                    </div>
+                </td>
+            `;
+            wrapper.querySelector('.delete-row-btn').style.display = afterRow ? 'inline-flex' : 'none';
+            if (afterRow) {
+                afterRow.insertAdjacentElement('afterend', wrapper);
+            } else {
+                document.getElementById('invoiceRows').appendChild(wrapper);
+            }
+            wrapper.querySelector('.material-select').value = materialName;
+            syncRow(wrapper.querySelector('.material-select'));
+            calculateInvoice();
+        }
+
+        function syncRow(select) {
+            const option = select.selectedOptions[0];
+            const row = select.closest('tr');
+            const priceInput = row.querySelector('.row-price');
+            const note = row.querySelector('.row-note');
+            const unit = option.dataset.unit === 'window' ? 'window' : 'meter';
+            const isWorker = option.dataset.worker;
+
+            if (isWorker) {
+                priceInput.value = option.dataset.price;
+                priceInput.readOnly = true;
+                note.placeholder = option.value === 'خياطة'
+                    ? '1,000 IQD per meter to خياطة account'
+                    : '10,000 IQD per window to تركيب account';
+            } else {
+                priceInput.readOnly = false;
+                if (Number(priceInput.value) === 1000 || Number(priceInput.value) === 10000) priceInput.value = 0;
+                note.placeholder = unit === 'window' ? 'Count windows' : 'Count meters';
+            }
+
+            if (option.dataset.worker === 'sewing') {
+                priceInput.readOnly = false;
+                if (Number(priceInput.value) === Number(option.dataset.price)) priceInput.value = '';
+                note.placeholder = 'Enter sewing meter price; khayat gets 1,000 IQD per meter';
+            }
+        }
+
+        function selectNumber(input) {
+            if (!input.readOnly) {
+                input.select();
+            }
+        }
+
+        function lineMoney(value) {
+            return Number(value || 0) > 0 ? money(value) : '';
+        }
+
+        function duplicateInvoiceRow(button) {
+            const currentRow = button.closest('tr');
+            const materialName = currentRow.querySelector('.material-select').value;
+            addInvoiceRow(materialName, currentRow);
+        }
+
+        function deleteInvoiceRow(button) {
+            const rows = document.querySelectorAll('.invoice-row');
+            if (rows.length <= 1) return;
+            button.closest('tr').remove();
+            calculateInvoice();
+        }
+
+        function getInvoiceData() {
+            let saleTotal = 0;
+            let sewingTotal = 0;
+            let installationTotal = 0;
+            const items = [];
+            const workerAccounts = [];
+
+            document.querySelectorAll('.invoice-row').forEach(row => {
+                const select = row.querySelector('.material-select');
+                const option = select.selectedOptions[0];
+                const material = select.value;
+                const quantity = Number(row.querySelector('.row-qty').value || 0);
+                const price = Number(row.querySelector('.row-price').value || 0);
+                const lineTotal = quantity * price;
+                const rowNote = row.querySelector('.row-note').value;
+                const workerAccount = option.dataset.worker;
+                const unit = option.dataset.unit;
+                const workerTotal = workerAccount === 'sewing' ? quantity * 1000 : lineTotal;
+
+                saleTotal += lineTotal;
+                row.querySelector('.row-sale-total').value = lineMoney(lineTotal);
+                row.querySelector('.row-account-total').value = workerAccount ? lineMoney(workerTotal) : '';
+
+                if (workerAccount) {
+                    if (workerAccount === 'sewing') sewingTotal += workerTotal;
+                    if (workerAccount === 'installation') installationTotal += workerTotal;
+                    workerAccounts.push({ account: workerAccount, material, quantity, unit, price, lineTotal, total: workerTotal, storeShare: lineTotal - workerTotal, note: rowNote });
+                }
+
+                items.push({ material, quantity, unit, price, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
+            });
+
+            return { saleTotal, sewingTotal, installationTotal, items, workerAccounts };
+        }
+
+        function calculateInvoice() {
+            const data = getInvoiceData();
+            const discount = Math.min(Number(document.getElementById('discountAmount').value || 0), data.saleTotal);
+            const finalTotal = Math.max(data.saleTotal - discount, 0);
+            const paid = Math.min(Number(document.getElementById('paidAmount').value || 0), finalTotal);
+
+            document.getElementById('saleSubtotal').textContent = money(data.saleTotal);
+            document.getElementById('saleTotal').textContent = money(finalTotal);
+            document.getElementById('receiptSubtotal').textContent = money(data.saleTotal);
+            document.getElementById('receiptDiscount').textContent = money(discount);
+            document.getElementById('receiptFinalTotal').textContent = money(finalTotal);
+            document.getElementById('sewingTotal').textContent = money(data.sewingTotal);
+            document.getElementById('installationTotal').textContent = money(data.installationTotal);
+            document.getElementById('remainingDebt').value = money(finalTotal - paid);
+        }
+
+        function resetInvoiceForm() {
+            document.querySelectorAll('.invoice-row.is-added-row').forEach(row => row.remove());
+
+            document.querySelectorAll('.invoice-row').forEach(row => {
+                row.querySelector('.row-qty').value = '';
+                row.querySelector('.row-price').value = '';
+                row.querySelector('.row-sale-total').value = '';
+                row.querySelector('.row-account-total').value = '';
+                row.querySelector('.row-note').value = '';
+                syncRow(row.querySelector('.material-select'));
+            });
+
+            document.getElementById('saleDate').value = todayInputValue();
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('discountAmount').value = 0;
+            document.getElementById('discountNote').value = '';
+            document.getElementById('paidAmount').value = 0;
+            document.getElementById('debtNote').value = '';
+            calculateInvoice();
+        }
+
+        function submitSale() {
+            const data = getInvoiceData();
+            const discount = Math.min(Number(document.getElementById('discountAmount').value || 0), data.saleTotal);
+            const finalTotal = Math.max(data.saleTotal - discount, 0);
+            const paid = Math.min(Number(document.getElementById('paidAmount').value || 0), finalTotal);
+            const remaining = finalTotal - paid;
+            const saleDate = document.getElementById('saleDate').value || todayInputValue();
+            document.getElementById('saleDate').value = saleDate;
+            const sale = {
+                id: Date.now(),
+                storeId: getStoreId(),
+                storeName: getStoreName(),
+                date: saleDate,
+                clientName: document.getElementById('clientName').value || 'One-time customer',
+                clientPhone: document.getElementById('clientPhone').value || '-',
+                subtotal: data.saleTotal,
+                discount,
+                discountNote: document.getElementById('discountNote').value,
+                total: finalTotal,
+                paid,
+                remaining,
+                status: remaining === 0 ? 'Paid' : paid === 0 ? 'Debt' : 'Partial',
+                note: document.getElementById('debtNote').value,
+                items: data.items,
+                workerAccounts: data.workerAccounts
+            };
+
+            saveStoreSale(sale);
+            localStorage.setItem('last_saved_sale_id', String(sale.id));
+
+            const message = document.getElementById('submitMessage');
+            message.textContent = remaining > 0
+                ? `Sale added. Remaining ${money(remaining)} was added as debt for ${sale.clientName}. Worker accounts updated automatically.`
+                : `Sale added as fully paid. Worker accounts updated automatically.`;
+            message.style.display = 'block';
+            resetInvoiceForm();
+            renderClientSuggestions();
+        }
+
+        function printReceipt() {
+            calculateInvoice();
+            window.print();
+        }
+
+        ['قماش', 'تول', 'بطانة', 'زبرا', 'خياطة', 'سكة', 'تركيب', 'مزهرية', 'حبال'].forEach(material => addInvoiceRow(material));
+        renderClientSuggestions();
+    </script>
+    <script src="../js/i18n.js?v=orders-1"></script>
+</body>
+</html>

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Orders - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .orders-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .orders-view {
+            display: none;
+        }
+
+        .orders-view.active {
+            display: block;
+        }
+
+        .order-receipt {
+            background: var(--surface-color);
+        }
+
+        .order-receipt-head {
+            text-align: center;
+            padding: 22px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .order-brand {
+            font-size: 30px;
+            letter-spacing: 2px;
+            font-weight: 800;
+            color: #1f315f;
+        }
+
+        .order-subbrand {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1f315f;
+            margin-top: 4px;
+        }
+
+        .order-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            padding: 18px 20px 8px;
+        }
+
+        .order-items-table th,
+        .order-items-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .order-items-table th:first-child,
+        .order-items-table td:first-child {
+            width: 18%;
+            min-width: 130px;
+        }
+
+        .order-items-table .order-type {
+            min-width: 120px;
+        }
+
+        .order-items-table input,
+        .order-items-table select {
+            text-align: center;
+            padding: 8px;
+        }
+
+        .order-item-actions {
+            display: inline-flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .order-bottom {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 10px;
+            padding: 16px 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .order-bottom-item {
+            background: #f7f3e8;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .order-bottom-item span {
+            display: block;
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+
+        .order-bottom-item strong {
+            color: var(--text-dark);
+            font-size: 18px;
+        }
+
+        .orders-filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fbf8ef;
+        }
+
+        .orders-filter-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .order-detail-panel {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            background: #f7f3e8;
+        }
+
+        .order-detail-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fffdf6;
+            padding: 12px;
+        }
+
+        .ledger-entry {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            background: #fffdf6;
+            margin-bottom: 10px;
+        }
+
+        .ledger-entry-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .print-order-receipt {
+            display: none;
+        }
+
+        @media print {
+            body.printing-order .layout {
+                display: none;
+            }
+
+            body.printing-order .print-order-receipt {
+                display: block;
+                padding: 18px;
+                direction: rtl;
+                font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+                color: #111827;
+            }
+
+            body.printing-order .print-order-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 16px;
+            }
+
+            body.printing-order .print-order-table th,
+            body.printing-order .print-order-table td {
+                border: 1px solid #1f315f;
+                padding: 8px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="ltr">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+            <ul class="sidebar-menu">
+                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
+                <li class="menu-item"><a href="orders.html" class="active"><span class="menu-icon">O</span><span>Orders</span></a></li>
+                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
+                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
+                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            </ul>
+            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+        </aside>
+        <div class="main-content">
+            <nav class="navbar"><div class="navbar-title">Retail Orders</div><div class="navbar-actions"><span class="scope-pill">external supplier orders</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
+            <main class="content">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Orders</h1>
+                        <p class="page-subtitle">Special manual orders supplied by other companies, with buyer debt and supplier ledger tracking.</p>
+                    </div>
+                </div>
+
+                <div class="orders-tabs">
+                    <button class="filter-btn active" onclick="showOrdersView('create', this)">Create order</button>
+                    <button class="filter-btn" onclick="showOrdersView('list', this)">Orders list</button>
+                    <button class="filter-btn" onclick="showOrdersView('suppliers', this)">Company stats</button>
+                </div>
+
+                <div class="workspace-grid">
+                    <div class="metric-card"><span>Total order sales</span><strong id="ordersTotalSales">0 IQD</strong><small>Final totals</small></div>
+                    <div class="metric-card"><span>Order profit</span><strong id="ordersProfit">0 IQD</strong><small>Our income</small></div>
+                    <div class="metric-card"><span>Supplier debt</span><strong id="ordersSupplierDebt">0 IQD</strong><small>We owe companies</small></div>
+                    <div class="metric-card"><span>Buyer debt</span><strong id="ordersBuyerDebt">0 IQD</strong><small>Customers owe us</small></div>
+                </div>
+
+                <section id="createView" class="orders-view active">
+                    <div class="two-column">
+                        <section class="card order-receipt">
+                            <div class="order-receipt-head">
+                                <div class="order-brand">DLOVAN PARDA</div>
+                                <div class="order-subbrand">دلوفان للستائر</div>
+                            </div>
+                            <div class="order-meta">
+                                <div class="form-group"><label>Order date</label><input type="date" id="orderDate"></div>
+                                <div class="form-group"><label>Order time</label><input type="time" id="orderTime"></div>
+                                <div class="form-group"><label>Buyer name</label><input id="buyerName" list="orderClientNames" placeholder="Search saved client name" oninput="selectOrderClient('name')"><datalist id="orderClientNames"></datalist></div>
+                                <div class="form-group"><label>Buyer phone</label><input id="buyerPhone" list="orderClientPhones" placeholder="07xx xxx xxxx" oninput="selectOrderClient('phone')"><datalist id="orderClientPhones"></datalist></div>
+                                <div class="form-group"><label>Company / supplier</label><input id="supplierName" list="supplierSuggestions" placeholder="Supplier company name"><datalist id="supplierSuggestions"></datalist></div>
+                                <div class="form-group"><label>Notes</label><input id="orderNotes" placeholder="Optional order notes"></div>
+                            </div>
+
+                            <div class="card-body table-wrapper">
+                                <table class="order-items-table">
+                                    <thead><tr><th>Item type</th><th>Manual code</th><th>Quantity</th><th>Unit</th><th>Price</th><th>Line total</th><th>Add</th></tr></thead>
+                                    <tbody id="orderItemRows"></tbody>
+                                </table>
+                            </div>
+                            <div class="order-bottom">
+                                <div class="order-bottom-item"><span>Subtotal</span><strong id="orderSubtotalPreview">0 IQD</strong></div>
+                                <div class="order-bottom-item"><span>Delivery price</span><strong id="orderDeliveryPreview">0 IQD</strong></div>
+                                <div class="order-bottom-item"><span>Final total</span><strong id="orderFinalPreview">0 IQD</strong></div>
+                                <div class="order-bottom-item"><span>Buyer remaining debt</span><strong id="orderBuyerDebtPreview">0 IQD</strong></div>
+                            </div>
+                        </section>
+
+                        <aside class="card">
+                            <div class="card-header"><h2 class="card-title">Order money split</h2></div>
+                            <div class="card-body">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Delivery price</label><input id="deliveryPrice" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                    <div class="form-group"><label>Buyer paid amount</label><input id="buyerPaid" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                    <div class="form-group"><label>Our profit</label><input id="ourProfit" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                    <div class="form-group"><label>Supplier share</label><input id="supplierShare" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                    <div class="form-group"><label>Paid to supplier</label><input id="supplierPaid" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                </div>
+                                <div class="summary-line"><span>Final total</span><strong id="summaryFinalTotal">0 IQD</strong></div>
+                                <div class="summary-line"><span>Split difference</span><strong id="summarySplitDifference">0 IQD</strong></div>
+                                <div class="summary-line"><span>Supplier remaining balance</span><strong id="summarySupplierDue">0 IQD</strong></div>
+                                <div class="summary-line"><span>Buyer remaining debt</span><strong id="summaryBuyerDue">0 IQD</strong></div>
+                                <div id="orderMessage" class="alert alert-info" style="display:none;margin-top:16px;"></div>
+                                <button class="btn btn-success btn-block" onclick="submitOrder()">Save order</button>
+                                <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printCurrentOrderReceipt()">Print current receipt</button>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header"><h2 class="card-title">Order sales history</h2></div>
+                        <div class="orders-filter-grid">
+                            <div class="form-group">
+                                <label>Search history</label>
+                                <input id="orderHistorySearch" placeholder="Search buyer, phone, supplier, order, code, notes" oninput="renderOrderHistory()">
+                            </div>
+                        </div>
+                        <div class="card-body table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Items</th>
+                                        <th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th><th>Notes</th><th>Print</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orderHistoryRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="listView" class="orders-view">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Orders list</h2></div>
+                        <div class="orders-filter-grid">
+                            <div class="form-group"><label>Search</label><input id="orderSearch" placeholder="Order, buyer, phone, supplier, code" oninput="renderOrders()"></div>
+                            <div class="form-group"><label>Supplier</label><input id="supplierFilter" placeholder="Company" oninput="renderOrders()"></div>
+                            <div class="form-group"><label>Buyer</label><input id="buyerFilter" placeholder="Buyer name" oninput="renderOrders()"></div>
+                            <div class="form-group"><label>Start date</label><input id="orderStartDate" type="date" onchange="renderOrders()"></div>
+                            <div class="form-group"><label>End date</label><input id="orderEndDate" type="date" onchange="renderOrders()"></div>
+                            <div class="form-group"><label>Buyer status</label><select id="buyerStatusFilter" onchange="renderOrders()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Debt</option></select></div>
+                            <div class="form-group"><label>Supplier status</label><select id="supplierStatusFilter" onchange="renderOrders()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Debt</option></select></div>
+                        </div>
+                        <div class="card-body table-wrapper">
+                            <table>
+                                <thead><tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th><th>Action</th></tr></thead>
+                                <tbody id="ordersRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="suppliersView" class="orders-view">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Company / supplier stats</h2></div>
+                        <div class="orders-filter-grid">
+                            <div class="form-group"><label>Search companies</label><input id="companySearch" placeholder="Supplier name" oninput="renderSuppliers()"></div>
+                        </div>
+                        <div class="card-body table-wrapper">
+                            <table>
+                                <thead><tr><th>Company</th><th>Orders</th><th>Supplier share</th><th>Paid</th><th>Remaining</th><th>Action</th></tr></thead>
+                                <tbody id="supplierRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="supplierLedger" style="margin-top:20px;"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="printOrderReceipt" class="print-order-receipt"></div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script>
+        if (!checkAuth()) throw new Error('Not authenticated');
+        if (!getStoreId()) window.location.href = '../landing.html';
+        loadShell(getStoreName());
+
+        const orderTypes = [
+            { name: 'قماش', unit: 'metres' },
+            { name: 'التوب', unit: 'metres' },
+            { name: 'سلايد', unit: 'cubic metres' }
+        ];
+
+        function todayInputValue() {
+            const now = new Date();
+            const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 10);
+        }
+
+        function currentTimeValue() {
+            const now = new Date();
+            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function orderStatus(paid, total) {
+            if (Number(total || 0) <= 0 || Number(paid || 0) >= Number(total || 0)) return 'Paid';
+            return Number(paid || 0) <= 0 ? 'Debt' : 'Partial';
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function orderTypeOptions() {
+            return orderTypes.map(type => `<option value="${type.name}" data-unit="${type.unit}">${type.name}</option>`).join('');
+        }
+
+        function addOrderItemRow(afterRow = null) {
+            const row = document.createElement('tr');
+            row.className = afterRow ? 'order-item-row is-added-row' : 'order-item-row';
+            row.innerHTML = `
+                <td><select class="order-type" onchange="syncOrderItemUnit(this); calculateOrder()">${orderTypeOptions()}</select></td>
+                <td><input class="order-code" placeholder="Manual code"></td>
+                <td><input class="order-qty" type="number" min="0" step="0.01" oninput="calculateOrder()"></td>
+                <td><input class="order-unit" readonly></td>
+                <td><input class="order-price" type="number" min="0" oninput="calculateOrder()"></td>
+                <td><input class="order-line-total" readonly></td>
+                <td><div class="order-item-actions"><button class="btn btn-primary btn-small" onclick="addOrderItemRow(this.closest('tr'))">+</button><button class="btn btn-danger btn-small delete-order-row" onclick="deleteOrderItemRow(this)">x</button></div></td>
+            `;
+            if (afterRow) {
+                afterRow.insertAdjacentElement('afterend', row);
+            } else {
+                document.getElementById('orderItemRows').appendChild(row);
+            }
+            row.querySelector('.delete-order-row').style.display = afterRow ? 'inline-flex' : 'none';
+            syncOrderItemUnit(row.querySelector('.order-type'));
+            calculateOrder();
+        }
+
+        function syncOrderItemUnit(select) {
+            const option = select.selectedOptions[0];
+            select.closest('tr').querySelector('.order-unit').value = option.dataset.unit;
+        }
+
+        function deleteOrderItemRow(button) {
+            const rows = document.querySelectorAll('.order-item-row');
+            if (rows.length <= 1) return;
+            button.closest('tr').remove();
+            calculateOrder();
+        }
+
+        function getOrderItems() {
+            const items = [];
+            document.querySelectorAll('.order-item-row').forEach(row => {
+                const typeSelect = row.querySelector('.order-type');
+                const itemType = typeSelect.value;
+                const unit = typeSelect.selectedOptions[0].dataset.unit;
+                const code = row.querySelector('.order-code').value.trim();
+                const quantity = Number(row.querySelector('.order-qty').value || 0);
+                const price = Number(row.querySelector('.order-price').value || 0);
+                const lineTotal = quantity * price;
+
+                row.querySelector('.order-line-total').value = lineTotal > 0 ? money(lineTotal) : '';
+                if (code || quantity > 0 || price > 0) {
+                    items.push({ itemType, code, quantity, unit, price, lineTotal });
+                }
+            });
+            return items;
+        }
+
+        function calculateOrder() {
+            const items = getOrderItems();
+            const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+            const deliveryPrice = Number(document.getElementById('deliveryPrice').value || 0);
+            const finalTotal = subtotal + deliveryPrice;
+            const buyerPaid = Math.min(Number(document.getElementById('buyerPaid').value || 0), finalTotal);
+            const ourProfit = Number(document.getElementById('ourProfit').value || 0);
+            const supplierShare = Number(document.getElementById('supplierShare').value || 0);
+            const supplierPaid = Math.min(Number(document.getElementById('supplierPaid').value || 0), supplierShare);
+            const buyerDue = Math.max(finalTotal - buyerPaid, 0);
+            const supplierDue = Math.max(supplierShare - supplierPaid, 0);
+            const splitDifference = finalTotal - ourProfit - supplierShare;
+
+            document.getElementById('buyerPaid').value = buyerPaid || '';
+            document.getElementById('supplierPaid').value = supplierPaid || '';
+            document.getElementById('orderSubtotalPreview').textContent = money(subtotal);
+            document.getElementById('orderDeliveryPreview').textContent = money(deliveryPrice);
+            document.getElementById('orderFinalPreview').textContent = money(finalTotal);
+            document.getElementById('orderBuyerDebtPreview').textContent = money(buyerDue);
+            document.getElementById('summaryFinalTotal').textContent = money(finalTotal);
+            document.getElementById('summarySplitDifference').textContent = money(splitDifference);
+            document.getElementById('summarySupplierDue').textContent = money(supplierDue);
+            document.getElementById('summaryBuyerDue').textContent = money(buyerDue);
+
+            return { items, subtotal, deliveryPrice, finalTotal, buyerPaid, buyerDue, ourProfit, supplierShare, supplierPaid, supplierDue, splitDifference };
+        }
+
+        function getOrderDraft() {
+            const data = calculateOrder();
+            const id = Date.now();
+            return {
+                id,
+                reference: `ORD-${id}`,
+                storeId: getStoreId(),
+                storeName: getStoreName(),
+                date: document.getElementById('orderDate').value || todayInputValue(),
+                time: document.getElementById('orderTime').value || currentTimeValue(),
+                buyerName: document.getElementById('buyerName').value || 'Order customer',
+                buyerPhone: document.getElementById('buyerPhone').value || '-',
+                supplierName: document.getElementById('supplierName').value || '',
+                notes: document.getElementById('orderNotes').value || '',
+                items: data.items,
+                subtotal: data.subtotal,
+                deliveryPrice: data.deliveryPrice,
+                finalTotal: data.finalTotal,
+                buyerPaid: data.buyerPaid,
+                buyerDue: data.buyerDue,
+                buyerStatus: orderStatus(data.buyerPaid, data.finalTotal),
+                ourProfit: data.ourProfit,
+                supplierShare: data.supplierShare,
+                supplierPaid: data.supplierPaid,
+                supplierDue: data.supplierDue,
+                supplierStatus: orderStatus(data.supplierPaid, data.supplierShare),
+                splitDifference: data.splitDifference,
+                supplierPayments: data.supplierPaid > 0 ? [{ date: todayInputValue(), amount: data.supplierPaid, note: 'Initial supplier payment' }] : [],
+                buyerPayments: data.buyerPaid > 0 ? [{ date: todayInputValue(), amount: data.buyerPaid, note: 'Initial buyer payment' }] : []
+            };
+        }
+
+        function validateOrder(order) {
+            if (!order.items.length || order.subtotal <= 0) return 'Add at least one order item with quantity and price.';
+            if (!order.supplierName.trim()) return 'Enter the company or supplier name.';
+            if (Math.abs(order.splitDifference) > 0.001) return 'Our profit plus supplier share must equal the final total.';
+            return '';
+        }
+
+        function submitOrder() {
+            const order = getOrderDraft();
+            const error = validateOrder(order);
+            const message = document.getElementById('orderMessage');
+            if (error) {
+                message.textContent = error;
+                message.className = 'alert alert-danger';
+                message.style.display = 'block';
+                return;
+            }
+
+            saveStoreOrder(order);
+            localStorage.setItem('last_saved_order_id', String(order.id));
+            message.textContent = `Order ${order.reference} saved.`;
+            message.className = 'alert alert-success';
+            message.style.display = 'block';
+            renderAll();
+            resetOrderForm();
+        }
+
+        function resetOrderForm() {
+            document.querySelectorAll('.order-item-row.is-added-row').forEach(row => row.remove());
+            document.querySelectorAll('.order-item-row').forEach(row => {
+                row.querySelector('.order-code').value = '';
+                row.querySelector('.order-qty').value = '';
+                row.querySelector('.order-price').value = '';
+                row.querySelector('.order-line-total').value = '';
+                syncOrderItemUnit(row.querySelector('.order-type'));
+            });
+            document.getElementById('orderDate').value = todayInputValue();
+            document.getElementById('orderTime').value = currentTimeValue();
+            document.getElementById('buyerName').value = '';
+            document.getElementById('buyerPhone').value = '';
+            document.getElementById('supplierName').value = '';
+            document.getElementById('orderNotes').value = '';
+            document.getElementById('deliveryPrice').value = 0;
+            document.getElementById('buyerPaid').value = 0;
+            document.getElementById('ourProfit').value = 0;
+            document.getElementById('supplierShare').value = 0;
+            document.getElementById('supplierPaid').value = 0;
+            calculateOrder();
+            renderSuggestions();
+        }
+
+        function orderItemsSummary(order) {
+            return (order.items || []).map(item => `${item.itemType} ${item.code || '-'}: ${item.quantity} ${item.unit}`).join('<br>') || '-';
+        }
+
+        function renderOrderHistory() {
+            const searchInput = document.getElementById('orderHistorySearch');
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const orders = getStoreOrders().filter(order => {
+                if (!query) return true;
+                const haystack = [
+                    order.reference,
+                    order.date,
+                    order.buyerName,
+                    order.buyerPhone,
+                    order.supplierName,
+                    order.notes,
+                    (order.items || []).map(item => `${item.itemType} ${item.code} ${item.quantity} ${item.unit}`).join(' ')
+                ].join(' ').toLowerCase();
+                return haystack.includes(query);
+            });
+
+            document.getElementById('orderHistoryRows').innerHTML = orders.length
+                ? orders.map(order => `
+                    <tr>
+                        <td>${order.reference}</td>
+                        <td>${order.date} ${order.time || ''}</td>
+                        <td>${order.buyerName}<br>${order.buyerPhone}</td>
+                        <td>${order.supplierName}</td>
+                        <td>${orderItemsSummary(order)}</td>
+                        <td>${money(order.finalTotal)}</td>
+                        <td>${money(order.ourProfit)}</td>
+                        <td>${money(order.supplierDue)}</td>
+                        <td>${money(order.buyerDue)}</td>
+                        <td>${order.notes || '-'}</td>
+                        <td><button class="btn btn-small btn-primary" onclick="printOrderReceipt(${order.id})">Print</button></td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="11">No order history yet.</td></tr>';
+
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function filteredOrders() {
+            const query = document.getElementById('orderSearch').value.trim().toLowerCase();
+            const supplier = document.getElementById('supplierFilter').value.trim().toLowerCase();
+            const buyer = document.getElementById('buyerFilter').value.trim().toLowerCase();
+            const startDate = document.getElementById('orderStartDate').value;
+            const endDate = document.getElementById('orderEndDate').value;
+            const buyerStatus = document.getElementById('buyerStatusFilter').value;
+            const supplierStatus = document.getElementById('supplierStatusFilter').value;
+
+            return getStoreOrders().filter(order => {
+                const haystack = [
+                    order.reference,
+                    order.buyerName,
+                    order.buyerPhone,
+                    order.supplierName,
+                    (order.items || []).map(item => item.code).join(' ')
+                ].join(' ').toLowerCase();
+                if (query && !haystack.includes(query)) return false;
+                if (supplier && !String(order.supplierName || '').toLowerCase().includes(supplier)) return false;
+                if (buyer && !String(order.buyerName || '').toLowerCase().includes(buyer)) return false;
+                if (startDate && order.date < startDate) return false;
+                if (endDate && order.date > endDate) return false;
+                if (buyerStatus && order.buyerStatus !== buyerStatus) return false;
+                if (supplierStatus && order.supplierStatus !== supplierStatus) return false;
+                return true;
+            });
+        }
+
+        function orderDetailHtml(order) {
+            return `
+                <td colspan="9">
+                    <div class="order-detail-panel">
+                        <div class="order-detail-card">
+                            <strong>${order.reference}</strong> | ${order.date} ${order.time || ''} | ${order.buyerName} (${order.buyerPhone}) | ${order.supplierName}
+                            <div style="margin-top:8px;">${orderItemsSummary(order)}</div>
+                            ${order.notes ? `<div style="margin-top:8px;">Notes: ${escapeHtml(order.notes)}</div>` : ''}
+                        </div>
+                        <div class="module-grid" style="margin-bottom:0;">
+                            <div class="order-detail-card">
+                                <h3>Buyer debt</h3>
+                                <div class="summary-line"><span>Paid</span><strong>${money(order.buyerPaid)}</strong></div>
+                                <div class="summary-line"><span>Remaining</span><strong>${money(order.buyerDue)}</strong></div>
+                                ${order.buyerDue > 0 ? `<div class="form-grid"><input id="buyerPay${order.id}" type="number" min="0" max="${order.buyerDue}" placeholder="Payment amount"><button class="btn btn-success" onclick="recordBuyerPayment(${order.id})">Pay buyer debt</button></div>` : '<div class="alert alert-success">Buyer balance paid.</div>'}
+                            </div>
+                            <div class="order-detail-card">
+                                <h3>Supplier debt</h3>
+                                <div class="summary-line"><span>Paid</span><strong>${money(order.supplierPaid)}</strong></div>
+                                <div class="summary-line"><span>Remaining</span><strong>${money(order.supplierDue)}</strong></div>
+                                ${order.supplierDue > 0 ? `<div class="form-grid"><input id="supplierPay${order.id}" type="number" min="0" max="${order.supplierDue}" placeholder="Payment amount"><button class="btn btn-success" onclick="recordSupplierPayment(${order.id})">Pay supplier</button></div>` : '<div class="alert alert-success">Supplier balance paid.</div>'}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            `;
+        }
+
+        function renderOrders() {
+            const orders = filteredOrders();
+            document.getElementById('ordersRows').innerHTML = orders.length
+                ? orders.map(order => `
+                    <tr>
+                        <td>${order.reference}</td><td>${order.date}</td><td>${order.buyerName}<br>${order.buyerPhone}</td><td>${order.supplierName}</td>
+                        <td>${money(order.finalTotal)}</td><td>${money(order.ourProfit)}</td><td>${money(order.supplierDue)}</td><td>${money(order.buyerDue)}</td>
+                        <td><button class="btn btn-small btn-primary" onclick="toggleOrderDetails(${order.id})">View</button><button class="btn btn-small btn-secondary" onclick="printOrderReceipt(${order.id})">Print</button></td>
+                    </tr>
+                    <tr id="orderDetail${order.id}" style="display:none;">${orderDetailHtml(order)}</tr>
+                `).join('')
+                : '<tr><td colspan="9">No orders yet.</td></tr>';
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function toggleOrderDetails(orderId) {
+            const row = document.getElementById(`orderDetail${orderId}`);
+            row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+        }
+
+        function recordBuyerPayment(orderId) {
+            const order = getStoreOrders().find(item => Number(item.id) === Number(orderId));
+            if (!order || order.buyerDue <= 0) return;
+            const input = document.getElementById(`buyerPay${orderId}`);
+            const amount = Math.min(Number(input.value || 0), Number(order.buyerDue || 0));
+            if (amount <= 0) return;
+            order.buyerPaid += amount;
+            order.buyerDue = Math.max(order.finalTotal - order.buyerPaid, 0);
+            order.buyerStatus = orderStatus(order.buyerPaid, order.finalTotal);
+            order.buyerPayments = order.buyerPayments || [];
+            order.buyerPayments.push({ date: todayInputValue(), amount, note: 'Buyer debt payment' });
+            updateStoreOrder(order);
+            renderAll();
+        }
+
+        function recordSupplierPayment(orderId) {
+            const order = getStoreOrders().find(item => Number(item.id) === Number(orderId));
+            if (!order || order.supplierDue <= 0) return;
+            const input = document.getElementById(`supplierPay${orderId}`);
+            const amount = Math.min(Number(input.value || 0), Number(order.supplierDue || 0));
+            if (amount <= 0) return;
+            order.supplierPaid += amount;
+            order.supplierDue = Math.max(order.supplierShare - order.supplierPaid, 0);
+            order.supplierStatus = orderStatus(order.supplierPaid, order.supplierShare);
+            order.supplierPayments = order.supplierPayments || [];
+            order.supplierPayments.push({ date: todayInputValue(), amount, note: 'Supplier payment' });
+            updateStoreOrder(order);
+            renderAll();
+        }
+
+        function supplierStats() {
+            const stats = new Map();
+            getStoreOrders().forEach(order => {
+                const key = String(order.supplierName || 'Unknown supplier').toLowerCase();
+                if (!stats.has(key)) {
+                    stats.set(key, { name: order.supplierName || 'Unknown supplier', count: 0, share: 0, paid: 0, due: 0, orders: [] });
+                }
+                const row = stats.get(key);
+                row.count += 1;
+                row.share += Number(order.supplierShare || 0);
+                row.paid += Number(order.supplierPaid || 0);
+                row.due += Number(order.supplierDue || 0);
+                row.orders.push(order);
+            });
+            return [...stats.values()].sort((a, b) => b.due - a.due || a.name.localeCompare(b.name));
+        }
+
+        function renderSuppliers() {
+            const query = document.getElementById('companySearch').value.trim().toLowerCase();
+            const rows = supplierStats().filter(row => !query || row.name.toLowerCase().includes(query));
+            document.getElementById('supplierRows').innerHTML = rows.length
+                ? rows.map(row => `
+                    <tr><td>${row.name}</td><td>${row.count}</td><td>${money(row.share)}</td><td>${money(row.paid)}</td><td>${money(row.due)}</td><td><button class="btn btn-small btn-primary" onclick="showSupplierLedger('${encodeURIComponent(row.name)}')">Ledger</button></td></tr>
+                `).join('')
+                : '<tr><td colspan="6">No supplier orders yet.</td></tr>';
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function showSupplierLedger(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            const supplier = supplierStats().find(row => row.name === name);
+            if (!supplier) return;
+            document.getElementById('supplierLedger').innerHTML = `
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">${supplier.name} ledger</h2></div>
+                    <div class="card-body">
+                        ${supplier.orders.map(order => `
+                            <div class="ledger-entry">
+                                <div class="ledger-entry-head"><span>${order.reference} - ${order.date}</span><span>${order.buyerName}</span></div>
+                                <div>${orderItemsSummary(order)}</div>
+                                <div class="summary-line"><span>Receipt total</span><strong>${money(order.finalTotal)}</strong></div>
+                                <div class="summary-line"><span>Our profit</span><strong>${money(order.ourProfit)}</strong></div>
+                                <div class="summary-line"><span>Supplier share</span><strong>${money(order.supplierShare)}</strong></div>
+                                <div class="summary-line"><span>Paid to supplier</span><strong>${money(order.supplierPaid)}</strong></div>
+                                <div class="summary-line"><span>Remaining supplier balance</span><strong>${money(order.supplierDue)}</strong></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function renderSummary() {
+            const orders = getStoreOrders();
+            document.getElementById('ordersTotalSales').textContent = money(orders.reduce((sum, order) => sum + Number(order.finalTotal || 0), 0));
+            document.getElementById('ordersProfit').textContent = money(orders.reduce((sum, order) => sum + Number(order.ourProfit || 0), 0));
+            document.getElementById('ordersSupplierDebt').textContent = money(orders.reduce((sum, order) => sum + Number(order.supplierDue || 0), 0));
+            document.getElementById('ordersBuyerDebt').textContent = money(orders.reduce((sum, order) => sum + Number(order.buyerDue || 0), 0));
+        }
+
+        function renderSuggestions() {
+            const clients = new Map();
+            getStoreSales().forEach(sale => {
+                if (!sale.clientName || sale.clientName === 'One-time customer') return;
+                clients.set(sale.clientPhone || sale.clientName, { name: sale.clientName, phone: sale.clientPhone || '' });
+            });
+            getStoreOrders().forEach(order => {
+                if (!order.buyerName) return;
+                clients.set(order.buyerPhone || order.buyerName, { name: order.buyerName, phone: order.buyerPhone || '' });
+            });
+
+            const clientRows = [...clients.values()];
+            document.getElementById('orderClientNames').innerHTML = clientRows.map(client => `<option value="${escapeHtml(client.name)}" label="${escapeHtml(client.phone || 'No phone')}"></option>`).join('');
+            document.getElementById('orderClientPhones').innerHTML = clientRows.filter(client => client.phone && client.phone !== '-').map(client => `<option value="${escapeHtml(client.phone)}" label="${escapeHtml(client.name)}"></option>`).join('');
+
+            const suppliers = [...new Set(getStoreOrders().map(order => order.supplierName).filter(Boolean))].sort();
+            document.getElementById('supplierSuggestions').innerHTML = suppliers.map(name => `<option value="${escapeHtml(name)}"></option>`).join('');
+            window.orderClients = clientRows;
+        }
+
+        function selectOrderClient(source) {
+            const nameInput = document.getElementById('buyerName');
+            const phoneInput = document.getElementById('buyerPhone');
+            const query = (source === 'phone' ? phoneInput.value : nameInput.value).trim().toLowerCase();
+            if (!query) return;
+            const match = (window.orderClients || []).find(client => {
+                const name = String(client.name || '').toLowerCase();
+                const phone = String(client.phone || '').toLowerCase();
+                return source === 'phone' ? phone === query : name === query;
+            });
+            if (!match) return;
+            nameInput.value = match.name;
+            phoneInput.value = match.phone || '';
+        }
+
+        function showOrdersView(viewName, button) {
+            document.querySelectorAll('.orders-view').forEach(view => view.classList.remove('active'));
+            document.getElementById(`${viewName}View`).classList.add('active');
+            document.querySelectorAll('.orders-tabs .filter-btn').forEach(tab => tab.classList.remove('active'));
+            button.classList.add('active');
+            renderAll();
+        }
+
+        function receiptHtml(order) {
+            return `
+                <div style="text-align:center;color:#1f315f;">
+                    <h1 style="letter-spacing:2px;margin:0;">DLOVAN PARDA</h1>
+                    <h2 style="margin:4px 0 10px;">دلوفان للستائر</h2>
+                    <strong>${order.reference}</strong>
+                </div>
+                <p>التاريخ: ${order.date} ${order.time || ''}</p>
+                <p>الزبون: ${order.buyerName} - ${order.buyerPhone}</p>
+                <p>الشركة: ${order.supplierName}</p>
+                <table class="print-order-table">
+                    <thead><tr><th>النوع</th><th>الكود</th><th>الكمية</th><th>الوحدة</th><th>السعر</th><th>المجموع</th></tr></thead>
+                    <tbody>${order.items.map(item => `<tr><td>${item.itemType}</td><td>${item.code || '-'}</td><td>${item.quantity}</td><td>${item.unit}</td><td>${money(item.price)}</td><td>${money(item.lineTotal)}</td></tr>`).join('')}</tbody>
+                </table>
+                <p>Subtotal: ${money(order.subtotal)}</p>
+                <p>Delivery: ${money(order.deliveryPrice)}</p>
+                <p>Final total: ${money(order.finalTotal)}</p>
+                <p>Paid amount: ${money(order.buyerPaid)}</p>
+                <p>Buyer remaining debt: ${money(order.buyerDue)}</p>
+                <p>Our profit: ${money(order.ourProfit)}</p>
+                <p>Supplier share: ${money(order.supplierShare)}</p>
+                ${order.notes ? `<p>Notes: ${escapeHtml(order.notes)}</p>` : ''}
+            `;
+        }
+
+        function printOrder(order) {
+            document.getElementById('printOrderReceipt').innerHTML = receiptHtml(order);
+            document.body.classList.add('printing-order');
+            window.print();
+            setTimeout(() => document.body.classList.remove('printing-order'), 200);
+        }
+
+        function printOrderReceipt(orderId) {
+            const order = getStoreOrders().find(item => Number(item.id) === Number(orderId));
+            if (order) printOrder(order);
+        }
+
+        function printCurrentOrderReceipt() {
+            const order = getOrderDraft();
+            const error = validateOrder(order);
+            const message = document.getElementById('orderMessage');
+            if (error) {
+                message.textContent = error;
+                message.className = 'alert alert-danger';
+                message.style.display = 'block';
+                return;
+            }
+            printOrder(order);
+        }
+
+        function renderAll() {
+            renderSummary();
+            renderOrders();
+            renderOrderHistory();
+            renderSuppliers();
+            renderSuggestions();
+        }
+
+        document.getElementById('orderDate').value = todayInputValue();
+        document.getElementById('orderTime').value = currentTimeValue();
+        addOrderItemRow();
+        renderAll();
+        calculateOrder();
+    </script>
+    <script src="../js/i18n.js?v=orders-1"></script>
+</body>
+</html>

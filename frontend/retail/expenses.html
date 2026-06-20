@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Expenses - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="ltr">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+            <ul class="sidebar-menu">
+                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
+                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
+                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
+                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
+                <li class="menu-item"><a href="expenses.html" class="active"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            </ul>
+            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+        </aside>
+        <div class="main-content">
+            <nav class="navbar"><div class="navbar-title">Retail Expenses</div><div class="navbar-actions"><span class="scope-pill">store_id scoped</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
+            <main class="content">
+                <div class="page-header">
+                    <div><h1 class="page-title">Expenses</h1><p class="page-subtitle">Store-specific expenses by category, amount, date, and note.</p></div>
+                </div>
+                <div class="two-column">
+                    <section class="card">
+                        <div class="card-header"><h2 class="card-title">Add expense</h2></div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group"><label>Category</label><select id="categorySelect"></select></div>
+                                <div class="form-group"><label>Amount</label><input id="expenseAmount" type="number" min="0" placeholder="0"></div>
+                                <div class="form-group"><label>Date</label><input id="expenseDate" type="date"></div>
+                            </div>
+                            <div class="form-group"><label>Note</label><textarea id="expenseNote" placeholder="Reason or detail"></textarea></div>
+                            <button class="btn btn-primary" onclick="saveExpense()">Save expense</button>
+                            <div id="expenseMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
+                        </div>
+                    </section>
+                    <section class="card">
+                        <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
+                        <div class="card-body table-wrapper">
+                            <table><thead><tr><th>Category</th><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody id="expenseRows"></tbody></table>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="../js/api.js"></script>
+    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script>
+        if (!checkAuth()) throw new Error('Not authenticated');
+        if (!getStoreId()) window.location.href = '../landing.html';
+        loadShell(getStoreName());
+
+        function todayInputValue() {
+            const now = new Date();
+            const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 10);
+        }
+
+        document.getElementById('categorySelect').innerHTML = retailDemo.expenseCategories.map(item => `<option>${item}</option>`).join('');
+        document.getElementById('expenseDate').value = todayInputValue();
+
+        function renderExpenses() {
+            const expenses = getStoreExpenses().concat(retailDemo.expenses);
+            document.getElementById('expenseRows').innerHTML = expenses.length
+                ? expenses.map(expense => `
+                    <tr><td>${expense.category}</td><td>${money(expense.amount)}</td><td>${expense.date}</td><td>${expense.note || '-'}</td></tr>
+                `).join('')
+                : '<tr><td colspan="4">No expenses yet.</td></tr>';
+
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function saveExpense() {
+            const amountInput = document.getElementById('expenseAmount');
+            const amount = Number(amountInput.value || 0);
+            const message = document.getElementById('expenseMessage');
+
+            if (amount <= 0) {
+                message.textContent = 'Enter an expense amount before saving.';
+                message.className = 'alert alert-danger';
+                message.style.display = 'block';
+                amountInput.focus();
+                return;
+            }
+
+            const expense = {
+                id: Date.now(),
+                storeId: getStoreId(),
+                storeName: getStoreName(),
+                category: document.getElementById('categorySelect').value,
+                amount,
+                date: document.getElementById('expenseDate').value || todayInputValue(),
+                note: document.getElementById('expenseNote').value
+            };
+
+            saveStoreExpense(expense);
+            amountInput.value = '';
+            document.getElementById('expenseDate').value = todayInputValue();
+            document.getElementById('expenseNote').value = '';
+            message.textContent = 'Expense saved.';
+            message.className = 'alert alert-success';
+            message.style.display = 'block';
+            renderExpenses();
+        }
+
+        renderExpenses();
+    </script>
+    <script src="../js/i18n.js?v=orders-1"></script>
+</body>
+</html>
