@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -54,16 +55,105 @@
 
     <script src="js/api.js"></script>
     <script>
+=======
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختيار المتجر - نظام إدارة الستائر</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .navbar-brand-logo {
+            font-size: 24px;
+        }
+
+        .navbar-brand-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" style="background: white; padding: 15px 30px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <div class="navbar-brand">
+            <span class="navbar-brand-logo">👔</span>
+            <span class="navbar-brand-text">إدارة الستائر</span>
+        </div>
+        <div class="user-section">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <span class="user-name" id="userName">المستخدم</span>
+            </div>
+            <button class="btn btn-danger" onclick="handleLogout()">تسجيل الخروج</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div style="max-width: 1200px; margin: 0 auto; padding: 40px 30px;">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">اختر المتجر أو الوحدة</h1>
+                <p class="page-subtitle">اختر المتجر المطلوب لإدارة المبيعات والمخزون</p>
+            </div>
+        </div>
+
+        <div id="loadingState" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>جاري تحميل البيانات...</p>
+        </div>
+
+        <div id="storeCardsContainer" class="store-cards-grid">
+            <!-- Store cards will be loaded here -->
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Check auth
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
         if (!checkAuth()) {
             window.location.href = 'index.html';
         }
 
         const storesList = [
+<<<<<<< HEAD
             { id: 1, name: 'Store 1', description: 'Independent retail workspace for POS, debts, clients, expenses, and store reports.', icon: 'S1', type: 'retail' },
             { id: 2, name: 'Store 2', description: 'Separate sales and client records for the second retail branch.', icon: 'S2', type: 'retail' },
             { id: 3, name: 'Store 3', description: 'Dedicated dashboard and transactions for the third retail branch.', icon: 'S3', type: 'retail' },
             { id: 4, name: 'Store 4', description: 'Standalone retail workspace for the fourth branch.', icon: 'S4', type: 'retail' },
             { id: null, name: 'Inventory / Warehouse', description: 'Wholesale workflow for categories, product types, clients, balances, sales, debts, and reports.', icon: 'INV', type: 'inventory' }
+=======
+            { id: 1, name: 'Store 1', description: 'إدارة مبيعات وموارد المتجر الأول', icon: '🏪', type: 'retail' },
+            { id: 2, name: 'Store 2', description: 'إدارة مبيعات وموارد المتجر الثاني', icon: '🏪', type: 'retail' },
+            { id: 3, name: 'Store 3', description: 'إدارة مبيعات وموارد المتجر الثالث', icon: '🏪', type: 'retail' },
+            { id: 4, name: 'Store 4', description: 'إدارة مبيعات وموارد المتجر الرابع', icon: '🏪', type: 'retail' },
+            { id: null, name: 'المستودع / المخزون', description: 'إدارة المخزون العام والفئات والعملاء', icon: '📦', type: 'inventory' }
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
         ];
 
         function loadUserInfo() {
@@ -84,7 +174,11 @@
                             <div class="store-card-title">${store.name}</div>
                             <div class="store-card-description">${store.description}</div>
                         </div>
+<<<<<<< HEAD
                         <div class="store-card-footer">Enter workspace</div>
+=======
+                        <div class="store-card-footer">اضغط للدخول →</div>
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                     </div>
                 </a>
             `).join('');
@@ -96,6 +190,7 @@
             } else {
                 removeStoreSelection();
                 localStorage.setItem('store_name', storeName);
+<<<<<<< HEAD
                 localStorage.setItem('inventory_unit_id', '1');
             }
 
@@ -106,11 +201,26 @@
 
         async function handleLogout() {
             if (confirm('Logout from the system?')) {
+=======
+            }
+
+            // Redirect based on type
+            const redirectUrl = type === 'inventory'
+                ? 'inventory/dashboard.html'
+                : 'retail/dashboard.html';
+
+            window.location.href = redirectUrl;
+        }
+
+        async function handleLogout() {
+            if (confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')) {
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                 await logout();
                 window.location.href = 'index.html';
             }
         }
 
+<<<<<<< HEAD
         window.addEventListener('load', () => {
             loadUserInfo();
             renderStoreCards();
@@ -118,5 +228,13 @@
         });
     </script>
     <script src="js/i18n.js?v=arabic-en-2"></script>
+=======
+        // Initialize
+        window.addEventListener('load', () => {
+            loadUserInfo();
+            renderStoreCards();
+        });
+    </script>
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
 </body>
 </html>

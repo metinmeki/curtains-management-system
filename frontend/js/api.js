@@ -125,6 +125,7 @@ async function login(email, password) {
         return data.data;
     } catch (error) {
         console.error('Login error:', error);
+<<<<<<< HEAD
 
         if (email === 'admin@curtains.com' && password === 'admin123') {
             const demoUser = {
@@ -143,6 +144,8 @@ async function login(email, password) {
             };
         }
 
+=======
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
         throw error;
     }
 }

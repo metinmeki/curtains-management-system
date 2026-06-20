@@ -1,9 +1,17 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Curtains Management System</title>
+=======
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام إدارة الستائر</title>
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
     <link rel="stylesheet" href="css/style.css">
     <style>
         .login-errors {
@@ -13,6 +21,7 @@
             display: none;
         }
 
+<<<<<<< HEAD
         .login-demo-hint {
             background-color: #eef5e8;
             color: #31533f;
@@ -40,28 +49,99 @@
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" value="admin@curtains.com" required>
+=======
+        .login-success {
+            color: #065f46;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .login-demo-hint {
+            background-color: #dbeafe;
+            color: #0c4a6e;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-actions button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo">👔</div>
+            <h1 class="login-title">نظام إدارة الستائر</h1>
+            <p class="login-subtitle">منصة متكاملة لإدارة المبيعات والمخزون</p>
+
+            <form id="loginForm">
+                <div id="successMessage" class="alert alert-success" style="display: none;">
+                    تم تسجيل الدخول بنجاح، جاري التحويل...
+                </div>
+
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="admin@curtains.com"
+                        required
+                    />
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                     <div class="login-errors" id="emailError"></div>
                 </div>
 
                 <div class="form-group">
+<<<<<<< HEAD
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" value="admin123" required>
+=======
+                    <label for="password">كلمة المرور</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                    />
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                     <div class="login-errors" id="passwordError"></div>
                 </div>
 
                 <div id="generalError" class="alert alert-danger" style="display: none;"></div>
 
                 <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+<<<<<<< HEAD
                     <span id="btnText">Login</span>
+=======
+                    <span id="btnText">تسجيل الدخول</span>
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                     <span id="btnLoader" style="display: none;">
                         <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></span>
                     </span>
                 </button>
 
                 <div class="login-demo-hint">
+<<<<<<< HEAD
                     <strong>Demo access:</strong><br>
                     Email: admin@curtains.com<br>
                     Password: admin123
+=======
+                    <strong>بيانات التجربة:</strong><br>
+                    البريد: admin@curtains.com<br>
+                    كلمة المرور: admin123
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                 </div>
             </form>
         </div>
@@ -78,12 +158,22 @@
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
 
+<<<<<<< HEAD
             document.getElementById('generalError').style.display = 'none';
+=======
+            // Clear errors
+            document.getElementById('emailError').textContent = '';
+            document.getElementById('passwordError').textContent = '';
+            document.getElementById('generalError').style.display = 'none';
+
+            // Show loading
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
             loginBtn.disabled = true;
             btnText.style.display = 'none';
             btnLoader.style.display = 'inline';
 
             try {
+<<<<<<< HEAD
                 await login(email, password);
                 document.getElementById('successMessage').style.display = 'block';
                 setTimeout(() => {
@@ -92,16 +182,46 @@
             } catch (error) {
                 document.getElementById('generalError').textContent = error.message || 'Login failed';
                 document.getElementById('generalError').style.display = 'block';
+=======
+                const data = await login(email, password);
+
+                // Show success
+                document.getElementById('successMessage').style.display = 'block';
+
+                // Redirect to landing
+                setTimeout(() => {
+                    window.location.href = 'landing.html';
+                }, 1000);
+
+            } catch (error) {
+                const errorMsg = error.message || 'حدث خطأ في تسجيل الدخول';
+
+                if (errorMsg.includes('credentials')) {
+                    document.getElementById('generalError').textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+                } else {
+                    document.getElementById('generalError').textContent = errorMsg;
+                }
+
+                document.getElementById('generalError').style.display = 'block';
+
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
                 loginBtn.disabled = false;
                 btnText.style.display = 'inline';
                 btnLoader.style.display = 'none';
             }
         });
 
+<<<<<<< HEAD
+=======
+        // Redirect if already logged in
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
         if (getToken()) {
             window.location.href = 'landing.html';
         }
     </script>
+<<<<<<< HEAD
     <script src="js/i18n.js?v=arabic-en-2"></script>
+=======
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
 </body>
 </html>
