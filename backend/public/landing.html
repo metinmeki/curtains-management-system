@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Workspace - Curtains Management System</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=restore-2">
 </head>
 <body class="ltr">
     <nav class="navbar">
@@ -114,7 +114,9 @@
         window.addEventListener('load', () => {
             loadUserInfo();
             renderStoreCards();
+            if (window.applyLanguage) applyLanguage();
         });
     </script>
+    <script src="js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>
