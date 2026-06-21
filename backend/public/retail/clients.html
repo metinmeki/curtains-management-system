@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<<<<<<< HEAD
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Clients - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .client-detail-row td {
+            background: #f7f3e8;
+            padding: 0;
+        }
+
+        .client-history {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+        }
+
+        .client-history-entry {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fffdf6;
+            padding: 12px;
+        }
+
+        .client-history-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .client-history-items {
+            color: var(--text-gray);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .client-balance-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.4fr auto;
+            gap: 10px;
+            align-items: end;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #eef8ee;
+        }
+
+        .client-balance-panel .form-group {
+            margin-bottom: 0;
+        }
+
+        .client-balance-total {
+            color: var(--text-dark);
+            font-weight: 800;
+        }
+
+        .payment-history {
+            margin-top: 8px;
+            color: var(--text-gray);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .client-search-row {
+            display: grid;
+            grid-template-columns: minmax(220px, 420px) 1fr;
+            gap: 12px;
+            align-items: end;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fbf8ef;
+        }
+
+        .client-search-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .client-search-hint {
+            color: var(--text-gray);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .client-balance-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .client-search-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="ltr">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+            <ul class="sidebar-menu">
+                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
+                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
+                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
+                <li class="menu-item"><a href="clients.html" class="active"><span class="menu-icon">C</span><span>Clients</span></a></li>
+                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            </ul>
+            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+        </aside>
+        <div class="main-content">
+            <nav class="navbar"><div class="navbar-title">Retail Clients</div><div class="navbar-actions"><span class="scope-pill">store clients only</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
+            <main class="content">
+                <div class="page-header">
+                    <div><h1 class="page-title">Clients</h1><p class="page-subtitle">Repeat customers and optional saved one-time customers for the selected store.</p></div>
+                    <button class="btn btn-primary">Add client</button>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Client accounts</h2></div>
+                    <div class="client-search-row">
+                        <div class="form-group">
+                            <label>Search clients</label>
+                            <input id="clientSearch" type="search" placeholder="Search by client name or phone" oninput="renderClients()">
+                        </div>
+                        <div class="client-search-hint">Search instantly filters saved clients, POS sales, and debt customers.</div>
+                    </div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead><tr><th>Name</th><th>Phone</th><th>Total sales</th><th>Total paid</th><th>Balance</th><th>Last transaction</th><th>Details</th></tr></thead>
+                            <tbody id="clientRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="../js/api.js"></script>
+    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script>
+        if (!checkAuth()) throw new Error('Not authenticated');
+        if (!getStoreId()) window.location.href = '../landing.html';
+        loadShell(getStoreName());
+
+        function clientKey(name, phone) {
+            const cleanPhone = phone && phone !== '-' ? phone : '';
+            return cleanPhone || (name || 'One-time customer').toLowerCase();
+        }
+
+        function saleItemsText(sale) {
+            const activeItems = (sale.items || []).filter(item => Number(item.saleTotal || 0) > 0 || Number(item.quantity || 0) > 0);
+            if (!activeItems.length) return sale.note || '-';
+
+            return activeItems.map(item => {
+                const qty = Number(item.quantity || 0);
+                const unit = item.unit || 'meter';
+                return `${item.material}: ${qty || '-'} ${unit}, ${money(item.saleTotal || (qty * Number(item.price || 0)))}`;
+            }).join('<br>');
+        }
+
+        function buildClientAccounts() {
+            const accounts = new Map();
+
+            getStoreSales().forEach(sale => {
+                const name = sale.clientName || 'One-time customer';
+                const phone = sale.clientPhone || '-';
+                const key = clientKey(name, phone);
+
+                if (!accounts.has(key)) {
+                    accounts.set(key, {
+                        name,
+                        phone,
+                        totalSales: 0,
+                        totalPaid: 0,
+                        totalDebt: 0,
+                        lastDate: sale.date || '-',
+                        key,
+                        history: []
+                    });
+                }
+
+                const account = accounts.get(key);
+                account.name = account.name === 'One-time customer' && name !== 'One-time customer' ? name : account.name;
+                account.phone = account.phone === '-' && phone !== '-' ? phone : account.phone;
+                account.totalSales += Number(sale.total || 0);
+                account.totalPaid += Number(sale.paid || 0);
+                account.totalDebt += Number(sale.remaining || 0);
+                if ((sale.date || '') > (account.lastDate || '')) account.lastDate = sale.date;
+                account.history.push(sale);
+            });
+
+            getStoreOrders().forEach(order => {
+                const name = order.buyerName || 'Order customer';
+                const phone = order.buyerPhone || '-';
+                const key = clientKey(name, phone);
+
+                if (!accounts.has(key)) {
+                    accounts.set(key, {
+                        name,
+                        phone,
+                        totalSales: 0,
+                        totalPaid: 0,
+                        totalDebt: 0,
+                        lastDate: order.date || '-',
+                        key,
+                        history: []
+                    });
+                }
+
+                const account = accounts.get(key);
+                account.totalSales += Number(order.finalTotal || 0);
+                account.totalPaid += Number(order.buyerPaid || 0);
+                account.totalDebt += Number(order.buyerDue || 0);
+                if ((order.date || '') > (account.lastDate || '')) account.lastDate = order.date;
+                account.history.push({
+                    source: 'order',
+                    id: order.reference,
+                    date: order.date,
+                    total: order.finalTotal,
+                    paid: order.buyerPaid,
+                    remaining: order.buyerDue,
+                    note: order.notes,
+                    payments: order.buyerPayments || [],
+                    items: (order.items || []).map(item => ({
+                        material: `${item.itemType} ${item.code || ''}`.trim(),
+                        quantity: item.quantity,
+                        unit: item.unit,
+                        price: item.price,
+                        saleTotal: item.lineTotal
+                    }))
+                });
+            });
+
+            retailDemo.clients.forEach(client => {
+                const key = clientKey(client.name, client.phone);
+                if (!accounts.has(key)) {
+                    accounts.set(key, {
+                        name: client.name,
+                        phone: client.phone,
+                        totalSales: Number(client.totalSales || 0),
+                        totalPaid: Number(client.totalPaid || 0),
+                        totalDebt: Number(client.totalDebt || 0),
+                        lastDate: client.lastDate || '-',
+                        key,
+                        history: []
+                    });
+                }
+            });
+
+            return [...accounts.values()].sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || ''));
+        }
+
+        function filterClientAccounts(clients) {
+            const searchInput = document.getElementById('clientSearch');
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            if (!query) return clients;
+
+            return clients.filter(client => {
+                const name = String(client.name || '').toLowerCase();
+                const phone = String(client.phone || '').toLowerCase();
+                return name.includes(query) || phone.includes(query);
+            });
+        }
+
+        function paymentHistoryHtml(sale) {
+            const payments = sale.payments || [];
+            if (!payments.length) return '';
+
+            return `
+                <div class="payment-history">
+                    ${payments.map(payment => `
+                        <div>Payment ${payment.date || '-'}: ${money(payment.amount)}${payment.note ? ` - ${payment.note}` : ''}</div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function clientPaymentPanel(client, index) {
+            if (Number(client.totalDebt || 0) <= 0) {
+                return '<div class="client-balance-panel"><div class="client-balance-total">Balance fully paid.</div></div>';
+            }
+
+            return `
+                <div class="client-balance-panel">
+                    <div class="client-balance-total"><span>Balance</span>: ${money(client.totalDebt)}</div>
+                    <div class="form-group">
+                        <label>Payment amount</label>
+                        <input id="clientPayAmount${index}" type="number" min="0" max="${client.totalDebt}" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Payment note</label>
+                        <input id="clientPayNote${index}" placeholder="Optional note">
+                    </div>
+                    <button class="btn btn-success" onclick="recordClientPayment(${index})">Pay debt</button>
+                </div>
+            `;
+        }
+
+        function clientHistoryHtml(client, index) {
+            if (!client.history.length) {
+                return `<div class="client-history">${clientPaymentPanel(client, index)}<div class="client-history-entry">No purchase details yet.</div></div>`;
+            }
+
+            return `
+                <div class="client-history">
+                    ${clientPaymentPanel(client, index)}
+                    ${client.history.map(sale => `
+                        <div class="client-history-entry">
+                            <div class="client-history-head">
+                                <span>#${sale.id} - ${sale.date || '-'}</span>
+                                <span>Total ${money(sale.total)} | Paid ${money(sale.paid)} | Debt ${money(sale.remaining)}</span>
+                            </div>
+                            <div class="client-history-items">${saleItemsText(sale)}</div>
+                            ${sale.note ? `<div class="client-history-items">Note: ${sale.note}</div>` : ''}
+                            ${paymentHistoryHtml(sale)}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderClients() {
+            const clients = filterClientAccounts(buildClientAccounts());
+            document.getElementById('clientRows').innerHTML = clients.length
+                ? clients.map((client, index) => `
+                    <tr>
+                        <td>${client.name}</td>
+                        <td>${client.phone}</td>
+                        <td>${money(client.totalSales)}</td>
+                        <td>${money(client.totalPaid)}</td>
+                        <td>${money(client.totalDebt)}</td>
+                        <td>${client.lastDate}</td>
+                        <td><button class="btn btn-small btn-primary" onclick="toggleClientDetails(${index})">View details</button></td>
+                    </tr>
+                    <tr class="client-detail-row" id="clientDetail${index}" style="display:none;">
+                        <td colspan="7">${clientHistoryHtml(client, index)}</td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="7">No matching clients found.</td></tr>';
+
+            window.clientAccounts = clients;
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function toggleClientDetails(index) {
+            const row = document.getElementById(`clientDetail${index}`);
+            row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+        }
+
+        function recordClientPayment(index) {
+            const client = window.clientAccounts[index];
+            if (!client || Number(client.totalDebt || 0) <= 0) return;
+
+            const input = document.getElementById(`clientPayAmount${index}`);
+            const noteInput = document.getElementById(`clientPayNote${index}`);
+            let remainingPayment = Math.min(Number(input.value || 0), Number(client.totalDebt || 0));
+            if (remainingPayment <= 0) {
+                input.focus();
+                return;
+            }
+
+            const note = noteInput ? noteInput.value.trim() : '';
+            const paymentDate = new Date().toISOString().slice(0, 10);
+            const key = getStoreSalesKey();
+            const sales = getStoreSales();
+            const ordersKey = getStoreOrdersKey();
+            const orders = getStoreOrders();
+
+            sales
+                .filter(sale => clientKey(sale.clientName || 'One-time customer', sale.clientPhone || '-') === client.key)
+                .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+                .forEach(sale => {
+                    const saleDebt = Number(sale.remaining || 0);
+                    if (remainingPayment <= 0 || saleDebt <= 0) return;
+
+                    const paymentAmount = Math.min(remainingPayment, saleDebt);
+                    sale.paid = Number(sale.paid || 0) + paymentAmount;
+                    sale.remaining = Math.max(Number(sale.total || 0) - Number(sale.paid || 0), 0);
+                    sale.status = sale.remaining === 0 ? 'Paid' : 'Partial';
+                    sale.payments = sale.payments || [];
+                    sale.payments.push({ date: paymentDate, amount: paymentAmount, note });
+                    remainingPayment -= paymentAmount;
+                });
+
+            localStorage.setItem(key, JSON.stringify(sales));
+
+            orders
+                .filter(order => clientKey(order.buyerName || 'Order customer', order.buyerPhone || '-') === client.key)
+                .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+                .forEach(order => {
+                    const orderDebt = Number(order.buyerDue || 0);
+                    if (remainingPayment <= 0 || orderDebt <= 0) return;
+
+                    const paymentAmount = Math.min(remainingPayment, orderDebt);
+                    order.buyerPaid = Number(order.buyerPaid || 0) + paymentAmount;
+                    order.buyerDue = Math.max(Number(order.finalTotal || 0) - Number(order.buyerPaid || 0), 0);
+                    order.buyerStatus = order.buyerDue === 0 ? 'Paid' : 'Partial';
+                    order.buyerPayments = order.buyerPayments || [];
+                    order.buyerPayments.push({ date: paymentDate, amount: paymentAmount, note });
+                    remainingPayment -= paymentAmount;
+                });
+
+            localStorage.setItem(ordersKey, JSON.stringify(orders));
+            renderClients();
+            const refreshed = window.clientAccounts.findIndex(account => account.key === client.key);
+            if (refreshed >= 0) toggleClientDetails(refreshed);
+        }
+
+        renderClients();
+    </script>
+    <script src="../js/i18n.js?v=orders-1"></script>
+=======
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>العملاء - نظام إدارة الستائر</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">المتجر</div>
+                <div class="sidebar-store-name" id="sidebarStoreName">متجر</div>
+            </div>
+
+            <ul class="sidebar-menu" id="sidebarMenu">
+                <li class="menu-item">
+                    <a href="dashboard.html">
+                        <span class="menu-icon">📊</span>
+                        <span>لوحة التحكم</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="pos.html">
+                        <span class="menu-icon">💳</span>
+                        <span>نقطة البيع</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="debts.html">
+                        <span class="menu-icon">💰</span>
+                        <span>الديون</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="clients.html" class="active">
+                        <span class="menu-icon">👥</span>
+                        <span>العملاء</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="expenses.html">
+                        <span class="menu-icon">💸</span>
+                        <span>المصاريف</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <nav class="navbar">
+                <div class="navbar-title" id="pageTitle">العملاء</div>
+                <div class="navbar-actions">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <span id="userName">المستخدم</span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content">
+                <div class="page-header">
+                    <h1 class="page-title">العملاء</h1>
+                </div>
+
+                <div id="loadingState" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل البيانات...</p>
+                </div>
+
+                <div id="contentState">
+                    <div class="card">
+                        <div class="card-body">
+                            <p>محتوى الصفحة سيتم تحميله هنا</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        if (!checkAuth()) return;
+        const storeId = getStoreId();
+        const storeName = getStoreName();
+        if (!storeId && !storeName) window.location.href = '../landing.html';
+
+        document.getElementById('sidebarStoreName').textContent = storeName;
+        const user = getUser();
+        if (user && user.name) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+        }
+
+        function highlightActiveMenu() {
+            const currentPage = window.location.pathname.split('/').pop();
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+        highlightActiveMenu();
+
+        async function handleLogout() {
+            if (confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')) {
+                await logout();
+                window.location.href = '../index.html';
+            }
+        }
+    </script>
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
+</body>
+</html>

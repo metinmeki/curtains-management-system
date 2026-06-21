@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<<<<<<< HEAD
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Debts - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .debt-receipt-card {
+            background: #fffdf6;
+            border: 1px solid rgba(36, 95, 73, 0.28);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 14px 34px rgba(33, 66, 56, 0.12);
+        }
+
+        .debt-receipt-head {
+            text-align: center;
+            color: #245f49;
+            padding: 20px 16px 14px;
+            border-bottom: 2px solid #245f49;
+            background: #fffdf6;
+        }
+
+        .debt-receipt-brand {
+            font-size: clamp(24px, 4vw, 34px);
+            letter-spacing: 3px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .debt-receipt-subbrand {
+            font-size: clamp(16px, 2.5vw, 24px);
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .debt-receipt-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            padding: 16px;
+            background: #f4f1e6;
+            border-bottom: 1px solid rgba(36, 95, 73, 0.35);
+        }
+
+        .debt-receipt-meta .form-group {
+            margin-bottom: 0;
+        }
+
+        .debt-receipt-meta label {
+            color: #245f49;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .debt-receipt-meta input,
+        .debt-receipt-meta textarea {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid rgba(36, 95, 73, 0.42);
+            border-radius: 0;
+            padding: 7px 2px 5px;
+            box-shadow: none;
+            color: #245f49;
+        }
+
+        .debt-receipt-table {
+            direction: rtl;
+            table-layout: fixed;
+            width: 100%;
+            border-collapse: collapse;
+            color: #245f49;
+        }
+
+        .debt-receipt-table th,
+        .debt-receipt-table td {
+            border: 1px solid rgba(36, 95, 73, 0.46);
+            text-align: center;
+            vertical-align: middle;
+            padding: 11px 8px;
+        }
+
+        .debt-receipt-table th {
+            background: #eaf3e5;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .debt-receipt-bottom {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1px;
+            border-top: 2px solid #245f49;
+            background: rgba(36, 95, 73, 0.42);
+        }
+
+        .debt-receipt-bottom-item {
+            background: #fffdf6;
+            padding: 12px 14px;
+            color: #245f49;
+        }
+
+        .debt-receipt-bottom-item span {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            opacity: 0.75;
+        }
+
+        .debt-receipt-bottom-item strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 17px;
+        }
+
+        .receipt-card {
+            --receipt-ink: #245f49;
+            --receipt-line: rgba(36, 95, 73, 0.46);
+            --receipt-soft: #f4f1e6;
+            --receipt-soft-green: #eaf3e5;
+            background:
+                linear-gradient(180deg, rgba(255, 253, 246, 0.98), rgba(250, 247, 237, 0.98)),
+                repeating-linear-gradient(0deg, transparent 0, transparent 53px, rgba(36, 95, 73, 0.05) 54px);
+            border: 1px solid rgba(36, 95, 73, 0.28);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(33, 66, 56, 0.14);
+        }
+
+        .receipt-head {
+            position: relative;
+            text-align: center;
+            color: var(--receipt-ink);
+            padding: 24px 18px 16px;
+            border-bottom: 2px solid var(--receipt-ink);
+            background: #fffdf6;
+        }
+
+        .receipt-head::after {
+            content: "";
+            display: block;
+            width: min(420px, 70%);
+            height: 2px;
+            margin: 12px auto 0;
+            background: linear-gradient(90deg, transparent, var(--receipt-ink), transparent);
+            opacity: 0.7;
+        }
+
+        .receipt-brand {
+            font-size: clamp(24px, 4vw, 38px);
+            letter-spacing: 3px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .receipt-subbrand {
+            font-size: clamp(18px, 3vw, 28px);
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .receipt-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            padding: 14px 18px 16px;
+            background: var(--receipt-soft);
+            border-bottom: 1px solid var(--receipt-line);
+        }
+
+        .receipt-meta .form-group {
+            margin-bottom: 0;
+        }
+
+        .receipt-meta label {
+            color: var(--receipt-ink);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .receipt-meta input {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--receipt-line);
+            border-radius: 0;
+            padding: 7px 2px 5px;
+            box-shadow: none;
+            color: var(--receipt-ink);
+        }
+
+        .receipt-table {
+            direction: rtl;
+            table-layout: fixed;
+            width: 100%;
+            min-width: 0;
+            border-collapse: collapse;
+            color: var(--receipt-ink);
+        }
+
+        .receipt-table th,
+        .receipt-table td {
+            border: 1px solid var(--receipt-line);
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .receipt-table th {
+            background: var(--receipt-soft-green);
+            font-weight: 800;
+            font-size: 12px;
+            padding: 10px 5px;
+            color: var(--receipt-ink);
+            white-space: normal;
+            word-break: keep-all;
+        }
+
+        .receipt-table td {
+            height: 58px;
+            padding: 0;
+        }
+
+        .receipt-table input,
+        .receipt-table select {
+            border: 0;
+            box-shadow: none;
+            border-radius: 0;
+            min-width: 0;
+            width: 100%;
+            height: 100%;
+            padding: 8px 5px;
+            background: transparent;
+            color: var(--receipt-ink);
+            text-align: center;
+            font-weight: 650;
+            font-size: 13px;
+        }
+
+        .receipt-table input:focus,
+        .receipt-table select:focus {
+            outline: 2px solid rgba(47, 125, 91, 0.2);
+            outline-offset: -2px;
+            background: #fffdf6;
+        }
+
+        .receipt-table input::placeholder {
+            color: rgba(36, 95, 73, 0.36);
+            font-weight: 500;
+        }
+
+        .receipt-table .row-note {
+            text-align: center;
+            font-weight: 500;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        .receipt-table tbody tr:nth-child(even) td {
+            background: rgba(244, 241, 230, 0.34);
+        }
+
+        .receipt-table tbody tr.is-added-row td {
+            background: rgba(234, 243, 229, 0.5);
+        }
+
+        .receipt-actions-head,
+        .receipt-action-cell {
+            width: 48px;
+            background: var(--receipt-soft);
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .receipt-row-actions {
+            direction: ltr;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            height: 58px;
+            width: 100%;
+            padding: 4px;
+        }
+
+        .receipt-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 0;
+        }
+
+        .receipt-action-btn.delete-row-btn {
+            background: #fff3ef;
+            color: #b4534a;
+            border: 1px solid rgba(180, 83, 74, 0.28);
+        }
+
+        .receipt-bottom {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1px;
+            border-top: 2px solid var(--receipt-ink);
+            background: var(--receipt-line);
+        }
+
+        .receipt-bottom-item {
+            background: #fffdf6;
+            padding: 12px 14px;
+            color: var(--receipt-ink);
+        }
+
+        .receipt-bottom-item span {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            opacity: 0.72;
+        }
+
+        .receipt-bottom-item strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 17px;
+        }
+
+        @media (max-width: 900px) {
+            .receipt-table {
+                min-width: 0;
+            }
+
+            .receipt-bottom {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .sidebar,
+            .navbar,
+            .page-header,
+            .debt-actions,
+            .debt-list-card,
+            .receipt-action-cell,
+            .receipt-actions-head {
+                display: none !important;
+            }
+
+            .layout,
+            .main-content,
+            .content,
+            .two-column {
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .receipt-card {
+                width: 100% !important;
+                box-shadow: none !important;
+                border: 2px solid #245f49 !important;
+            }
+        }
+    </style>
+</head>
+<body class="ltr">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+            <ul class="sidebar-menu">
+                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
+                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
+                <li class="menu-item"><a href="debts.html" class="active"><span class="menu-icon">B</span><span>Debts</span></a></li>
+                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
+                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            </ul>
+            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+        </aside>
+        <div class="main-content">
+            <nav class="navbar"><div class="navbar-title">Retail Debts</div><div class="navbar-actions"><span class="scope-pill">selected store debts</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
+            <main class="content">
+                <div class="page-header">
+                    <div><h1 class="page-title">Debt tracking</h1><p class="page-subtitle">Unpaid and partially paid sales with remaining balances and payment history actions.</p></div>
+                    <div class="filter-controls"><button class="filter-btn active">All</button><button class="filter-btn">Open</button><button class="filter-btn">Partial</button><button class="filter-btn">Date range</button></div>
+                </div>
+                <div class="two-column">
+                    <section class="card receipt-card" id="debtReceipt">
+                        <div class="receipt-head">
+                            <div class="receipt-brand">DLOVAN PARDA</div>
+                            <div class="receipt-subbrand">دلوفان للستائر</div>
+                        </div>
+                        <div class="receipt-meta">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="debtDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Client name</label>
+                                <input id="debtClientName" placeholder="Name for debt receipt">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone number</label>
+                                <input id="debtClientPhone" placeholder="07xx xxx xxxx">
+                            </div>
+                        </div>
+                        <div class="card-body table-wrapper">
+                            <table class="receipt-table">
+                                <colgroup>
+                                        <col style="width: 13%;">
+                                        <col style="width: 12%;">
+                                        <col style="width: 12%;">
+                                        <col style="width: 13%;">
+                                        <col style="width: 13%;">
+                                        <col style="width: 31%;">
+                                        <col style="width: 6%;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>المواد</th>
+                                        <th>متر / نافذة</th>
+                                        <th>سعر المتر</th>
+                                        <th>المجموع</th>
+                                        <th>الحساب</th>
+                                        <th>ملاحظات</th>
+                                        <th class="receipt-actions-head">إضافة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceRows"></tbody>
+                            </table>
+                        </div>
+                        <div class="receipt-bottom">
+                            <div class="receipt-bottom-item">
+                                <span>Customer sale total</span>
+                                <strong id="debtOriginalPreview">0 IQD</strong>
+                            </div>
+                            <div class="receipt-bottom-item">
+                                <span>Paid</span>
+                                <strong id="debtPaidPreview">0 IQD</strong>
+                            </div>
+                            <div class="receipt-bottom-item">
+                                <span>Remaining debt</span>
+                                <strong id="debtRemainingPreview">0 IQD</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside class="card debt-actions">
+                        <div class="card-header"><h2 class="card-title">Add debt sale</h2></div>
+                        <div class="card-body">
+                            <div class="summary-line"><span>Customer sale total</span><strong id="debtSaleTotal">0 IQD</strong></div>
+                            <div class="form-group">
+                                <label>Paid amount</label>
+                                <input id="debtPaidAmount" class="quick-number" type="number" min="0" value="0" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()">
+                            </div>
+                            <div class="form-group">
+                                <label>Remaining debt</label>
+                                <input id="debtRemainingAmount" readonly value="0 IQD">
+                            </div>
+                            <div class="form-group">
+                                <label>Debt note</label>
+                                <textarea id="debtNote" placeholder="Optional details for this debt" oninput="calculateDebtReceipt()"></textarea>
+                            </div>
+                            <button class="btn btn-success btn-block" onclick="submitDebtSale()">Add debt</button>
+                            <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printDebtReceipt()">Print receipt</button>
+                            <div id="debtSubmitMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
+                        </div>
+                    </aside>
+                </div>
+
+                <div class="card debt-list-card" style="margin-top:20px;">
+                    <div class="card-header"><h2 class="card-title">Outstanding debts</h2></div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead><tr><th>Client</th><th>Phone</th><th>Original sale</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Sale date</th><th>Action</th></tr></thead>
+                            <tbody id="debtRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="../js/api.js"></script>
+    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script>
+        if (!checkAuth()) throw new Error('Not authenticated');
+        if (!getStoreId()) window.location.href = '../landing.html';
+        loadShell(getStoreName());
+
+        function todayInputValue() {
+            const now = new Date();
+            const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 10);
+        }
+
+        document.getElementById('debtDate').value = todayInputValue();
+
+        function selectNumber(input) {
+            if (!input.readOnly) input.select();
+        }
+
+        function materialOptions() {
+            return retailDemo.materials.map(item => `
+                <option value="${item.name}" data-price="${item.price}" data-unit="${item.unit}" data-affects-total="${item.affectsSaleTotal}" data-worker="${item.workerAccount || ''}">
+                    ${item.name}
+                </option>
+            `).join('');
+        }
+
+        function addInvoiceRow(materialName = 'قماش', afterRow = null) {
+            const wrapper = document.createElement('tr');
+            wrapper.className = afterRow ? 'invoice-row is-added-row' : 'invoice-row';
+            wrapper.innerHTML = `
+                <td><select class="material-select" onchange="syncRow(this); calculateDebtReceipt()">${materialOptions()}</select></td>
+                <td><input class="row-qty quick-number" type="number" min="0" step="0.1" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()"></td>
+                <td><input class="row-price quick-number" type="number" min="0" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()"></td>
+                <td><input class="row-sale-total" readonly></td>
+                <td><input class="row-account-total" readonly></td>
+                <td><input class="row-note"></td>
+                <td class="receipt-action-cell">
+                    <div class="receipt-row-actions">
+                        <button class="btn btn-primary btn-small receipt-action-btn" title="Add another line below" onclick="duplicateInvoiceRow(this)">+</button>
+                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete this added line" onclick="deleteInvoiceRow(this)">x</button>
+                    </div>
+                </td>
+            `;
+            wrapper.querySelector('.delete-row-btn').style.display = afterRow ? 'inline-flex' : 'none';
+            if (afterRow) {
+                afterRow.insertAdjacentElement('afterend', wrapper);
+            } else {
+                document.getElementById('invoiceRows').appendChild(wrapper);
+            }
+            wrapper.querySelector('.material-select').value = materialName;
+            syncRow(wrapper.querySelector('.material-select'));
+            calculateDebtReceipt();
+        }
+
+        function syncRow(select) {
+            const option = select.selectedOptions[0];
+            const row = select.closest('tr');
+            const priceInput = row.querySelector('.row-price');
+            const note = row.querySelector('.row-note');
+            const unit = option.dataset.unit === 'window' ? 'window' : 'meter';
+            const isWorker = option.dataset.worker;
+
+            if (isWorker) {
+                priceInput.value = option.dataset.price;
+                priceInput.readOnly = true;
+                note.placeholder = option.value === 'خياطة'
+                    ? 'Enter sewing meter price; khayat gets 1,000 IQD per meter'
+                    : '10,000 IQD per window to تركيب account';
+            } else {
+                priceInput.readOnly = false;
+                if (Number(priceInput.value) === 1000 || Number(priceInput.value) === 10000) priceInput.value = '';
+                note.placeholder = unit === 'window' ? 'Count windows' : 'Count meters';
+            }
+
+            if (option.dataset.worker === 'sewing') {
+                priceInput.readOnly = false;
+                if (Number(priceInput.value) === Number(option.dataset.price)) priceInput.value = '';
+                note.placeholder = 'Enter sewing meter price; khayat gets 1,000 IQD per meter';
+            }
+        }
+
+        function lineMoney(value) {
+            return Number(value || 0) > 0 ? money(value) : '';
+        }
+
+        function duplicateInvoiceRow(button) {
+            const currentRow = button.closest('tr');
+            const materialName = currentRow.querySelector('.material-select').value;
+            addInvoiceRow(materialName, currentRow);
+        }
+
+        function deleteInvoiceRow(button) {
+            const rows = document.querySelectorAll('.invoice-row');
+            if (rows.length <= 1) return;
+            button.closest('tr').remove();
+            calculateDebtReceipt();
+        }
+
+        function getInvoiceData() {
+            let saleTotal = 0;
+            let sewingTotal = 0;
+            let installationTotal = 0;
+            const items = [];
+            const workerAccounts = [];
+
+            document.querySelectorAll('.invoice-row').forEach(row => {
+                const select = row.querySelector('.material-select');
+                const option = select.selectedOptions[0];
+                const material = select.value;
+                const quantity = Number(row.querySelector('.row-qty').value || 0);
+                const price = Number(row.querySelector('.row-price').value || 0);
+                const lineTotal = quantity * price;
+                const rowNote = row.querySelector('.row-note').value;
+                const workerAccount = option.dataset.worker;
+                const unit = option.dataset.unit;
+                const workerTotal = workerAccount === 'sewing' ? quantity * 1000 : lineTotal;
+
+                saleTotal += lineTotal;
+                row.querySelector('.row-sale-total').value = lineMoney(lineTotal);
+                row.querySelector('.row-account-total').value = workerAccount ? lineMoney(workerTotal) : '';
+
+                if (workerAccount) {
+                    if (workerAccount === 'sewing') sewingTotal += workerTotal;
+                    if (workerAccount === 'installation') installationTotal += workerTotal;
+                    workerAccounts.push({ account: workerAccount, material, quantity, unit, price, lineTotal, total: workerTotal, storeShare: lineTotal - workerTotal, note: rowNote });
+                }
+
+                items.push({ material, quantity, unit, price, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
+            });
+
+            return { saleTotal, sewingTotal, installationTotal, items, workerAccounts };
+        }
+
+        function calculateDebtReceipt() {
+            const data = getInvoiceData();
+            const original = data.saleTotal;
+            const paid = Math.min(Number(document.getElementById('debtPaidAmount').value || 0), original);
+            const remaining = Math.max(original - paid, 0);
+
+            document.getElementById('debtPaidAmount').value = paid || '';
+            document.getElementById('debtRemainingAmount').value = money(remaining);
+            document.getElementById('debtSaleTotal').textContent = money(original);
+            document.getElementById('debtOriginalPreview').textContent = money(original);
+            document.getElementById('debtPaidPreview').textContent = money(paid);
+            document.getElementById('debtRemainingPreview').textContent = money(remaining);
+        }
+
+        function getLocalDebtSales() {
+            const saleDebts = getStoreSales()
+                .filter(sale => Number(sale.remaining || 0) > 0)
+                .sort((a, b) => Number(b.id || 0) - Number(a.id || 0))
+                .map(sale => ({
+                    client: sale.clientName,
+                    phone: sale.clientPhone,
+                    original: sale.subtotal || sale.total,
+                    paid: sale.paid,
+                    remaining: sale.remaining,
+                    status: sale.status,
+                    date: sale.date
+                }));
+
+            const orderDebts = getStoreOrders()
+                .filter(order => Number(order.buyerDue || 0) > 0)
+                .sort((a, b) => Number(b.id || 0) - Number(a.id || 0))
+                .map(order => ({
+                    client: order.buyerName,
+                    phone: order.buyerPhone,
+                    original: order.finalTotal,
+                    paid: order.buyerPaid,
+                    remaining: order.buyerDue,
+                    status: order.buyerStatus,
+                    date: order.date
+                }));
+
+            return saleDebts.concat(orderDebts);
+        }
+
+        function renderDebtRows() {
+            const debts = getLocalDebtSales().concat(retailDemo.debts);
+            document.getElementById('debtRows').innerHTML = debts.length
+                ? debts.map(debt => `
+                    <tr><td>${debt.client}</td><td>${debt.phone}</td><td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${debt.status}</td><td>${debt.date}</td><td><button class="btn btn-small btn-primary">Add payment</button></td></tr>
+                `).join('')
+                : '<tr><td colspan="8">No debts yet.</td></tr>';
+        }
+
+        function resetDebtForm() {
+            document.getElementById('debtDate').value = todayInputValue();
+            document.getElementById('debtClientName').value = '';
+            document.getElementById('debtClientPhone').value = '';
+            document.getElementById('debtPaidAmount').value = 0;
+            document.getElementById('debtNote').value = '';
+            document.querySelectorAll('.invoice-row.is-added-row').forEach(row => row.remove());
+            document.querySelectorAll('.invoice-row').forEach(row => {
+                row.querySelector('.row-qty').value = '';
+                row.querySelector('.row-price').value = '';
+                row.querySelector('.row-sale-total').value = '';
+                row.querySelector('.row-account-total').value = '';
+                row.querySelector('.row-note').value = '';
+                syncRow(row.querySelector('.material-select'));
+            });
+            calculateDebtReceipt();
+        }
+
+        function submitDebtSale() {
+            const data = getInvoiceData();
+            const original = data.saleTotal;
+            const paid = Math.min(Number(document.getElementById('debtPaidAmount').value || 0), original);
+            const remaining = Math.max(original - paid, 0);
+
+            if (original <= 0) {
+                const message = document.getElementById('debtSubmitMessage');
+                message.textContent = 'Enter an original sale amount before adding the debt.';
+                message.className = 'alert alert-danger';
+                message.style.display = 'block';
+                return;
+            }
+
+            const sale = {
+                id: Date.now(),
+                source: 'manual-debt',
+                storeId: getStoreId(),
+                storeName: getStoreName(),
+                date: document.getElementById('debtDate').value || todayInputValue(),
+                clientName: document.getElementById('debtClientName').value || 'Debt customer',
+                clientPhone: document.getElementById('debtClientPhone').value || '-',
+                subtotal: original,
+                discount: 0,
+                discountNote: '',
+                total: original,
+                paid,
+                remaining,
+                status: remaining === 0 ? 'Paid' : paid === 0 ? 'Debt' : 'Partial',
+                note: document.getElementById('debtNote').value,
+                items: data.items,
+                workerAccounts: data.workerAccounts
+            };
+
+            saveStoreSale(sale);
+            localStorage.setItem('last_saved_sale_id', String(sale.id));
+
+            const message = document.getElementById('debtSubmitMessage');
+            message.textContent = `Debt sale added for ${sale.clientName}. Remaining ${money(remaining)} will appear in dashboard debts.`;
+            message.className = 'alert alert-success';
+            message.style.display = 'block';
+
+            renderDebtRows();
+            resetDebtForm();
+            if (window.applyLanguage) applyLanguage();
+        }
+
+        function printDebtReceipt() {
+            calculateDebtReceipt();
+            window.print();
+        }
+
+        ['قماش', 'تول', 'بطانة', 'زبرا', 'خياطة', 'سكة', 'تركيب', 'مزهرية', 'حبال'].forEach(material => addInvoiceRow(material));
+        calculateDebtReceipt();
+        renderDebtRows();
+    </script>
+    <script src="../js/i18n.js?v=orders-1"></script>
+=======
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الديون - نظام إدارة الستائر</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">المتجر</div>
+                <div class="sidebar-store-name" id="sidebarStoreName">متجر</div>
+            </div>
+
+            <ul class="sidebar-menu" id="sidebarMenu">
+                <li class="menu-item">
+                    <a href="dashboard.html">
+                        <span class="menu-icon">📊</span>
+                        <span>لوحة التحكم</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="pos.html">
+                        <span class="menu-icon">💳</span>
+                        <span>نقطة البيع</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="debts.html" class="active">
+                        <span class="menu-icon">💰</span>
+                        <span>الديون</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="clients.html">
+                        <span class="menu-icon">👥</span>
+                        <span>العملاء</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="expenses.html">
+                        <span class="menu-icon">💸</span>
+                        <span>المصاريف</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <nav class="navbar">
+                <div class="navbar-title" id="pageTitle">الديون</div>
+                <div class="navbar-actions">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <span id="userName">المستخدم</span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content">
+                <div class="page-header">
+                    <h1 class="page-title">الديون</h1>
+                </div>
+
+                <div id="loadingState" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل البيانات...</p>
+                </div>
+
+                <div id="contentState">
+                    <div class="card">
+                        <div class="card-body">
+                            <p>محتوى الصفحة سيتم تحميله هنا</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        if (!checkAuth()) return;
+        const storeId = getStoreId();
+        const storeName = getStoreName();
+        if (!storeId && !storeName) window.location.href = '../landing.html';
+
+        document.getElementById('sidebarStoreName').textContent = storeName;
+        const user = getUser();
+        if (user && user.name) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+        }
+
+        function highlightActiveMenu() {
+            const currentPage = window.location.pathname.split('/').pop();
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+        highlightActiveMenu();
+
+        async function handleLogout() {
+            if (confirm('هل أنت متأكد من رغبتك في تسجيل الخروج؟')) {
+                await logout();
+                window.location.href = '../index.html';
+            }
+        }
+    </script>
+>>>>>>> 8e76e2432f0dae02a931ccede0df85aebf2cab45
+</body>
+</html>
