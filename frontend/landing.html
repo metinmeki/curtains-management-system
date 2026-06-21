@@ -114,7 +114,9 @@
         window.addEventListener('load', () => {
             loadUserInfo();
             renderStoreCards();
+            if (window.applyLanguage) applyLanguage();
         });
     </script>
+    <script src="js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>
