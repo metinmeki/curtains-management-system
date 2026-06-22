@@ -795,6 +795,13 @@
 
         function submitSale() {
             const data = getInvoiceData();
+            if (data.saleTotal <= 0) {
+                const msg = document.getElementById('submitMessage');
+                msg.textContent = 'Add at least one item with quantity and price before saving.';
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+                return;
+            }
             const discount = Math.min(Number(document.getElementById('discountAmount').value || 0), data.saleTotal);
             const finalTotal = Math.max(data.saleTotal - discount, 0);
             const paid = Math.min(Number(document.getElementById('paidAmount').value || 0), finalTotal);
@@ -824,11 +831,18 @@
             localStorage.setItem('last_saved_sale_id', String(sale.id));
 
             // Deduct inventory stock for any row that matched a variant code
+            const missingVariants = [];
             sale.items.forEach(item => {
                 if (item.variantId && item.quantity > 0) {
+                    const exists = getInvVariants ? getInvVariants().some(v => String(v.id) === String(item.variantId)) : true;
+                    if (!exists) { missingVariants.push(item.code || item.variantCode); return; }
                     deductVariantStock(item.variantId, item.quantity, getStoreId(), 'POS sale', String(sale.id));
                 }
             });
+            if (missingVariants.length) {
+                const msg = document.getElementById('submitMessage');
+                msg.textContent += ` Note: codes [${missingVariants.join(', ')}] not found in inventory — stock not deducted.`;
+            }
 
             const message = document.getElementById('submitMessage');
             message.textContent = remaining > 0

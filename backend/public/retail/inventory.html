@@ -328,7 +328,7 @@
             </div>
             <div class="form-group">
                 <label id="adjustQtyLabel">Quantity to add</label>
-                <input id="adjustQty" type="number" min="0" value="1">
+                <input id="adjustQty" type="number" min="0" value="1" oninput="updateAdjustLabel()">
             </div>
             <div class="form-group">
                 <label>Reason / note (optional)</label>
@@ -950,8 +950,6 @@
         document.getElementById('adjustReason').value = '';
         updateAdjustLabel();
         openModal('adjustModal');
-        document.getElementById('adjustQty').addEventListener('input', updateAdjustLabel);
-        document.getElementById('adjustType').addEventListener('change', updateAdjustLabel);
     }
 
     function updateAdjustLabel() {

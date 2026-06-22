@@ -492,7 +492,7 @@
         function validateOrder(order) {
             if (!order.items.length || order.subtotal <= 0) return 'Add at least one order item with quantity and price.';
             if (!order.supplierName.trim()) return 'Enter the company or supplier name.';
-            if (Math.abs(order.splitDifference) > 0.001) return 'Our profit plus supplier share must equal the final total.';
+            if (Math.abs(Math.round(order.splitDifference)) > 0) return 'Our profit plus supplier share must equal the final total.';
             return '';
         }
 
@@ -573,7 +573,7 @@
                         <td>${money(order.ourProfit)}</td>
                         <td>${money(order.supplierDue)}</td>
                         <td>${money(order.buyerDue)}</td>
-                        <td>${order.notes || '-'}</td>
+                        <td>${escapeHtml(order.notes) || '-'}</td>
                         <td><button class="btn btn-small btn-primary" onclick="printOrderReceipt(${order.id})">Print</button></td>
                     </tr>
                 `).join('')
