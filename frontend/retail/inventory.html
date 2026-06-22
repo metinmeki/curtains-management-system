@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Inventory - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css?v=restore-2">
+    <style>
+        /* ── Stats ── */
+        .inv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .inv-stat { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--primary-color); }
+        .inv-stat:nth-child(1) { border-left-color: #2f7d5b; }
+        .inv-stat:nth-child(2) { border-left-color: #4f7ca8; }
+        .inv-stat:nth-child(3) { border-left-color: #c79543; }
+        .inv-stat:nth-child(4) { border-left-color: #b4534a; }
+        .inv-stat-label { font-size: 12px; color: var(--text-gray); font-weight: 700; margin-bottom: 4px; }
+        .inv-stat-value { font-size: 22px; font-weight: 800; color: var(--text-dark); }
+
+        /* ── Toolbar ── */
+        .inv-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+        .inv-toolbar .form-group { margin-bottom: 0; min-width: 160px; }
+        .inv-toolbar input, .inv-toolbar select { height: 38px; padding: 6px 10px; font-size: 13px; }
+        .view-toggle { display: flex; gap: 0; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-left: auto; }
+        .view-toggle button { border: 0; background: var(--surface-color); padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-gray); }
+        .view-toggle button.active { background: var(--primary-color); color: #fff; }
+
+        /* ── Hierarchy view ── */
+        .inv-category-block { border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 14px; background: var(--surface-color); }
+        .inv-category-header { display: flex; align-items: center; gap: 12px; padding: 13px 16px; cursor: pointer; background: #f0f6f1; user-select: none; }
+        .inv-category-header:hover { background: #e5f0e8; }
+        .inv-category-chevron { font-size: 16px; transition: transform 0.2s; display: inline-block; }
+        .inv-category-block.open .inv-category-chevron { transform: rotate(90deg); }
+        .inv-category-name { font-weight: 800; font-size: 15px; color: var(--text-dark); flex: 1; }
+        .inv-category-meta { font-size: 12px; color: var(--text-gray); }
+        .inv-category-body { display: none; padding: 10px 14px 14px; border-top: 1px solid var(--border-color); }
+        .inv-category-block.open .inv-category-body { display: block; }
+
+        .inv-item-block { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: #fff; }
+        .inv-item-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; background: #f9f7f0; user-select: none; }
+        .inv-item-header:hover { background: #f3f0e5; }
+        .inv-item-block.open .inv-item-chevron { transform: rotate(90deg); }
+        .inv-item-chevron { font-size: 14px; transition: transform 0.2s; display: inline-block; }
+        .inv-item-name { font-weight: 700; font-size: 14px; color: var(--text-dark); flex: 1; }
+        .inv-item-meta { font-size: 12px; color: var(--text-gray); }
+        .inv-item-body { display: none; padding: 12px; border-top: 1px solid var(--border-color); }
+        .inv-item-block.open .inv-item-body { display: block; }
+
+        .inv-variant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+        .inv-variant-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--surface-color); transition: box-shadow 0.15s; }
+        .inv-variant-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .inv-variant-img { width: 100%; height: 100px; object-fit: cover; background: #f0ede3; display: flex; align-items: center; justify-content: center; color: #b8b0a0; font-size: 28px; }
+        .inv-variant-img img { width: 100%; height: 100%; object-fit: cover; }
+        .inv-variant-info { padding: 10px 12px 6px; }
+        .inv-variant-name { font-weight: 700; font-size: 13px; color: var(--text-dark); margin-bottom: 3px; }
+        .inv-variant-code { font-size: 11px; color: var(--text-gray); font-family: monospace; background: #f3f0e6; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
+        .inv-variant-qty { font-size: 13px; color: var(--text-dark); font-weight: 800; margin-bottom: 4px; }
+        .inv-variant-actions { display: flex; gap: 6px; padding: 6px 12px 10px; }
+        .inv-variant-actions button { flex: 1; padding: 5px 4px; font-size: 11px; font-weight: 700; border-radius: 5px; border: 1px solid var(--border-color); cursor: pointer; background: #fff; color: var(--text-dark); }
+        .inv-variant-actions button:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .inv-variant-actions button.danger:hover { background: #b4534a; border-color: #b4534a; }
+
+        /* ── Table view ── */
+        #tableView { display: none; }
+        #tableView.active { display: block; }
+        #hierarchyView.active { display: block; }
+        #hierarchyView { display: none; }
+        .inv-table-img { width: 40px; height: 40px; object-fit: cover; border-radius: 5px; background: #f0ede3; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #b0a890; }
+        .inv-table-img img { width: 40px; height: 40px; object-fit: cover; border-radius: 5px; }
+        .code-chip { font-family: monospace; font-size: 11px; background: #f3f0e6; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+
+        /* ── Status badges ── */
+        .status-in { color: #2f7d5b; background: #e8f5ec; border: 1px solid #b8dec8; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .status-low { color: #8a6010; background: #fdf3d8; border: 1px solid #e8d090; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .status-out { color: #8c3028; background: #fbeae8; border: 1px solid #e0b0aa; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+        /* ── Modal ── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.46); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.22); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0; }
+        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-gray); line-height: 1; padding: 0 4px; }
+        .modal-close:hover { color: #b4534a; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-footer button { min-width: 90px; }
+
+        /* ── Movement log ── */
+        .movement-entry { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .movement-entry:last-child { border-bottom: 0; }
+        .movement-delta { font-weight: 800; font-size: 15px; min-width: 48px; text-align: right; }
+        .movement-delta.neg { color: #b4534a; }
+        .movement-delta.pos { color: #2f7d5b; }
+        .movement-meta { flex: 1; font-size: 13px; color: var(--text-dark); }
+        .movement-meta small { color: var(--text-gray); font-size: 11px; }
+
+        /* ── Add buttons row ── */
+        .add-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+
+        /* ── Empty state ── */
+        .inv-empty { text-align: center; padding: 60px 20px; color: var(--text-gray); }
+        .inv-empty-icon { font-size: 48px; margin-bottom: 14px; }
+        .inv-empty h3 { font-size: 18px; color: var(--text-dark); margin-bottom: 8px; }
+    </style>
+</head>
+<body class="ltr">
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">Retail Store</div>
+            <div class="sidebar-store-name" id="sidebarStoreName">Store</div>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
+            <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
+            <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
+            <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
+            <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            <li class="menu-item"><a href="inventory.html" class="active"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
+        </ul>
+        <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+    </aside>
+
+    <div class="main-content">
+        <nav class="navbar">
+            <div class="navbar-title">Store Inventory</div>
+            <div class="navbar-actions">
+                <span class="scope-pill">Track each store item by code and quantity. POS sales deduct stock by code.</span>
+                <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div>
+            </div>
+        </nav>
+
+        <main class="content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Variant Inventory</h1>
+                    <p class="page-subtitle">Category → Item → Variant structure. Each variant has its own code, quantity, and stock history per store.</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="inv-stats" id="invStats">
+                <div class="inv-stat"><div class="inv-stat-label" id="statLabel1">Total codes</div><div class="inv-stat-value" id="statCodes">0</div></div>
+                <div class="inv-stat"><div class="inv-stat-label" id="statLabel2">Total quantity</div><div class="inv-stat-value" id="statQty">0</div></div>
+                <div class="inv-stat"><div class="inv-stat-label" id="statLabel3">Low stock</div><div class="inv-stat-value" id="statLow">0</div></div>
+                <div class="inv-stat"><div class="inv-stat-label" id="statLabel4">Out of stock</div><div class="inv-stat-value" id="statOut">0</div></div>
+            </div>
+
+
+            <!-- Toolbar -->
+            <div class="inv-toolbar">
+                <div class="form-group">
+                    <input id="searchInput" type="text" placeholder="Search by name or code…" oninput="renderAll()">
+                </div>
+                <div class="form-group">
+                    <select id="filterCategory" onchange="renderAll()">
+                        <option value="">All categories</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select id="filterStatus" onchange="renderAll()">
+                        <option value="">All status</option>
+                        <option value="in">In Stock</option>
+                        <option value="low">Low Stock</option>
+                        <option value="out">Out of Stock</option>
+                    </select>
+                </div>
+                <div class="view-toggle">
+                    <button id="btnHierarchy" class="active" onclick="switchView('hierarchy')">Hierarchy</button>
+                    <button id="btnTable" onclick="switchView('table')">Table</button>
+                </div>
+            </div>
+
+            <!-- Hierarchy view -->
+            <div id="hierarchyView" class="active"></div>
+
+            <!-- Table view -->
+            <div id="tableView">
+                <div class="card">
+                    <div class="card-body table-wrapper">
+                        <table id="invTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:52px;">Photo</th>
+                                    <th>Category</th>
+                                    <th>Item</th>
+                                    <th>Variant</th>
+                                    <th>Code / SKU</th>
+                                    <th>Quantity</th>
+                                    <th>Min Qty</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Last activities footer ── -->
+            <div id="footerActivities" style="margin-top:24px;border-top:2px solid var(--border-color);padding-top:18px;">
+                <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">Last Activities</div>
+                <div id="footerActivityList"></div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL: Add/Edit Category ════════════════ -->
+<div class="modal-overlay" id="catModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="catModalTitle">Add Category</h3>
+            <button class="modal-close" onclick="closeModal('catModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="catEditId">
+            <div class="form-group"><label>Category name</label><input id="catName" placeholder="e.g. Curtain Fabrics"></div>
+            <div class="form-group"><label>Description (optional)</label><input id="catDesc" placeholder="Short description"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('catModal')">Cancel</button>
+            <button class="btn btn-success" onclick="saveCategory()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL: Add/Edit Item ════════════════ -->
+<div class="modal-overlay" id="itemModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="itemModalTitle">Add Item</h3>
+            <button class="modal-close" onclick="closeModal('itemModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="itemEditId">
+            <div class="form-group">
+                <label>Category</label>
+                <select id="itemCategorySelect"></select>
+            </div>
+            <div class="form-group"><label>Item name</label><input id="itemName" placeholder="e.g. Blackout Curtain"></div>
+            <div class="form-group"><label>Description (optional)</label><input id="itemDesc" placeholder="Short description"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('itemModal')">Cancel</button>
+            <button class="btn btn-success" onclick="saveItem()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL: Add/Edit Variant ════════════════ -->
+<div class="modal-overlay" id="variantModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="variantModalTitle">Add Variant</h3>
+            <button class="modal-close" onclick="closeModal('variantModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="variantEditId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="variantCategorySelect" onchange="populateVariantItems()"></select>
+                </div>
+                <div class="form-group">
+                    <label>Item</label>
+                    <select id="variantItemSelect" onchange="updateVariantQtyLabel()"></select>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Variant name</label><input id="variantName" placeholder="e.g. Red / Medium"></div>
+                <div class="form-group">
+                    <label>Code / SKU <span style="color:#b4534a;">*</span></label>
+                    <input id="variantCode" placeholder="e.g. BLK-RED-M" oninput="checkCodeUnique()">
+                    <small id="codeUniqueTip" style="color:#b4534a;display:none;">This code is already in use.</small>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Color / attribute</label><input id="variantColor" placeholder="e.g. Red"></div>
+                <div class="form-group"><label>Size / attribute 2</label><input id="variantSize" placeholder="e.g. Medium"></div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label id="variantQtyLabel">Starting quantity (metres)</label>
+                    <input id="variantQty" type="number" min="0" step="0.1" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Min stock alert</label>
+                    <input id="variantMinQty" type="number" min="0" value="5">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Image URL (optional)</label>
+                <input id="variantImage" placeholder="https://… or leave empty">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('variantModal')">Cancel</button>
+            <button class="btn btn-success" onclick="saveVariant()">Save variant</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL: Adjust Stock ════════════════ -->
+<div class="modal-overlay" id="adjustModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Adjust Stock</h3>
+            <button class="modal-close" onclick="closeModal('adjustModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="adjustVariantId">
+            <div class="summary-line" style="margin-bottom:14px;">
+                <span id="adjustVariantLabel" style="font-weight:700;font-size:15px;"></span>
+                <strong id="adjustCurrentQty"></strong>
+            </div>
+            <div class="form-group">
+                <label>Action</label>
+                <select id="adjustType" onchange="updateAdjustLabel()">
+                    <option value="add">Add stock</option>
+                    <option value="remove">Remove stock</option>
+                    <option value="set">Set exact quantity</option>
+                    <option value="damaged">Mark as damaged / lost</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label id="adjustQtyLabel">Quantity to add</label>
+                <input id="adjustQty" type="number" min="0" value="1">
+            </div>
+            <div class="form-group">
+                <label>Reason / note (optional)</label>
+                <input id="adjustReason" placeholder="e.g. Received shipment, annual count…">
+            </div>
+            <div class="summary-line" style="margin-top:10px;">
+                <span>Resulting quantity</span>
+                <strong id="adjustResultPreview" style="font-size:18px;"></strong>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('adjustModal')">Cancel</button>
+            <button class="btn btn-success" onclick="applyAdjust()">Apply</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL: Movement Log ════════════════ -->
+<div class="modal-overlay" id="movLogModal">
+    <div class="modal-box" style="max-width:640px;">
+        <div class="modal-header">
+            <h3>Inventory Movement Log</h3>
+            <button class="modal-close" onclick="closeModal('movLogModal')">×</button>
+        </div>
+        <div class="modal-body" id="movLogBody" style="max-height:60vh;overflow-y:auto;">
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL: Delete confirm ════════════════ -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box" style="max-width:380px;">
+        <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <p id="deleteModalMsg" style="color:var(--text-dark);font-size:14px;"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('deleteModal')">Cancel</button>
+            <button class="btn btn-danger" id="deleteModalConfirm">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=inv-1"></script>
+<script>
+    if (!checkAuth()) throw new Error('Not authenticated');
+    if (!getStoreId()) window.location.href = '../landing.html';
+    loadShell(getStoreName());
+
+    const STORE_ID = getStoreId();
+    let currentView = 'hierarchy';
+
+    // ─── Helpers ─────────────────────────────────────────────────
+    function uid() { return Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
+
+    function stockStatus(qty, minQty) {
+        if (qty <= 0) return { label: 'Out of Stock', cls: 'status-out' };
+        if (qty <= (minQty || 5)) return { label: 'Low Stock', cls: 'status-low' };
+        return { label: 'In Stock', cls: 'status-in' };
+    }
+
+    function variantImgHtml(image, size) {
+        const s = size || 40;
+        if (image) return `<img src="${image}" style="width:${s}px;height:${s}px;object-fit:cover;border-radius:5px;" onerror="this.parentElement.innerHTML='📦'">`;
+        return '📦';
+    }
+
+    // ─── Modal helpers ────────────────────────────────────────────
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+        if (id === 'movLogModal') renderMovLog();
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    });
+
+    function getItemUnit(itemId) {
+        const item = getInvItems().find(i => String(i.id) === String(itemId));
+        return (item && (item.name === 'مزهرية' || item.name === 'حبال')) ? 'قطعة' : 'متر';
+    }
+
+    function updateVariantQtyLabel() {
+        const itemId = document.getElementById('variantItemSelect').value;
+        const unit = getItemUnit(itemId);
+        const label = document.getElementById('variantQtyLabel');
+        const qtyInput = document.getElementById('variantQty');
+        if (unit === 'قطعة') {
+            label.textContent = 'Starting quantity (pieces / قطع)';
+            qtyInput.step = '1';
+        } else {
+            label.textContent = 'Starting quantity (metres)';
+            qtyInput.step = '0.1';
+        }
+    }
+
+    // ─── Stats ───────────────────────────────────────────────────
+    function renderStats() {
+        const variants = getInvVariants();
+        let totalQty = 0, low = 0, out = 0;
+        variants.forEach(v => {
+            const qty = getVariantQty(v.id, STORE_ID);
+            totalQty += qty;
+            const s = stockStatus(qty, v.minQty);
+            if (s.cls === 'status-low') low++;
+            if (s.cls === 'status-out') out++;
+        });
+        document.getElementById('statLabel1').textContent = 'Total codes';
+        document.getElementById('statLabel2').textContent = 'Total quantity';
+        document.getElementById('statLabel3').textContent = 'Low stock';
+        document.getElementById('statLabel4').textContent = 'Out of stock';
+        document.getElementById('statCodes').textContent = variants.length;
+        document.getElementById('statQty').textContent = totalQty.toLocaleString();
+        document.getElementById('statLow').textContent = low;
+        document.getElementById('statOut').textContent = out;
+    }
+
+    function selectItemStats(itemId) {
+        const item = getInvItems().find(i => String(i.id) === String(itemId));
+        if (!item) return;
+        const variants = getInvVariants().filter(v => String(v.itemId) === String(itemId));
+        let totalQty = 0, low = 0, out = 0;
+        variants.forEach(v => {
+            const qty = getVariantQty(v.id, STORE_ID);
+            totalQty += qty;
+            const s = stockStatus(qty, v.minQty);
+            if (s.cls === 'status-low') low++;
+            if (s.cls === 'status-out') out++;
+        });
+        document.getElementById('statLabel1').textContent = 'Item';
+        document.getElementById('statLabel2').textContent = 'Types';
+        document.getElementById('statLabel3').textContent = 'Total metres';
+        document.getElementById('statLabel4').textContent = 'Low / Out';
+        document.getElementById('statCodes').textContent = item.name;
+        document.getElementById('statQty').textContent = variants.length;
+        document.getElementById('statLow').textContent = totalQty.toLocaleString();
+        document.getElementById('statOut').textContent = low + ' / ' + out;
+    }
+
+    function selectVariantStats(variantId) {
+        const v = getInvVariants().find(x => String(x.id) === String(variantId));
+        if (!v) return;
+        const qty = getVariantQty(v.id, STORE_ID);
+        const s = stockStatus(qty, v.minQty);
+        document.getElementById('statLabel1').textContent = 'Type name';
+        document.getElementById('statLabel2').textContent = 'Code';
+        document.getElementById('statLabel3').textContent = 'Quantity (متر)';
+        document.getElementById('statLabel4').textContent = 'Status';
+        document.getElementById('statCodes').textContent = v.name;
+        document.getElementById('statQty').textContent = v.code || '—';
+        document.getElementById('statLow').textContent = qty.toLocaleString();
+        document.getElementById('statOut').innerHTML = `<span class="${s.cls}">${s.label}</span>`;
+    }
+
+    // ─── Filter state ─────────────────────────────────────────────
+    function getFilters() {
+        return {
+            search: (document.getElementById('searchInput').value || '').toLowerCase().trim(),
+            category: document.getElementById('filterCategory').value,
+            status: document.getElementById('filterStatus').value
+        };
+    }
+
+    function variantPassesFilter(variant, f) {
+        if (f.search) {
+            const name = (variant.name || '').toLowerCase();
+            const code = (variant.code || '').toLowerCase();
+            if (!name.includes(f.search) && !code.includes(f.search)) {
+                const items = getInvItems();
+                const item = items.find(i => String(i.id) === String(variant.itemId));
+                if (!item || !((item.name || '').toLowerCase().includes(f.search))) return false;
+            }
+        }
+        if (f.category) {
+            const items = getInvItems();
+            const item = items.find(i => String(i.id) === String(variant.itemId));
+            if (!item || String(item.categoryId) !== f.category) return false;
+        }
+        if (f.status) {
+            const qty = getVariantQty(variant.id, STORE_ID);
+            const s = stockStatus(qty, variant.minQty);
+            if (f.status === 'in' && s.cls !== 'status-in') return false;
+            if (f.status === 'low' && s.cls !== 'status-low') return false;
+            if (f.status === 'out' && s.cls !== 'status-out') return false;
+        }
+        return true;
+    }
+
+    // ─── Hierarchy view ───────────────────────────────────────────
+    function renderHierarchy() {
+        const cats = getInvCategories();
+        const items = getInvItems();
+        const variants = getInvVariants();
+        const f = getFilters();
+        const container = document.getElementById('hierarchyView');
+
+        if (cats.length === 0) {
+            container.innerHTML = `<div class="inv-empty"><div class="inv-empty-icon">📦</div><h3>No inventory yet</h3><p>Start by adding a category, then items, then variants.</p></div>`;
+            return;
+        }
+
+        let html = '';
+        cats.forEach(cat => {
+            const catItems = items.filter(i => String(i.categoryId) === String(cat.id));
+            if (f.category && String(cat.id) !== f.category) return;
+
+            let itemsHtml = '';
+            let catVariantCount = 0;
+
+            catItems.forEach(item => {
+                const itemVariants = variants.filter(v => String(v.itemId) === String(item.id) && variantPassesFilter(v, f));
+                catVariantCount += itemVariants.length;
+
+                if (itemVariants.length === 0 && (f.search || f.status)) return;
+
+                const cardsHtml = itemVariants.length === 0
+                    ? `<p style="color:var(--text-gray);font-size:13px;padding:8px 0;">No variants yet. <button class="btn btn-primary" style="padding:3px 10px;font-size:12px;" onclick="openAddVariantFor('${cat.id}','${item.id}')">+ Add variant</button></p>`
+                    : `<div class="inv-variant-grid">${itemVariants.map(v => variantCard(v)).join('')}</div>`;
+
+                itemsHtml += `
+                    <div class="inv-item-block" id="item-block-${item.id}">
+                        <div class="inv-item-header" onclick="toggleItem('${item.id}');selectItemStats('${item.id}')">
+                            <span class="inv-item-chevron">▶</span>
+                            <span class="inv-item-name">${esc(item.name)}</span>
+                            <span class="inv-item-meta">${itemVariants.length} <span>variants</span></span>
+                            <button class="btn" style="padding:2px 8px;font-size:11px;margin-left:8px;" onclick="event.stopPropagation();openEditItem('${item.id}')">Edit</button>
+                            <button class="btn btn-danger" style="padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();confirmDeleteItem('${item.id}')">Delete</button>
+                        </div>
+                        <div class="inv-item-body">${cardsHtml}</div>
+                    </div>`;
+            });
+
+            if (!itemsHtml && (f.search || f.status || f.category)) return;
+
+            html += `
+                <div class="inv-category-block open" id="cat-block-${cat.id}">
+                    <div class="inv-category-header" onclick="toggleCategory('${cat.id}')">
+                        <span class="inv-category-chevron">▶</span>
+                        <span class="inv-category-name">${esc(cat.name)}</span>
+                        <span class="inv-category-meta">${catItems.length} <span>items</span> · ${catVariantCount} <span>variants</span></span>
+                        <button class="btn" style="padding:2px 8px;font-size:11px;margin-left:8px;" onclick="event.stopPropagation();openEditCategory('${cat.id}')">Edit</button>
+                        <button class="btn btn-danger" style="padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();confirmDeleteCategory('${cat.id}')">Delete</button>
+                    </div>
+                    <div class="inv-category-body">
+                        ${itemsHtml || `<p style="color:var(--text-gray);font-size:13px;">No items in this category yet.</p>`}
+                        <button class="btn btn-primary" style="margin-top:8px;padding:4px 12px;font-size:12px;" onclick="openAddItemFor('${cat.id}')">+ Add item to this category</button>
+                    </div>
+                </div>`;
+        });
+
+        container.innerHTML = html || `<div class="inv-empty"><div class="inv-empty-icon">🔍</div><h3>No results</h3><p>Try a different search or filter.</p></div>`;
+    }
+
+    function variantCard(v) {
+        const qty = getVariantQty(v.id, STORE_ID);
+        const s = stockStatus(qty, v.minQty);
+        const attrs = [v.color, v.size].filter(Boolean).join(' / ');
+        return `
+            <div class="inv-variant-card" onclick="selectVariantStats('${v.id}')" style="cursor:pointer;">
+                <div class="inv-variant-img">${variantImgHtml(v.image, 'full')}</div>
+                <div class="inv-variant-info">
+                    <div class="inv-variant-name">${esc(v.name)}</div>
+                    ${attrs ? `<div style="font-size:11px;color:var(--text-gray);margin-bottom:4px;">${esc(attrs)}</div>` : ''}
+                    <div class="inv-variant-code">${esc(v.code)}</div>
+                    <div class="inv-variant-qty">${qty.toLocaleString()} ${getItemUnit(v.itemId)}</div>
+                    <span class="${s.cls}">${s.label}</span>
+                </div>
+                <div class="inv-variant-actions">
+                    <button onclick="openAdjust('${v.id}')">Adjust</button>
+                    <button onclick="openEditVariant('${v.id}')">Edit</button>
+                    <button class="danger" onclick="confirmDeleteVariant('${v.id}')">Delete</button>
+                </div>
+            </div>`;
+    }
+
+    // ─── Table view ───────────────────────────────────────────────
+    function renderTable() {
+        const cats = getInvCategories();
+        const items = getInvItems();
+        const variants = getInvVariants();
+        const f = getFilters();
+        const tbody = document.getElementById('invTableBody');
+
+        const filtered = variants.filter(v => variantPassesFilter(v, f));
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-gray);padding:40px;">No variants found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(v => {
+            const item = items.find(i => String(i.id) === String(v.itemId));
+            const cat = item ? cats.find(c => String(c.id) === String(item.categoryId)) : null;
+            const qty = getVariantQty(v.id, STORE_ID);
+            const s = stockStatus(qty, v.minQty);
+            return `
+                <tr>
+                    <td><div class="inv-table-img">${variantImgHtml(v.image, 40)}</div></td>
+                    <td>${esc(cat ? cat.name : '—')}</td>
+                    <td>${esc(item ? item.name : '—')}</td>
+                    <td>${esc(v.name)}${v.color || v.size ? `<br><small style="color:var(--text-gray);">${esc([v.color,v.size].filter(Boolean).join(' / '))}</small>` : ''}</td>
+                    <td><span class="code-chip">${esc(v.code)}</span></td>
+                    <td style="font-weight:800;font-size:15px;">${qty.toLocaleString()}</td>
+                    <td style="color:var(--text-gray);">${v.minQty || 5}</td>
+                    <td><span class="${s.cls}">${s.label}</span></td>
+                    <td>
+                        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                            <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="openAdjust('${v.id}')">Adjust</button>
+                            <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="openEditVariant('${v.id}')">Edit</button>
+                            <button class="btn btn-danger" style="padding:3px 8px;font-size:11px;" onclick="confirmDeleteVariant('${v.id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    // ─── View switch ──────────────────────────────────────────────
+    function switchView(v) {
+        currentView = v;
+        document.getElementById('hierarchyView').classList.toggle('active', v === 'hierarchy');
+        document.getElementById('tableView').classList.toggle('active', v === 'table');
+        document.getElementById('btnHierarchy').classList.toggle('active', v === 'hierarchy');
+        document.getElementById('btnTable').classList.toggle('active', v === 'table');
+        renderAll();
+    }
+
+    function renderAll() {
+        renderStats();
+        populateCategoryFilter();
+        if (currentView === 'hierarchy') renderHierarchy();
+        else renderTable();
+        renderFooterActivities();
+    }
+
+    function renderFooterActivities() {
+        const list = document.getElementById('footerActivityList');
+        if (!list) return;
+        const movements = (getInvMovements ? getInvMovements(STORE_ID) : []).slice(0, 10);
+        if (!movements.length) {
+            list.innerHTML = '<p style="color:var(--text-gray);padding:12px 0;font-size:13px;">No activities yet.</p>';
+            return;
+        }
+        const variants = getInvVariants();
+        list.innerHTML = movements.map(m => {
+            const v = variants.find(x => String(x.id) === String(m.variantId));
+            const isNeg = Number(m.delta) < 0;
+            const sign = Number(m.delta) > 0 ? '+' : '';
+            const typeMap = { sale: 'Sale', add: 'Stock added', remove: 'Stock removed', adjust: 'Adjusted', set: 'Set', damaged: 'Damaged' };
+            const dateStr = m.date ? new Date(m.date).toLocaleString() : '';
+            return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-color);">
+                <span style="font-size:16px;font-weight:900;color:${isNeg ? '#b4534a' : '#2f7d5b'};min-width:44px;text-align:center;">${sign}${m.delta}</span>
+                <div style="flex:1;">
+                    <span style="font-weight:700;font-size:13px;">${v ? v.name : (m.variantName || '—')}</span>
+                    ${v && v.code ? `<span style="margin-left:6px;font-size:11px;background:var(--surface-hover);border-radius:4px;padding:2px 6px;">${v.code}</span>` : ''}
+                    <span style="margin-left:8px;font-size:12px;color:var(--text-gray);">${typeMap[m.type] || m.type}</span>
+                    ${m.note ? `<span style="margin-left:8px;font-size:11px;color:var(--text-gray);">${m.note}</span>` : ''}
+                </div>
+                <span style="font-size:11px;color:var(--text-gray);white-space:nowrap;">${dateStr}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ─── Toggle accordion ─────────────────────────────────────────
+    function toggleCategory(id) {
+        const el = document.getElementById('cat-block-' + id);
+        if (el) el.classList.toggle('open');
+    }
+    function toggleItem(id) {
+        const el = document.getElementById('item-block-' + id);
+        if (el) el.classList.toggle('open');
+    }
+
+    // ─── Category CRUD ────────────────────────────────────────────
+    function populateCategoryFilter() {
+        const cats = getInvCategories();
+        const sel = document.getElementById('filterCategory');
+        const cur = sel.value;
+        sel.innerHTML = `<option value="">All categories</option>` + cats.map(c => `<option value="${c.id}" ${cur === String(c.id) ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+    }
+
+    function populateCategorySelects() {
+        const cats = getInvCategories();
+        const opts = cats.length ? cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('') : `<option value="">No categories yet</option>`;
+        document.getElementById('itemCategorySelect').innerHTML = opts;
+        document.getElementById('variantCategorySelect').innerHTML = opts;
+        populateVariantItems();
+    }
+
+    function openEditCategory(id) {
+        const cats = getInvCategories();
+        const c = cats.find(x => String(x.id) === String(id));
+        if (!c) return;
+        document.getElementById('catModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Edit Category', getLanguage()) : 'Edit Category';
+        document.getElementById('catEditId').value = c.id;
+        document.getElementById('catName').value = c.name;
+        document.getElementById('catDesc').value = c.description || '';
+        openModal('catModal');
+    }
+
+    function saveCategory() {
+        const name = document.getElementById('catName').value.trim();
+        if (!name) { alert('Category name is required.'); return; }
+        const id = document.getElementById('catEditId').value;
+        const cats = getInvCategories();
+        if (id) {
+            const idx = cats.findIndex(c => String(c.id) === id);
+            if (idx >= 0) { cats[idx].name = name; cats[idx].description = document.getElementById('catDesc').value.trim(); }
+        } else {
+            cats.push({ id: uid(), name, description: document.getElementById('catDesc').value.trim() });
+        }
+        saveInvCategories(cats);
+        document.getElementById('catEditId').value = '';
+        document.getElementById('catName').value = '';
+        document.getElementById('catDesc').value = '';
+        document.getElementById('catModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Add Category', getLanguage()) : 'Add Category';
+        closeModal('catModal');
+        renderAll();
+    }
+
+    function confirmDeleteCategory(id) {
+        const cats = getInvCategories();
+        const c = cats.find(x => String(x.id) === String(id));
+        document.getElementById('deleteModalMsg').textContent = `Delete category "${c ? c.name : id}"? All items and variants under it will also be deleted.`;
+        document.getElementById('deleteModalConfirm').onclick = () => { deleteCategory(id); closeModal('deleteModal'); };
+        openModal('deleteModal');
+    }
+
+    function deleteCategory(id) {
+        const items = getInvItems().filter(i => String(i.categoryId) !== String(id));
+        const deletedItemIds = getInvItems().filter(i => String(i.categoryId) === String(id)).map(i => String(i.id));
+        saveInvItems(items);
+        saveInvVariants(getInvVariants().filter(v => !deletedItemIds.includes(String(v.itemId))));
+        saveInvCategories(getInvCategories().filter(c => String(c.id) !== String(id)));
+        renderAll();
+    }
+
+    // ─── Item CRUD ────────────────────────────────────────────────
+    function openAddItemFor(catId) {
+        populateCategorySelects();
+        document.getElementById('itemModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Add Item', getLanguage()) : 'Add Item';
+        document.getElementById('itemEditId').value = '';
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemDesc').value = '';
+        document.getElementById('itemCategorySelect').value = catId;
+        openModal('itemModal');
+    }
+
+    function openEditItem(id) {
+        const items = getInvItems();
+        const item = items.find(i => String(i.id) === String(id));
+        if (!item) return;
+        populateCategorySelects();
+        document.getElementById('itemModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Edit Item', getLanguage()) : 'Edit Item';
+        document.getElementById('itemEditId').value = item.id;
+        document.getElementById('itemName').value = item.name;
+        document.getElementById('itemDesc').value = item.description || '';
+        document.getElementById('itemCategorySelect').value = item.categoryId;
+        openModal('itemModal');
+    }
+
+    function saveItem() {
+        const name = document.getElementById('itemName').value.trim();
+        const catId = document.getElementById('itemCategorySelect').value;
+        if (!name) { alert('Item name is required.'); return; }
+        if (!catId) { alert('Please select a category.'); return; }
+        const id = document.getElementById('itemEditId').value;
+        const items = getInvItems();
+        if (id) {
+            const idx = items.findIndex(i => String(i.id) === id);
+            if (idx >= 0) { items[idx].name = name; items[idx].categoryId = catId; items[idx].description = document.getElementById('itemDesc').value.trim(); }
+        } else {
+            items.push({ id: uid(), categoryId: catId, name, description: document.getElementById('itemDesc').value.trim() });
+        }
+        saveInvItems(items);
+        document.getElementById('itemEditId').value = '';
+        closeModal('itemModal');
+        renderAll();
+    }
+
+    function confirmDeleteItem(id) {
+        const items = getInvItems();
+        const item = items.find(i => String(i.id) === String(id));
+        document.getElementById('deleteModalMsg').textContent = `Delete item "${item ? item.name : id}"? All variants under it will also be deleted.`;
+        document.getElementById('deleteModalConfirm').onclick = () => { deleteItem(id); closeModal('deleteModal'); };
+        openModal('deleteModal');
+    }
+
+    function deleteItem(id) {
+        saveInvItems(getInvItems().filter(i => String(i.id) !== String(id)));
+        saveInvVariants(getInvVariants().filter(v => String(v.itemId) !== String(id)));
+        renderAll();
+    }
+
+    // ─── Variant CRUD ─────────────────────────────────────────────
+    function populateVariantItems() {
+        const catId = document.getElementById('variantCategorySelect').value;
+        const items = getInvItems().filter(i => !catId || String(i.categoryId) === catId);
+        document.getElementById('variantItemSelect').innerHTML = items.length
+            ? items.map(i => `<option value="${i.id}">${esc(i.name)}</option>`).join('')
+            : `<option value="">No items in this category</option>`;
+    }
+
+    function openAddVariantFor(catId, itemId) {
+        populateCategorySelects();
+        document.getElementById('variantModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Add Variant', getLanguage()) : 'Add Variant';
+        document.getElementById('variantEditId').value = '';
+        document.getElementById('variantName').value = '';
+        document.getElementById('variantCode').value = '';
+        document.getElementById('variantColor').value = '';
+        document.getElementById('variantSize').value = '';
+        document.getElementById('variantQty').value = 0;
+        document.getElementById('variantMinQty').value = 5;
+        document.getElementById('variantImage').value = '';
+        document.getElementById('variantCategorySelect').value = catId;
+        populateVariantItems();
+        if (itemId) document.getElementById('variantItemSelect').value = itemId;
+        updateVariantQtyLabel();
+        document.getElementById('codeUniqueTip').style.display = 'none';
+        openModal('variantModal');
+    }
+
+    function openEditVariant(id) {
+        const variants = getInvVariants();
+        const v = variants.find(x => String(x.id) === String(id));
+        if (!v) return;
+        populateCategorySelects();
+        const item = getInvItems().find(i => String(i.id) === String(v.itemId));
+        if (item) {
+            document.getElementById('variantCategorySelect').value = item.categoryId;
+            populateVariantItems();
+            document.getElementById('variantItemSelect').value = v.itemId;
+        }
+        updateVariantQtyLabel();
+        document.getElementById('variantModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Edit Variant', getLanguage()) : 'Edit Variant';
+        document.getElementById('variantEditId').value = v.id;
+        document.getElementById('variantName').value = v.name;
+        document.getElementById('variantCode').value = v.code;
+        document.getElementById('variantColor').value = v.color || '';
+        document.getElementById('variantSize').value = v.size || '';
+        document.getElementById('variantQty').value = getVariantQty(v.id, STORE_ID);
+        document.getElementById('variantMinQty').value = v.minQty || 5;
+        document.getElementById('variantImage').value = v.image || '';
+        document.getElementById('codeUniqueTip').style.display = 'none';
+        openModal('variantModal');
+    }
+
+    function checkCodeUnique() {
+        const code = document.getElementById('variantCode').value.trim();
+        const editId = document.getElementById('variantEditId').value;
+        const dup = getInvVariants().find(v => v.code && v.code.toLowerCase() === code.toLowerCase() && String(v.id) !== editId);
+        document.getElementById('codeUniqueTip').style.display = dup ? 'block' : 'none';
+    }
+
+    function saveVariant() {
+        const name = document.getElementById('variantName').value.trim();
+        const code = document.getElementById('variantCode').value.trim();
+        const itemId = document.getElementById('variantItemSelect').value;
+        if (!name) { alert('Variant name is required.'); return; }
+        if (!code) { alert('Code / SKU is required.'); return; }
+        if (!itemId) { alert('Please select an item.'); return; }
+
+        const editId = document.getElementById('variantEditId').value;
+        const variants = getInvVariants();
+        const dup = variants.find(v => v.code && v.code.toLowerCase() === code.toLowerCase() && String(v.id) !== editId);
+        if (dup) { alert('This code is already used by another variant.'); return; }
+
+        const qty = Math.max(0, Number(document.getElementById('variantQty').value) || 0);
+        const minQty = Math.max(0, Number(document.getElementById('variantMinQty').value) || 5);
+
+        if (editId) {
+            const idx = variants.findIndex(v => String(v.id) === editId);
+            if (idx >= 0) {
+                const prevQty = getVariantQty(variants[idx].id, STORE_ID);
+                variants[idx] = { ...variants[idx], itemId, name, code, color: document.getElementById('variantColor').value.trim(), size: document.getElementById('variantSize').value.trim(), minQty, image: document.getElementById('variantImage').value.trim() };
+                setVariantQty(variants[idx].id, qty, STORE_ID);
+                if (qty !== prevQty) {
+                    addInvMovement({ variantId: String(variants[idx].id), variantCode: code, variantName: name, type: 'adjust', delta: qty - prevQty, prevQty, nextQty: qty, reason: 'Manual edit', ref: '' }, STORE_ID);
+                }
+            }
+        } else {
+            const v = { id: uid(), itemId, name, code, color: document.getElementById('variantColor').value.trim(), size: document.getElementById('variantSize').value.trim(), minQty, image: document.getElementById('variantImage').value.trim() };
+            variants.push(v);
+            setVariantQty(v.id, qty, STORE_ID);
+            if (qty > 0) {
+                addInvMovement({ variantId: String(v.id), variantCode: code, variantName: name, type: 'add', delta: qty, prevQty: 0, nextQty: qty, reason: 'Initial stock', ref: '' }, STORE_ID);
+            }
+        }
+        saveInvVariants(variants);
+        closeModal('variantModal');
+        renderAll();
+    }
+
+    function confirmDeleteVariant(id) {
+        const v = getInvVariants().find(x => String(x.id) === String(id));
+        document.getElementById('deleteModalMsg').textContent = `Delete variant "${v ? v.name : id}" (${v ? v.code : ''})? This will remove all stock records for this variant.`;
+        document.getElementById('deleteModalConfirm').onclick = () => { deleteVariant(id); closeModal('deleteModal'); };
+        openModal('deleteModal');
+    }
+
+    function deleteVariant(id) {
+        saveInvVariants(getInvVariants().filter(v => String(v.id) !== String(id)));
+        renderAll();
+    }
+
+    // ─── Adjust stock ─────────────────────────────────────────────
+    function openAdjust(variantId) {
+        const v = getInvVariants().find(x => String(x.id) === String(variantId));
+        if (!v) return;
+        const qty = getVariantQty(variantId, STORE_ID);
+        document.getElementById('adjustVariantId').value = variantId;
+        document.getElementById('adjustVariantLabel').textContent = `${v.name} · ${v.code}`;
+        document.getElementById('adjustCurrentQty').textContent = qty + ' ' + getItemUnit(v.itemId);
+        document.getElementById('adjustType').value = 'add';
+        document.getElementById('adjustQty').value = 1;
+        document.getElementById('adjustReason').value = '';
+        updateAdjustLabel();
+        openModal('adjustModal');
+        document.getElementById('adjustQty').addEventListener('input', updateAdjustLabel);
+        document.getElementById('adjustType').addEventListener('change', updateAdjustLabel);
+    }
+
+    function updateAdjustLabel() {
+        const type = document.getElementById('adjustType').value;
+        const labels = { add: 'Quantity to add', remove: 'Quantity to remove', set: 'Set exact quantity', damaged: 'Quantity damaged / lost' };
+        document.getElementById('adjustQtyLabel').textContent = labels[type] || 'Quantity';
+        previewAdjust();
+    }
+
+    function previewAdjust() {
+        const variantId = document.getElementById('adjustVariantId').value;
+        const current = getVariantQty(variantId, STORE_ID);
+        const type = document.getElementById('adjustType').value;
+        const qty = Math.max(0, Number(document.getElementById('adjustQty').value) || 0);
+        let result = current;
+        if (type === 'add') result = current + qty;
+        else if (type === 'remove' || type === 'damaged') result = Math.max(0, current - qty);
+        else if (type === 'set') result = qty;
+        const adjVariant = getInvVariants().find(x => String(x.id) === String(document.getElementById('adjustVariantId').value));
+        document.getElementById('adjustResultPreview').textContent = result + ' ' + (adjVariant ? getItemUnit(adjVariant.itemId) : 'متر');
+    }
+
+    function applyAdjust() {
+        const variantId = document.getElementById('adjustVariantId').value;
+        const v = getInvVariants().find(x => String(x.id) === String(variantId));
+        const current = getVariantQty(variantId, STORE_ID);
+        const type = document.getElementById('adjustType').value;
+        const qty = Math.max(0, Number(document.getElementById('adjustQty').value) || 0);
+        const reason = document.getElementById('adjustReason').value.trim() || type;
+
+        let next = current;
+        if (type === 'add') next = current + qty;
+        else if (type === 'remove' || type === 'damaged') next = Math.max(0, current - qty);
+        else if (type === 'set') next = qty;
+
+        setVariantQty(variantId, next, STORE_ID);
+        addInvMovement({
+            variantId: String(variantId),
+            variantCode: v ? v.code : '',
+            variantName: v ? v.name : '',
+            type,
+            delta: next - current,
+            prevQty: current,
+            nextQty: next,
+            reason,
+            ref: ''
+        }, STORE_ID);
+
+        closeModal('adjustModal');
+        renderAll();
+    }
+
+    // ─── Movement log ─────────────────────────────────────────────
+    function renderMovLog() {
+        const movements = getInvMovements(STORE_ID);
+        const body = document.getElementById('movLogBody');
+        if (movements.length === 0) {
+            body.innerHTML = `<p style="color:var(--text-gray);text-align:center;padding:30px 0;">No movements yet.</p>`;
+            return;
+        }
+        body.innerHTML = movements.map(m => {
+            const isNeg = m.delta < 0;
+            const sign = m.delta > 0 ? '+' : '';
+            const typeLabels = { sale: '🛒 Sale', add: '📦 Add', remove: '↩️ Remove', adjust: '✏️ Adjust', set: '📐 Set', damaged: '🗑️ Damaged' };
+            const dateStr = m.date ? new Date(m.date).toLocaleString() : '';
+            return `
+                <div class="movement-entry">
+                    <div class="movement-delta ${isNeg ? 'neg' : 'pos'}">${sign}${m.delta}</div>
+                    <div class="movement-meta">
+                        <strong>${esc(m.variantName || '—')}</strong> <span class="code-chip">${esc(m.variantCode || '—')}</span>
+                        <br>${typeLabels[m.type] || m.type} · ${m.prevQty} → ${m.nextQty}
+                        ${m.reason ? ` · <em>${esc(m.reason)}</em>` : ''}
+                        <br><small>${dateStr}${m.ref ? ` · ref: ${esc(m.ref)}` : ''}</small>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    // ─── Escape helper ────────────────────────────────────────────
+    function esc(str) {
+        return String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // ─── Seed POS materials (runs once if inventory is empty) ──────
+    function migrateRemoveServices() {
+        const cats = getInvCategories();
+        if (!cats.find(c => c.id === 'seed-cat-services')) return;
+        saveInvCategories(cats.filter(c => c.id !== 'seed-cat-services'));
+        saveInvItems(getInvItems().filter(i => i.categoryId !== 'seed-cat-services'));
+        saveInvVariants(getInvVariants().filter(v => v.itemId !== 'seed-item-خياطة' && v.itemId !== 'seed-item-تركيب'));
+    }
+
+    function initSeedData() {
+        if (getInvCategories().length > 0) return;
+
+        const catFabrics  = { id: 'seed-cat-fabrics',  name: 'أقمشة', description: 'القماش والمواد الأساسية' };
+        const catHardware = { id: 'seed-cat-hardware', name: 'أدوات', description: 'السكك والإكسسوارات' };
+        saveInvCategories([catFabrics, catHardware]);
+
+        saveInvItems([
+            { id: 'seed-item-قماش',   categoryId: catFabrics.id,   name: 'قماش',   description: '' },
+            { id: 'seed-item-تول',    categoryId: catFabrics.id,   name: 'تول',    description: '' },
+            { id: 'seed-item-بطانة',  categoryId: catFabrics.id,   name: 'بطانة',  description: '' },
+            { id: 'seed-item-زبرا',   categoryId: catFabrics.id,   name: 'زبرا',   description: '' },
+            { id: 'seed-item-سكة',    categoryId: catHardware.id,  name: 'سكة',    description: '' },
+            { id: 'seed-item-مزهرية', categoryId: catHardware.id,  name: 'مزهرية', description: '' },
+            { id: 'seed-item-حبال',   categoryId: catHardware.id,  name: 'حبال',   description: '' },
+        ]);
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────
+    migrateRemoveServices();
+    initSeedData();
+    populateCategorySelects();
+    renderAll();
+</script>
+<script src="../js/i18n.js?v=inv-1"></script>
+</body>
+</html>

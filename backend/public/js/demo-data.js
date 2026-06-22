@@ -25,8 +25,8 @@ const retailDemo = {
     { name: 'خياطة', unit: 'meter', price: 1000, affectsSaleTotal: false, workerAccount: 'sewing' },
     { name: 'سكة', unit: 'meter', price: 0, affectsSaleTotal: true },
     { name: 'تركيب', unit: 'window', price: 10000, affectsSaleTotal: false, workerAccount: 'installation' },
-    { name: 'مزهرية', unit: 'meter', price: 0, affectsSaleTotal: true },
-    { name: 'حبال', unit: 'meter', price: 0, affectsSaleTotal: true }
+    { name: 'مزهرية', unit: 'piece', price: 0, affectsSaleTotal: true },
+    { name: 'حبال', unit: 'piece', price: 0, affectsSaleTotal: true }
   ],
   expenseCategories: ['Rent', 'Salaries', 'Delivery', 'Installation', 'Utilities', 'Repairs', 'Marketing', 'Other']
 };
@@ -141,4 +141,71 @@ function loadShell(sectionLabel) {
   if (sidebarStore) sidebarStore.textContent = sectionLabel || storeName;
   if (userName) userName.textContent = user && user.name ? user.name : 'Admin';
   if (avatar) avatar.textContent = user && user.name ? user.name.charAt(0).toUpperCase() : 'A';
+}
+
+// ─── Variant Inventory Data Model ────────────────────────────────────────────
+
+function getInvCategories() {
+  return JSON.parse(localStorage.getItem('inv_categories_v1') || '[]');
+}
+function saveInvCategories(arr) { localStorage.setItem('inv_categories_v1', JSON.stringify(arr)); }
+
+function getInvItems() {
+  return JSON.parse(localStorage.getItem('inv_items_v1') || '[]');
+}
+function saveInvItems(arr) { localStorage.setItem('inv_items_v1', JSON.stringify(arr)); }
+
+function getInvVariants() {
+  return JSON.parse(localStorage.getItem('inv_variants_v1') || '[]');
+}
+function saveInvVariants(arr) { localStorage.setItem('inv_variants_v1', JSON.stringify(arr)); }
+
+function findVariantByCode(code) {
+  if (!code) return null;
+  return getInvVariants().find(v => v.code && v.code.toLowerCase() === String(code).toLowerCase()) || null;
+}
+
+function invStockKey(storeId) { return `inv_stock_v1_store_${storeId || 'demo'}`; }
+function getStoreStock(storeId) { return JSON.parse(localStorage.getItem(invStockKey(storeId)) || '{}'); }
+function saveStoreStock(storeId, stock) { localStorage.setItem(invStockKey(storeId), JSON.stringify(stock)); }
+
+function getVariantQty(variantId, storeId) {
+  return getStoreStock(storeId)[String(variantId)] || 0;
+}
+
+function setVariantQty(variantId, qty, storeId) {
+  const stock = getStoreStock(storeId);
+  stock[String(variantId)] = Math.max(0, Number(qty) || 0);
+  saveStoreStock(storeId, stock);
+}
+
+function invMovementsKey(storeId) { return `inv_movements_v1_store_${storeId || 'demo'}`; }
+function getInvMovements(storeId) { return JSON.parse(localStorage.getItem(invMovementsKey(storeId)) || '[]'); }
+
+function addInvMovement(mov, storeId) {
+  const key = invMovementsKey(storeId);
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.unshift({ id: Date.now() + Math.random(), date: new Date().toISOString(), ...mov });
+  localStorage.setItem(key, JSON.stringify(list.slice(0, 1000)));
+}
+
+function deductVariantStock(variantId, qty, storeId, reason, saleRef) {
+  const stock = getStoreStock(storeId);
+  const current = stock[String(variantId)] || 0;
+  const next = Math.max(0, current - (Number(qty) || 0));
+  stock[String(variantId)] = next;
+  saveStoreStock(storeId, stock);
+
+  const variant = getInvVariants().find(v => String(v.id) === String(variantId));
+  addInvMovement({
+    variantId: String(variantId),
+    variantCode: variant ? variant.code : '',
+    variantName: variant ? variant.name : '',
+    type: 'sale',
+    delta: -(Number(qty) || 0),
+    prevQty: current,
+    nextQty: next,
+    reason: reason || 'Sale',
+    ref: saleRef || ''
+  }, storeId);
 }
