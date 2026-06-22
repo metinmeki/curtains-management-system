@@ -121,6 +121,23 @@
             outline: none;
         }
 
+        /* ── Measurement sub-fields ── */
+        .row-dims {
+            display: flex; gap: 3px; margin-top: 4px;
+        }
+        .row-dims input {
+            width: 46px; font-size: 10px; padding: 2px 4px; text-align: center;
+            border: 1px solid rgba(27,61,46,0.22); border-radius: 3px;
+            background: rgba(27,61,46,0.04); color: var(--receipt-ink);
+            box-shadow: none;
+        }
+        .row-dims input::placeholder { color: rgba(27,61,46,0.4); font-size: 9px; }
+        .row-dims-print { display: none; font-size: 10px; color: var(--receipt-ink); margin-top: 3px; line-height: 1.4; }
+        @media print {
+            .row-dims { display: none !important; }
+            .row-dims-print { display: block !important; }
+        }
+
         /* ── Table ── */
         .receipt-table {
             direction: rtl;
@@ -623,7 +640,14 @@
                     <input class="row-code" placeholder="optional" oninput="lookupCode(this)" style="width:100%;height:100%;padding:8px 5px;border:0;box-shadow:none;border-radius:0;background:transparent;color:var(--receipt-ink);text-align:center;font-family:monospace;font-size:12px;">
                     <div class="row-stock-tip" style="font-size:10px;text-align:center;position:absolute;bottom:3px;left:0;right:0;pointer-events:none;"></div>
                 </td>
-                <td><input class="row-qty quick-number" type="number" min="0" step="0.1" onfocus="selectNumber(this)" oninput="calculateInvoice()"></td>
+                <td>
+                    <input class="row-qty quick-number" type="number" min="0" step="0.1" onfocus="selectNumber(this)" oninput="calculateInvoice()">
+                    <div class="row-dims">
+                        <input class="row-width" type="number" min="0" step="0.01" placeholder="عرض" oninput="updateDimsDisplay(this.closest('tr'))">
+                        <input class="row-length" type="number" min="0" step="0.01" placeholder="طول" oninput="updateDimsDisplay(this.closest('tr'))">
+                    </div>
+                    <div class="row-dims-print"></div>
+                </td>
                 <td><input class="row-price quick-number" type="number" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()"></td>
                 <td><input class="row-sale-total" readonly></td>
                 <td><input class="row-account-total" readonly></td>
@@ -691,6 +715,17 @@
             }
         }
 
+        function updateDimsDisplay(row) {
+            const w = (row.querySelector('.row-width') || {}).value || '';
+            const l = (row.querySelector('.row-length') || {}).value || '';
+            const display = row.querySelector('.row-dims-print');
+            if (!display) return;
+            const parts = [];
+            if (w) parts.push('عرض: ' + w + ' م');
+            if (l) parts.push('طول: ' + l + ' م');
+            display.textContent = parts.join(' · ');
+        }
+
         function selectNumber(input) {
             if (!input.readOnly) {
                 input.select();
@@ -734,6 +769,8 @@
                 const unit = option.dataset.unit;
                 const workerTotal = workerAccount === 'sewing' ? quantity * 1000 : lineTotal;
                 const variant = code ? findVariantByCode(code) : null;
+                const width  = parseFloat((row.querySelector('.row-width')  || {}).value || '') || null;
+                const length = parseFloat((row.querySelector('.row-length') || {}).value || '') || null;
 
                 saleTotal += lineTotal;
                 row.querySelector('.row-sale-total').value = lineMoney(lineTotal);
@@ -745,7 +782,7 @@
                     workerAccounts.push({ account: workerAccount, material, quantity, unit, price, lineTotal, total: workerTotal, storeShare: lineTotal - workerTotal, note: rowNote });
                 }
 
-                items.push({ material, code: code || '', variantId: variant ? variant.id : null, variantCode: variant ? variant.code : '', variantName: variant ? variant.name : '', quantity, unit, price, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
+                items.push({ material, code: code || '', variantId: variant ? variant.id : null, variantCode: variant ? variant.code : '', variantName: variant ? variant.name : '', quantity, unit, width, length, price, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
             });
 
             return { saleTotal, sewingTotal, installationTotal, items, workerAccounts };
@@ -776,6 +813,9 @@
                 row.querySelector('.row-sale-total').value = '';
                 row.querySelector('.row-account-total').value = '';
                 row.querySelector('.row-note').value = '';
+                if (row.querySelector('.row-width'))  { row.querySelector('.row-width').value = ''; }
+                if (row.querySelector('.row-length')) { row.querySelector('.row-length').value = ''; }
+                if (row.querySelector('.row-dims-print')) { row.querySelector('.row-dims-print').textContent = ''; }
                 const codeInput = row.querySelector('.row-code');
                 if (codeInput) { codeInput.value = ''; }
                 const tip = row.querySelector('.row-stock-tip');
