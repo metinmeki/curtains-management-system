@@ -123,7 +123,7 @@ const inventoryDemo = {
 };
 
 function money(value) {
-  return `${Number(value || 0).toLocaleString('en-US')} ${DEMO_CURRENCY}`;
+  return `${Math.round(Number(value || 0)).toLocaleString('en-US').replace(/,/g, '.')} ${DEMO_CURRENCY}`;
 }
 
 function statusBadge(status) {

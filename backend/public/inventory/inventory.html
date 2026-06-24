@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Inventory — Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css?v=restore-2">
+    <style>
+        body { background: #f4f1e8; }
+
+        /* ── KPI ── */
+        .inv-kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:8px; }
+        .inv-kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:18px 20px; }
+        .inv-kpi-card span { display:block; font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#666; margin-bottom:6px; }
+        .inv-kpi-card strong { display:block; font-size:22px; font-weight:800; color:#1b3d2e; }
+        .inv-kpi-card small { display:block; font-size:11px; color:#888; margin-top:3px; }
+        .inv-kpi-card.low strong { color:#b8860b; }
+        .inv-kpi-card.critical strong { color:#8b2222; }
+        @media(max-width:860px){ .inv-kpi { grid-template-columns:repeat(2,1fr); } }
+
+        /* ── Section label ── */
+        .wh-section-label { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:#163329; opacity:0.65; margin:28px 0 14px; }
+        .wh-section-label::after { content:""; flex:1; height:1px; background:rgba(22,51,41,0.15); }
+
+        /* ── Item group ── */
+        .item-group { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:14px; overflow:hidden; margin-bottom:14px; }
+        .item-group-header {
+            display:flex; align-items:center; gap:14px; padding:16px 20px;
+            background:linear-gradient(135deg,#163329,#1f4a38);
+            cursor:pointer; user-select:none;
+        }
+        .item-group-icon { width:42px; height:42px; border-radius:50%; background:#b89a3a; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:#163329; flex-shrink:0; }
+        .item-group-title { color:#fff; font-size:17px; font-weight:800; }
+        .item-group-meta { color:rgba(255,255,255,0.65); font-size:12px; margin-top:1px; }
+        .item-group-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+        .item-group-total { color:#fff; font-size:13px; font-weight:800; background:rgba(255,255,255,0.15); padding:4px 12px; border-radius:20px; }
+        .item-group-toggle { color:rgba(255,255,255,0.7); font-size:12px; }
+        .item-group-body { display:none; padding:16px 20px 20px; }
+        .item-group-body.open { display:block; }
+
+        /* ── Variant grid ── */
+        .variant-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin-bottom:16px; }
+
+        /* ── Variant card ── */
+        .variant-card { border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; background:#fdfaf2; transition:box-shadow 0.15s; }
+        .variant-card:hover { box-shadow:0 4px 16px rgba(22,51,41,0.1); }
+
+        /* photo area */
+        .variant-photo { width:100%; height:140px; background:#f0ece0; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; cursor:pointer; }
+        .variant-photo img { width:100%; height:100%; object-fit:cover; }
+        .variant-photo-placeholder { display:flex; flex-direction:column; align-items:center; gap:6px; color:#aaa; font-size:12px; font-weight:700; }
+        .variant-photo-placeholder .ph-icon { font-size:32px; opacity:0.4; }
+        .variant-photo-overlay { position:absolute; inset:0; background:rgba(22,51,41,0.5); display:none; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:800; letter-spacing:0.5px; }
+        .variant-photo:hover .variant-photo-overlay { display:flex; }
+        .variant-photo input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+
+        /* card body */
+        .variant-body { padding:12px 14px; }
+        .variant-code { font-size:14px; font-weight:900; color:#b89a3a; letter-spacing:0.5px; margin-bottom:4px; }
+        .variant-code-empty { color:#ccc; font-size:13px; font-style:italic; }
+        .variant-qty-row { display:flex; align-items:baseline; gap:6px; margin:6px 0; }
+        .variant-qty { font-size:22px; font-weight:800; color:#163329; line-height:1; }
+        .variant-qty.low { color:#b8860b; }
+        .variant-qty.critical, .variant-qty.empty { color:#8b2222; }
+        .variant-unit { font-size:11px; color:#888; font-weight:700; }
+        .variant-status { display:inline-block; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; margin-bottom:8px; }
+        .variant-status.ok       { background:rgba(45,122,68,0.12); color:#2d7a44; }
+        .variant-status.low      { background:rgba(184,134,11,0.12); color:#b8860b; }
+        .variant-status.critical { background:rgba(139,34,34,0.1);  color:#8b2222; }
+        .variant-status.empty    { background:rgba(139,34,34,0.18); color:#8b2222; }
+
+        /* card actions */
+        .variant-actions { display:flex; gap:6px; margin-top:10px; }
+        .v-btn { flex:1; padding:6px 4px; border-radius:7px; font-size:11px; font-weight:800; cursor:pointer; border:1.5px solid; transition:all 0.12s; text-align:center; }
+        .v-btn-adjust { border-color:rgba(22,51,41,0.25); background:rgba(22,51,41,0.06); color:#163329; }
+        .v-btn-adjust:hover, .v-btn-adjust.active { background:#163329; color:#fff; border-color:#163329; }
+        .v-btn-edit { border-color:rgba(184,154,58,0.4); background:rgba(184,154,58,0.08); color:#b89a3a; }
+        .v-btn-edit:hover { background:#b89a3a; color:#fff; border-color:#b89a3a; }
+        .v-btn-delete { border-color:rgba(180,83,74,0.25); background:rgba(180,83,74,0.06); color:#b4534a; }
+        .v-btn-delete:hover { background:#b4534a; color:#fff; border-color:#b4534a; }
+
+        /* ── Adjust / Edit inline panel ── */
+        .variant-panel { display:none; background:#f0f7f4; border-top:1px solid rgba(22,51,41,0.1); padding:14px; }
+        .variant-panel.open { display:block; }
+        .variant-panel .form-group { margin-bottom:10px; }
+        .variant-panel .form-group label { font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#555; display:block; margin-bottom:4px; }
+        .variant-panel .form-group input,
+        .variant-panel .form-group select,
+        .variant-panel .form-group textarea { font-size:13px; width:100%; }
+        .variant-panel .panel-btns { display:flex; gap:8px; margin-top:4px; }
+        .variant-panel .panel-btns button { flex:1; }
+
+        /* ── Add variant card ── */
+        .add-variant-card {
+            border:2px dashed rgba(22,51,41,0.2); border-radius:12px; min-height:140px;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            gap:8px; cursor:pointer; color:#163329; font-weight:800; font-size:13px;
+            transition:all 0.15s; background:transparent;
+        }
+        .add-variant-card:hover { border-color:#163329; background:rgba(22,51,41,0.04); }
+        .add-variant-card .plus { font-size:28px; opacity:0.5; }
+
+        /* ── Add variant form ── */
+        .add-variant-form { border:1px solid rgba(22,51,41,0.15); border-radius:12px; padding:16px; background:#f9f7f1; display:none; }
+        .add-variant-form.open { display:block; }
+        .add-variant-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .add-variant-form .form-group { margin-bottom:0; }
+        .add-variant-form .form-group label { font-size:10px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#555; display:block; margin-bottom:4px; }
+
+        /* photo upload in add form */
+        .photo-upload-box { border:2px dashed rgba(22,51,41,0.2); border-radius:8px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; position:relative; overflow:hidden; background:#fff; }
+        .photo-upload-box img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+        .photo-upload-box input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+        .photo-upload-box .pu-label { font-size:11px; color:#aaa; font-weight:700; text-align:center; pointer-events:none; z-index:1; }
+        .photo-upload-box .pu-icon { font-size:22px; color:#ccc; pointer-events:none; z-index:1; }
+
+        /* ── Movement log ── */
+        .mov-table-wrap { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; }
+        .mov-filter { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px 16px; background:#f9f7f1; border-bottom:1px solid rgba(22,51,41,0.08); }
+        .mov-filter select, .mov-filter input { font-size:13px; border:1px solid rgba(22,51,41,0.18); border-radius:6px; padding:5px 10px; background:#fff; color:#163329; }
+        .mov-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .mov-table th { background:#f0ece0; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; padding:10px 16px; color:#163329; border-bottom:2px solid rgba(22,51,41,0.12); }
+        .mov-table td { padding:10px 16px; border-bottom:1px solid rgba(22,51,41,0.07); color:#444; }
+        .mov-table tr:last-child td { border-bottom:0; }
+        .mov-delta.pos { color:#2d7a44; font-weight:800; }
+        .mov-delta.neg { color:#8b2222; font-weight:800; }
+        .mov-empty { padding:30px; text-align:center; color:#aaa; font-size:14px; }
+    </style>
+</head>
+<body class="ltr">
+
+<div class="layout">
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-title">Warehouse</div>
+        <div class="sidebar-store-name" id="sidebarStoreName">المستودع</div>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="menu-item"><a href="home.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+        <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">S</span><span>Supply</span></a></li>
+        <li class="menu-item"><a href="inventory.html" class="active"><span class="menu-icon">I</span><span>Inventory</span></a></li>
+    </ul>
+    <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+</aside>
+<div class="main-content">
+
+<nav class="navbar">
+    <div class="navbar-title">Warehouse Inventory</div>
+    <div class="navbar-actions">
+        <span class="scope-pill">warehouse scope</span>
+        <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div>
+    </div>
+</nav>
+<main class="content">
+<div style="max-width:1300px;margin:0 auto;padding:28px 24px 60px;">
+
+    <!-- KPI -->
+    <div class="inv-kpi">
+        <div class="inv-kpi-card"><span>Total variants</span><strong id="kpiVariants">0</strong><small>Across all items</small></div>
+        <div class="inv-kpi-card low"><span>Low stock</span><strong id="kpiLow">0</strong><small>Below minimum level</small></div>
+        <div class="inv-kpi-card critical"><span>Empty / Critical</span><strong id="kpiCritical">0</strong><small>Needs restock now</small></div>
+        <div class="inv-kpi-card"><span>Movements today</span><strong id="kpiMov">0</strong><small>Adjustments recorded</small></div>
+    </div>
+
+    <!-- Item groups -->
+    <div class="wh-section-label">Stock by Item / المخزون حسب الصنف</div>
+    <div id="itemGroupsContainer"></div>
+
+    <!-- Movement history -->
+    <div class="wh-section-label">Stock Movements / سجل الحركة</div>
+    <div class="mov-table-wrap">
+        <div class="mov-filter">
+            <select id="movFilterItem" onchange="renderMovHistory()">
+                <option value="">All items</option>
+            </select>
+            <select id="movFilterType" onchange="renderMovHistory()">
+                <option value="">All types</option>
+                <option value="add">Add</option>
+                <option value="deduct">Deduct</option>
+                <option value="set">Set quantity</option>
+                <option value="supply">Supply to store</option>
+            </select>
+            <input type="date" id="movFilterDate" oninput="renderMovHistory()">
+            <button class="btn btn-small btn-outline" onclick="clearMovFilters()">Clear</button>
+        </div>
+        <table class="mov-table">
+            <thead>
+                <tr>
+                    <th>Date</th><th>Item</th><th>Code / Variant</th><th>Type</th>
+                    <th>Change</th><th>Before</th><th>After</th><th>Ref</th><th>Note</th>
+                </tr>
+            </thead>
+            <tbody id="movRows"></tbody>
+        </table>
+    </div>
+
+</div>
+</main>
+</div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=wh-2"></script>
+<script>
+if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
+loadShell('Warehouse');
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const WH_ITEMS = [
+    { name: 'سكة',   unit: 'متر',  step: 0.1 },
+    { name: 'حبل',   unit: 'قطعة', step: 1   },
+    { name: 'مزهري', unit: 'قطعة', step: 1   },
+    { name: 'شريط',  unit: 'متر',  step: 0.1 },
+    { name: 'بطن',   unit: 'متر',  step: 0.1 },
+    { name: 'رول',   unit: 'متر',  step: 0.1 },
+    { name: 'اويه',  unit: 'متر',  step: 0.1 },
+];
+
+const VARIANTS_KEY = 'wh_variants_v1';
+const MOV_KEY      = 'wh_mov_v1';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function esc(v) { return String(v||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function todayVal() { const n=new Date(); return new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+function getVariants() { return JSON.parse(localStorage.getItem(VARIANTS_KEY) || '{}'); }
+function saveVariants(v) { localStorage.setItem(VARIANTS_KEY, JSON.stringify(v)); }
+
+function getMov() { return JSON.parse(localStorage.getItem(MOV_KEY) || '[]'); }
+function saveMov(a) { localStorage.setItem(MOV_KEY, JSON.stringify(a)); }
+
+function addMov(entry) {
+    const list = getMov();
+    list.unshift({ id: uid(), date: todayVal(), ...entry });
+    saveMov(list.slice(0, 3000));
+}
+
+// ─── Status ───────────────────────────────────────────────────────────────────
+
+function itemStatus(qty, minQty) {
+    if (qty <= 0)               return 'empty';
+    if (qty < minQty * 0.5)    return 'critical';
+    if (qty < minQty)          return 'low';
+    return 'ok';
+}
+const STATUS_LABELS = { ok:'In stock', low:'Low stock', critical:'Critical', empty:'Empty' };
+
+// ─── UI state ─────────────────────────────────────────────────────────────────
+
+const openGroups  = new Set(WH_ITEMS.map(i => i.name)); // all open by default
+let   openPanel   = null; // 'variantId:adjust' or 'variantId:edit'
+let   addingFor   = null; // item name where add-form is open
+let   addPhotoB64 = {};   // itemName -> base64 for pending add form
+
+// ─── Photo helpers ────────────────────────────────────────────────────────────
+
+function fileToBase64(file) {
+    return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = e => res(e.target.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+    });
+}
+
+async function onAddPhoto(itemName, input) {
+    if (!input.files || !input.files[0]) return;
+    const b64 = await fileToBase64(input.files[0]);
+    addPhotoB64[itemName] = b64;
+    const preview = document.getElementById('addPhotoPreview_' + CSS.escape(itemName));
+    if (preview) {
+        preview.src = b64;
+        preview.style.display = 'block';
+    }
+}
+
+async function onVariantPhotoChange(variantId, input) {
+    if (!input.files || !input.files[0]) return;
+    const b64 = await fileToBase64(input.files[0]);
+    const variants = getVariants();
+    for (const itemName in variants) {
+        const v = variants[itemName].find(v => v.id === variantId);
+        if (v) { v.photo = b64; saveVariants(variants); break; }
+    }
+    renderAll();
+}
+
+// ─── Add variant ──────────────────────────────────────────────────────────────
+
+function openAddForm(itemName) {
+    addingFor = addingFor === itemName ? null : itemName;
+    addPhotoB64[itemName] = null;
+    renderAll();
+    if (addingFor) {
+        setTimeout(() => {
+            const el = document.getElementById('addForm_' + CSS.escape(itemName));
+            if (el) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }, 80);
+    }
+}
+
+function saveNewVariant(itemName) {
+    const codeEl  = document.getElementById('addCode_'   + CSS.escape(itemName));
+    const qtyEl   = document.getElementById('addQty_'    + CSS.escape(itemName));
+    const minEl   = document.getElementById('addMin_'    + CSS.escape(itemName));
+    const noteEl  = document.getElementById('addNote_'   + CSS.escape(itemName));
+
+    const code   = codeEl  ? codeEl.value.trim()          : '';
+    const qty    = parseFloat(qtyEl ? qtyEl.value   : 0)  || 0;
+    const minQty = parseFloat(minEl ? minEl.value   : 10) || 10;
+    const note   = noteEl  ? noteEl.value.trim()          : '';
+
+    if (!code) { if (codeEl) { codeEl.focus(); codeEl.style.borderColor='#b4534a'; } return; }
+
+    const variants = getVariants();
+    if (!variants[itemName]) variants[itemName] = [];
+
+    // check duplicate code within item
+    if (variants[itemName].some(v => v.code === code)) {
+        if (codeEl) { codeEl.style.borderColor='#b4534a'; codeEl.focus(); }
+        alert('A variant with this code already exists for ' + itemName);
+        return;
+    }
+
+    const id = uid();
+    variants[itemName].push({ id, code, photo: addPhotoB64[itemName] || null, qty, minQty });
+    saveVariants(variants);
+
+    if (qty > 0) {
+        addMov({ item: itemName, code, variantId: id, type:'add', delta: qty, prevQty:0, nextQty:qty, note: note||'Initial stock', ref:'' });
+    }
+
+    addingFor = null;
+    addPhotoB64[itemName] = null;
+    renderAll();
+}
+
+// ─── Delete variant ───────────────────────────────────────────────────────────
+
+function deleteVariant(itemName, variantId) {
+    if (!confirm('Delete this variant? Stock data will be lost.')) return;
+    const variants = getVariants();
+    if (variants[itemName]) {
+        variants[itemName] = variants[itemName].filter(v => v.id !== variantId);
+        saveVariants(variants);
+    }
+    if (openPanel && openPanel.startsWith(variantId)) openPanel = null;
+    renderAll();
+}
+
+// ─── Adjust / Edit panels ─────────────────────────────────────────────────────
+
+function togglePanel(variantId, mode) {
+    const key = variantId + ':' + mode;
+    openPanel = openPanel === key ? null : key;
+    renderAll();
+}
+
+function saveAdjust(itemName, variantId) {
+    const typeEl = document.getElementById('adjType_' + variantId);
+    const qtyEl  = document.getElementById('adjQty_'  + variantId);
+    const noteEl = document.getElementById('adjNote_' + variantId);
+    const minEl  = document.getElementById('adjMin_'  + variantId);
+
+    const type   = typeEl ? typeEl.value                   : 'add';
+    const qty    = parseFloat(qtyEl ? qtyEl.value   : 0)  || 0;
+    const note   = noteEl ? noteEl.value.trim()            : '';
+    const newMin = parseFloat(minEl ? minEl.value   : 0)  || 0;
+
+    if (qty <= 0) { if (qtyEl) qtyEl.focus(); return; }
+
+    const variants = getVariants();
+    const v = (variants[itemName] || []).find(x => x.id === variantId);
+    if (!v) return;
+
+    const prev = v.qty;
+    let next   = prev;
+    if (type === 'add')    next = prev + qty;
+    if (type === 'deduct') next = Math.max(0, prev - qty);
+    if (type === 'set')    next = qty;
+
+    v.qty = parseFloat(next.toFixed(4));
+    if (newMin > 0) v.minQty = newMin;
+    saveVariants(variants);
+
+    addMov({
+        item: itemName, code: v.code, variantId,
+        type, delta: next - prev, prevQty: prev, nextQty: next, note, ref:''
+    });
+
+    openPanel = null;
+    renderAll();
+}
+
+function saveEdit(itemName, variantId) {
+    const codeEl  = document.getElementById('editCode_' + variantId);
+    const minEl   = document.getElementById('editMin_'  + variantId);
+
+    const newCode = codeEl ? codeEl.value.trim() : '';
+    const newMin  = parseFloat(minEl ? minEl.value : 0) || 0;
+
+    if (!newCode) { if (codeEl) { codeEl.focus(); codeEl.style.borderColor='#b4534a'; } return; }
+
+    const variants = getVariants();
+    const list = variants[itemName] || [];
+    const v = list.find(x => x.id === variantId);
+    if (!v) return;
+
+    // check duplicate
+    if (list.some(x => x.id !== variantId && x.code === newCode)) {
+        alert('Another variant already uses this code.'); return;
+    }
+
+    v.code = newCode;
+    if (newMin > 0) v.minQty = newMin;
+    saveVariants(variants);
+    openPanel = null;
+    renderAll();
+}
+
+async function saveEditPhoto(variantId, input) {
+    if (!input.files || !input.files[0]) return;
+    const b64 = await fileToBase64(input.files[0]);
+    const variants = getVariants();
+    for (const itemName in variants) {
+        const v = variants[itemName].find(x => x.id === variantId);
+        if (v) { v.photo = b64; saveVariants(variants); renderAll(); break; }
+    }
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+
+function renderVariantCard(itemName, v, unit, step) {
+    const qty    = Number(v.qty || 0);
+    const minQty = Number(v.minQty || 10);
+    const s      = itemStatus(qty, minQty);
+    const isAdjOpen  = openPanel === v.id + ':adjust';
+    const isEditOpen = openPanel === v.id + ':edit';
+
+    const photoHtml = v.photo
+        ? `<img src="${v.photo}" alt="variant photo">`
+        : `<div class="variant-photo-placeholder"><span class="ph-icon">📷</span><span>No photo</span></div>`;
+
+    return `
+        <div class="variant-card">
+            <div class="variant-photo" title="Click to change photo">
+                ${photoHtml}
+                <div class="variant-photo-overlay">📷 Change photo</div>
+                <input type="file" accept="image/*" onchange="onVariantPhotoChange('${esc(v.id)}', this)">
+            </div>
+            <div class="variant-body">
+                ${v.code
+                    ? `<div class="variant-code">${esc(v.code)}</div>`
+                    : `<div class="variant-code-empty">No code set</div>`}
+                <div class="variant-qty-row">
+                    <span class="variant-qty ${s !== 'ok' ? s : ''}">${qty.toLocaleString('en-US').replace(/,/g,'.')}</span>
+                    <span class="variant-unit">${esc(unit)}</span>
+                </div>
+                <span class="variant-status ${s}">${STATUS_LABELS[s]}</span>
+                <div class="variant-actions">
+                    <button class="v-btn v-btn-adjust ${isAdjOpen?'active':''}" onclick="togglePanel('${esc(v.id)}','adjust')">▲ Stock</button>
+                    <button class="v-btn v-btn-edit  ${isEditOpen?'active':''}" onclick="togglePanel('${esc(v.id)}','edit')">✎ Edit</button>
+                    <button class="v-btn v-btn-delete" onclick="deleteVariant('${esc(itemName)}','${esc(v.id)}')">✕</button>
+                </div>
+            </div>
+
+            <!-- Adjust panel -->
+            <div class="variant-panel ${isAdjOpen?'open':''}">
+                <div class="form-group">
+                    <label>Action</label>
+                    <select id="adjType_${esc(v.id)}">
+                        <option value="add">Add to stock</option>
+                        <option value="deduct">Deduct from stock</option>
+                        <option value="set">Set exact quantity</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity (${esc(unit)})</label>
+                    <input id="adjQty_${esc(v.id)}" type="number" min="0" step="${step}" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Min. level</label>
+                    <input id="adjMin_${esc(v.id)}" type="number" min="0" step="${step}" value="${minQty}" placeholder="${minQty}">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <input id="adjNote_${esc(v.id)}" type="text" placeholder="Optional">
+                </div>
+                <div class="panel-btns">
+                    <button class="btn btn-success btn-small" onclick="saveAdjust('${esc(itemName)}','${esc(v.id)}')">Save</button>
+                    <button class="btn btn-outline btn-small" onclick="togglePanel('${esc(v.id)}','adjust')">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Edit panel -->
+            <div class="variant-panel ${isEditOpen?'open':''}">
+                <div class="form-group">
+                    <label>Change photo</label>
+                    <div class="photo-upload-box" style="height:70px;">
+                        <span class="pu-icon">📷</span>
+                        <span class="pu-label">Click to upload new photo</span>
+                        <input type="file" accept="image/*" onchange="saveEditPhoto('${esc(v.id)}', this)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Code</label>
+                    <input id="editCode_${esc(v.id)}" type="text" value="${esc(v.code)}" placeholder="e.g. SK-001">
+                </div>
+                <div class="form-group">
+                    <label>Min. level (${esc(unit)})</label>
+                    <input id="editMin_${esc(v.id)}" type="number" min="0" step="${step}" value="${minQty}">
+                </div>
+                <div class="panel-btns">
+                    <button class="btn btn-success btn-small" onclick="saveEdit('${esc(itemName)}','${esc(v.id)}')">Save changes</button>
+                    <button class="btn btn-outline btn-small" onclick="togglePanel('${esc(v.id)}','edit')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderItemGroup(item) {
+    const variants = (getVariants()[item.name] || []);
+    const totalQty = variants.reduce((s, v) => s + Number(v.qty || 0), 0);
+    const isOpen   = openGroups.has(item.name);
+    const isAdding = addingFor === item.name;
+
+    const variantCards = variants.map(v => renderVariantCard(item.name, v, item.unit, item.step)).join('');
+
+    const addPhotoPreview = addPhotoB64[item.name]
+        ? `<img id="addPhotoPreview_${esc(item.name)}" src="${addPhotoB64[item.name]}" style="display:block;">`
+        : `<img id="addPhotoPreview_${esc(item.name)}" style="display:none;">`;
+
+    const addForm = `
+        <div class="add-variant-form ${isAdding?'open':''}" id="addForm_${esc(item.name)}">
+            <div style="font-size:13px;font-weight:800;color:#163329;margin-bottom:12px;">New variant for ${esc(item.name)}</div>
+            <div class="add-variant-form-grid">
+                <div class="form-group">
+                    <label>Code <span style="color:#b4534a;">*</span></label>
+                    <input id="addCode_${esc(item.name)}" type="text" placeholder="e.g. SK-001" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Initial stock (${esc(item.unit)})</label>
+                    <input id="addQty_${esc(item.name)}" type="number" min="0" step="${item.step}" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>Min. level (${esc(item.unit)})</label>
+                    <input id="addMin_${esc(item.name)}" type="number" min="0" step="${item.step}" placeholder="10" value="10">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <input id="addNote_${esc(item.name)}" type="text" placeholder="Optional">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label>Photo</label>
+                <div class="photo-upload-box">
+                    ${addPhotoPreview}
+                    <span class="pu-icon">📷</span>
+                    <span class="pu-label">Click to upload photo<br>(optional)</span>
+                    <input type="file" accept="image/*" onchange="onAddPhoto('${esc(item.name)}', this)">
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-success" onclick="saveNewVariant('${esc(item.name)}')">Add variant</button>
+                <button class="btn btn-outline" onclick="openAddForm('${esc(item.name)}')">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    const initials = item.name.charAt(0);
+
+    return `
+        <div class="item-group">
+            <div class="item-group-header" onclick="toggleGroup('${esc(item.name)}')">
+                <div class="item-group-icon">${esc(initials)}</div>
+                <div>
+                    <div class="item-group-title">${esc(item.name)}</div>
+                    <div class="item-group-meta">${variants.length} variant${variants.length!==1?'s':''} &nbsp;·&nbsp; ${esc(item.unit)}</div>
+                </div>
+                <div class="item-group-right">
+                    <span class="item-group-total">${totalQty.toLocaleString('en-US').replace(/,/g,'.')} ${esc(item.unit)}</span>
+                    <span class="item-group-toggle">${isOpen?'▲':'▼'}</span>
+                </div>
+            </div>
+            <div class="item-group-body ${isOpen?'open':''}">
+                <div class="variant-grid">
+                    ${variantCards}
+                    <div class="add-variant-card" onclick="openAddForm('${esc(item.name)}')">
+                        <span class="plus">+</span>
+                        <span>Add variant</span>
+                    </div>
+                </div>
+                ${addForm}
+            </div>
+        </div>
+    `;
+}
+
+function toggleGroup(itemName) {
+    if (openGroups.has(itemName)) openGroups.delete(itemName);
+    else openGroups.add(itemName);
+    renderAll();
+}
+
+function renderKPI() {
+    const variants = getVariants();
+    let total = 0, low = 0, crit = 0;
+    for (const itemName in variants) {
+        (variants[itemName] || []).forEach(v => {
+            total++;
+            const s = itemStatus(Number(v.qty||0), Number(v.minQty||10));
+            if (s === 'low') low++;
+            if (s === 'critical' || s === 'empty') crit++;
+        });
+    }
+    document.getElementById('kpiVariants').textContent = total;
+    document.getElementById('kpiLow').textContent      = low;
+    document.getElementById('kpiCritical').textContent = crit;
+
+    const today = todayVal();
+    const movToday = getMov().filter(m => String(m.date||'').slice(0,10) === today).length;
+    document.getElementById('kpiMov').textContent = movToday;
+}
+
+function renderMovHistory() {
+    const filterItem = document.getElementById('movFilterItem').value;
+    const filterType = document.getElementById('movFilterType').value;
+    const filterDate = document.getElementById('movFilterDate').value;
+
+    let list = getMov();
+
+    // pull supply-deductions from wh_sales_v1 too
+    const sales = JSON.parse(localStorage.getItem('wh_sales_v1') || '[]');
+    sales.forEach(s => {
+        (s.items||[]).forEach(it => {
+            list.push({
+                id: s.id + '_' + it.item, date: s.date, item: it.item,
+                code: it.code || '', variantId: '',
+                type:'supply', delta:-Number(it.quantity),
+                prevQty:'—', nextQty:'—',
+                note:'Supplied to ' + (s.storeName||''), ref: s.reference||''
+            });
+        });
+    });
+
+    list.sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
+
+    if (filterItem) list = list.filter(m => m.item === filterItem);
+    if (filterType) list = list.filter(m => m.type === filterType);
+    if (filterDate) list = list.filter(m => String(m.date||'').slice(0,10) === filterDate);
+
+    const TYPE_LABEL = { add:'Add', deduct:'Deduct', set:'Set qty', supply:'Supply', adjust:'Adjust' };
+    const tbody = document.getElementById('movRows');
+
+    if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="9" class="mov-empty">No movements recorded yet.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = list.map(m => {
+        const delta = Number(m.delta || 0);
+        const sign  = delta >= 0 ? '+' : '';
+        const cls   = delta >= 0 ? 'pos' : 'neg';
+        const fmtDate = m.date ? new Date(m.date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+        return `
+            <tr>
+                <td style="font-size:12px;color:#555;">${fmtDate}</td>
+                <td style="font-weight:700;color:#163329;">${esc(m.item)}</td>
+                <td style="color:#b89a3a;font-weight:800;">${esc(m.code||'—')}</td>
+                <td><span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px;background:#f0ece0;color:#163329;">${TYPE_LABEL[m.type]||esc(m.type)}</span></td>
+                <td class="mov-delta ${cls}">${sign}${Number(delta).toLocaleString('en-US').replace(/,/g,'.')}</td>
+                <td style="color:#888;font-size:12px;">${typeof m.prevQty==='number'?Number(m.prevQty).toLocaleString('en-US').replace(/,/g,'.'):esc(String(m.prevQty||'—'))}</td>
+                <td style="color:#888;font-size:12px;">${typeof m.nextQty==='number'?Number(m.nextQty).toLocaleString('en-US').replace(/,/g,'.'):esc(String(m.nextQty||'—'))}</td>
+                <td style="font-size:12px;color:#b89a3a;">${esc(m.ref||'—')}</td>
+                <td style="font-size:12px;color:#888;">${esc(m.note||'—')}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderAll() {
+    document.getElementById('itemGroupsContainer').innerHTML = WH_ITEMS.map(renderItemGroup).join('');
+    renderKPI();
+    renderMovHistory();
+}
+
+function clearMovFilters() {
+    document.getElementById('movFilterItem').value = '';
+    document.getElementById('movFilterType').value = '';
+    document.getElementById('movFilterDate').value = '';
+    renderMovHistory();
+}
+
+function populateItemFilter() {
+    document.getElementById('movFilterItem').innerHTML =
+        '<option value="">All items</option>' +
+        WH_ITEMS.map(i => `<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
+}
+
+window.addEventListener('load', () => {
+    populateItemFilter();
+    renderAll();
+    if (window.applyLanguage) applyLanguage();
+});
+</script>
+<script src="../js/i18n.js?v=arabic-en-2"></script>
+</body>
+</html>

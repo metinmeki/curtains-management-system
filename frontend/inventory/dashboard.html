@@ -1,64 +1,923 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Dashboard - Curtains Management System</title>
+    <title>Warehouse — Curtains Management System</title>
     <link rel="stylesheet" href="../css/style.css?v=restore-2">
+    <style>
+        body { background: #f4f1e8; }
+
+        /* ══ Navbar ══ */
+        .wh-navbar {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(90deg,#163329 0%,#1f4a38 100%);
+            padding: 0 28px; height: 58px;
+            box-shadow: 0 2px 12px rgba(22,51,41,0.22);
+        }
+        .wh-navbar-brand { display:flex; align-items:center; gap:14px; }
+        .wh-navbar-logo { background:#b89a3a; color:#163329; font-weight:900; font-size:14px; letter-spacing:1px; padding:5px 10px; border-radius:6px; }
+        .wh-navbar-title { color:#fff; font-size:18px; font-weight:800; }
+        .wh-navbar-sub { color:rgba(255,255,255,0.65); font-size:12px; margin-left:2px; }
+        .wh-navbar-right { display:flex; align-items:center; gap:12px; }
+        .wh-navbar-right .scope-pill { background:rgba(255,255,255,0.15); color:#fff; font-size:11px; }
+        .wh-navbar-right a { color:rgba(255,255,255,0.75); font-size:13px; text-decoration:none; padding:6px 12px; border:1px solid rgba(255,255,255,0.25); border-radius:6px; transition:all 0.15s; }
+        .wh-navbar-right a:hover { background:rgba(255,255,255,0.12); color:#fff; }
+        .wh-navbar-right .user-avatar { background:#b89a3a; color:#163329; }
+        .wh-page { max-width:1400px; margin:0 auto; padding:28px 24px 60px; }
+
+        /* ══ Section label ══ */
+        .wh-section-label { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:#163329; opacity:0.65; margin:32px 0 14px; }
+        .wh-section-label::after { content:""; flex:1; height:1px; background:rgba(22,51,41,0.15); }
+
+        /* ══ KPI ══ */
+        .kpi-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:8px; }
+        .kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:18px 20px; }
+        .kpi-card span { display:block; font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#666; margin-bottom:6px; }
+        .kpi-card strong { display:block; font-size:20px; font-weight:800; color:#1b3d2e; }
+        .kpi-card small { display:block; font-size:11px; color:#888; margin-top:3px; }
+        .kpi-card.debt strong { color:#8b2222; }
+
+        /* ══ Items Management Panel ══ */
+        .items-mgmt-panel { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; margin-bottom:0; }
+        .items-mgmt-header { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:#f0ece0; border-bottom:1px solid rgba(22,51,41,0.1); cursor:pointer; user-select:none; }
+        .items-mgmt-header h3 { font-size:14px; font-weight:800; color:#163329; margin:0; }
+        .items-mgmt-header span { font-size:12px; color:#888; }
+        .items-mgmt-body { display:none; padding:16px 20px; }
+        .items-mgmt-body.open { display:block; }
+        .items-mgmt-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-bottom:14px; }
+        .item-code-box { background:#f9f7f1; border:1px solid rgba(22,51,41,0.1); border-radius:8px; padding:10px 12px; }
+        .item-code-box label { display:block; font-size:11px; font-weight:800; color:#163329; margin-bottom:4px; }
+        .item-code-box .unit-tag { display:inline-block; font-size:10px; color:#888; background:#e8e4d8; border-radius:4px; padding:1px 6px; margin-bottom:6px; }
+        .item-code-box input { width:100%; border:1px solid rgba(22,51,41,0.18); border-radius:6px; padding:6px 8px; font-size:13px; font-weight:700; color:#163329; background:#fff; }
+        .item-code-box input:focus { outline:none; border-color:#b89a3a; box-shadow:0 0 0 2px rgba(184,154,58,0.15); }
+
+        /* ══ Supply layout ══ */
+        .supply-layout { display:grid; grid-template-columns:1fr 290px; gap:16px; align-items:start; }
+        @media(max-width:960px){ .supply-layout { grid-template-columns:1fr; } .kpi-bar { grid-template-columns:repeat(2,1fr); } }
+
+        /* ══ Premium Ledger Receipt ══ */
+        .receipt-card {
+            --receipt-ink:   #1b3d2e;
+            --receipt-gold:  #b89a3a;
+            --receipt-cream: #fdf9f0;
+            --receipt-sage:  #d8e8dc;
+            --receipt-line:  rgba(27,61,46,0.12);
+            background:var(--receipt-cream);
+            border:1px solid rgba(27,61,46,0.14);
+            border-radius:14px; overflow:hidden;
+            box-shadow:0 2px 4px rgba(0,0,0,0.04),0 10px 32px rgba(27,61,46,0.10);
+        }
+        .receipt-head { position:relative; text-align:center; background:linear-gradient(148deg,#163329 0%,#1f4a38 45%,#265c47 100%); padding:26px 24px 20px; overflow:hidden; }
+        .receipt-head::before { content:""; position:absolute; top:-44px; right:-44px; width:150px; height:150px; border-radius:50%; border:2px solid rgba(184,154,58,0.15); pointer-events:none; }
+        .receipt-head::after { content:""; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent 5%,#b89a3a 30%,#d4b84e 50%,#b89a3a 70%,transparent 95%); }
+        .receipt-brand { font-size:clamp(22px,3.5vw,38px); letter-spacing:8px; font-weight:900; color:#fff; line-height:1.1; text-shadow:0 2px 12px rgba(0,0,0,0.25); }
+        .receipt-subbrand { font-size:clamp(12px,1.8vw,18px); font-weight:700; color:rgba(255,255,255,0.84); margin-top:5px; letter-spacing:2px; }
+        .receipt-meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:0; background:#f0ece0; border-bottom:1px solid var(--receipt-line); }
+        .receipt-meta .form-group { margin-bottom:0; padding:11px 14px; border-right:1px solid var(--receipt-line); }
+        .receipt-meta .form-group:last-child { border-right:0; }
+        .receipt-meta label { display:block; color:var(--receipt-ink); font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-bottom:4px; }
+        .receipt-meta input, .receipt-meta select { background:transparent; border:0; border-bottom:1.5px solid rgba(27,61,46,0.2); border-radius:0; padding:4px 0; box-shadow:none; color:var(--receipt-ink); font-size:14px; font-weight:700; width:100%; }
+        .receipt-meta input:focus, .receipt-meta select:focus { border-bottom-color:var(--receipt-gold); outline:none; }
+
+        /* ══ Receipt table ══ */
+        .receipt-table { direction:rtl; width:100%; border-collapse:collapse; color:var(--receipt-ink); }
+        .receipt-table th { background:var(--receipt-sage); font-weight:800; font-size:10px; letter-spacing:0.6px; text-transform:uppercase; padding:10px 8px; color:var(--receipt-ink); border-bottom:2px solid rgba(27,61,46,0.2); border-right:1px solid rgba(27,61,46,0.09); vertical-align:middle; text-align:center; white-space:nowrap; }
+        .receipt-table th:last-child { border-right:0; }
+        .receipt-table td { padding:6px 8px; border-bottom:1px solid rgba(27,61,46,0.07); border-right:1px solid rgba(27,61,46,0.05); vertical-align:middle; text-align:center; }
+        .receipt-table td:last-child { border-right:0; }
+        .receipt-table tbody tr:nth-child(even) td { background:rgba(216,232,220,0.25); }
+        .receipt-table tbody tr:hover td { background:rgba(27,61,46,0.04); }
+
+        /* item name cell */
+        .item-name-cell { text-align:right; padding:8px 12px; }
+        .item-name-label { font-weight:800; font-size:14px; color:var(--receipt-ink); display:block; }
+        .item-code-label { font-size:10px; color:var(--receipt-gold); font-weight:700; letter-spacing:0.5px; }
+        .item-unit-badge { display:inline-block; font-size:10px; background:rgba(27,61,46,0.09); color:var(--receipt-ink); border-radius:4px; padding:1px 6px; margin-top:2px; }
+
+        /* qty stepper */
+        .qty-stepper { display:flex; align-items:center; justify-content:center; gap:4px; }
+        .qty-btn { width:26px; height:26px; border-radius:50%; border:1.5px solid rgba(27,61,46,0.25); background:rgba(27,61,46,0.07); color:var(--receipt-ink); font-size:16px; font-weight:800; line-height:0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.12s; flex-shrink:0; }
+        .qty-btn:hover { background:var(--receipt-ink); color:#fff; border-color:var(--receipt-ink); }
+        .qty-input { width:54px; border:1px solid rgba(27,61,46,0.2); border-radius:6px; padding:4px 6px; text-align:center; font-size:14px; font-weight:700; color:var(--receipt-ink); background:#fff; }
+        .qty-input:focus { outline:none; border-color:var(--receipt-gold); }
+
+        /* price + total */
+        .price-input { width:90px; border:1px solid rgba(27,61,46,0.2); border-radius:6px; padding:5px 8px; text-align:center; font-size:13px; font-weight:700; color:var(--receipt-ink); background:#fff; }
+        .price-input:focus { outline:none; border-color:var(--receipt-gold); }
+        .row-total-cell { font-weight:800; font-size:13px; color:var(--receipt-ink); white-space:nowrap; }
+        .row-total-cell.has-value { color:#163329; }
+
+        /* row actions */
+        .row-actions { display:flex; gap:4px; justify-content:center; align-items:center; }
+        .row-btn { width:24px; height:24px; border-radius:50%; font-size:14px; font-weight:800; line-height:0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.12s; }
+        .row-btn.clone-btn { background:rgba(27,61,46,0.1); color:var(--receipt-ink); border:1px solid rgba(27,61,46,0.2); }
+        .row-btn.clone-btn:hover { background:var(--receipt-ink); color:#fff; }
+        .row-btn.del-btn { background:rgba(180,83,74,0.08); color:#b4534a; border:1px solid rgba(180,83,74,0.2); }
+        .row-btn.del-btn:hover { background:#b4534a; color:#fff; }
+
+        /* footer totals */
+        .receipt-bottom { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:2px solid rgba(27,61,46,0.14); }
+        .receipt-bottom-item { padding:14px 16px; border-right:1px solid rgba(27,61,46,0.1); background:var(--receipt-cream); }
+        .receipt-bottom-item:last-child { border-right:0; background:linear-gradient(135deg,#163329,#245f49); color:#fff; }
+        .receipt-bottom-item span { display:block; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; opacity:0.62; margin-bottom:4px; }
+        .receipt-bottom-item strong { display:block; font-size:18px; font-weight:800; }
+        .table-reset-bar { padding:8px 12px; background:#f9f7f1; border-top:1px solid rgba(27,61,46,0.07); display:flex; gap:8px; justify-content:flex-end; }
+
+        /* ══ Pay panel ══ */
+        .pay-panel .form-group { margin-bottom:12px; }
+        .pay-summary { background:#f0f7f3; border:1px solid #c8dfd1; border-radius:8px; padding:12px 14px; margin:12px 0; }
+        .pay-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(27,61,46,0.08); font-size:13px; }
+        .pay-row:last-child { border-bottom:0; font-size:16px; font-weight:800; color:#163329; }
+        .pay-row.debt-row { color:#8b2222; }
+
+        /* ══ Store Account Cards ══ */
+        .store-accounts-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+        .store-account-card { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; transition:box-shadow 0.15s,transform 0.15s; }
+        .store-account-card:hover { box-shadow:0 4px 20px rgba(22,51,41,0.12); transform:translateY(-1px); }
+        .store-account-head { display:flex; align-items:center; gap:12px; padding:16px 18px; background:linear-gradient(135deg,#163329,#1f4a38); cursor:pointer; }
+        .store-account-icon { width:42px; height:42px; border-radius:50%; background:#b89a3a; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px; color:#163329; flex-shrink:0; }
+        .store-account-name { color:#fff; font-size:16px; font-weight:800; }
+        .store-account-badge { margin-left:auto; font-size:11px; padding:3px 8px; border-radius:20px; font-weight:700; }
+        .store-account-badge.clear { background:rgba(100,200,130,0.25); color:#4caf50; }
+        .store-account-badge.owed { background:rgba(255,100,100,0.25); color:#ff6b6b; }
+        .store-account-stats { display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid rgba(22,51,41,0.08); }
+        .store-account-stat { padding:12px 14px; border-right:1px solid rgba(22,51,41,0.08); }
+        .store-account-stat:last-child { border-right:0; }
+        .store-account-stat label { display:block; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#888; margin-bottom:3px; }
+        .store-account-stat strong { display:block; font-size:13px; font-weight:800; color:#1b3d2e; }
+        .store-account-stat.debt-stat strong { color:#8b2222; }
+        .store-account-toggle { padding:10px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background:#f9f7f1; border-top:1px solid rgba(22,51,41,0.07); font-size:12px; font-weight:700; color:#163329; }
+        .store-account-toggle:hover { background:#f0ece0; }
+        .store-account-detail { display:none; border-top:1px solid rgba(22,51,41,0.1); }
+        .store-account-detail.open { display:block; }
+
+        /* store detail inner */
+        .store-pay-panel { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; padding:14px 16px; background:#eef8ee; border-bottom:1px solid rgba(22,51,41,0.08); }
+        .store-pay-panel .form-group { margin-bottom:0; }
+        .store-tx-list { padding:0 14px 14px; max-height:420px; overflow-y:auto; }
+        .store-tx-item { border:1px solid rgba(22,51,41,0.09); border-radius:8px; padding:12px 14px; margin-top:10px; }
+        .store-tx-head { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+        .store-tx-ref { font-weight:800; color:#163329; font-size:14px; }
+        .store-tx-date { color:#888; font-size:12px; }
+        .store-tx-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px; }
+        .store-tx-table th { background:#f0ece0; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; padding:5px 8px; color:#163329; text-align:right; border-bottom:1px solid rgba(22,51,41,0.1); }
+        .store-tx-table td { padding:5px 8px; border-bottom:1px solid rgba(22,51,41,0.06); color:#333; text-align:right; }
+        .store-tx-table td:last-child { text-align:left; }
+        .store-tx-table tr:last-child td { border-bottom:0; }
+        .store-tx-totals { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#555; padding-top:6px; border-top:1px solid rgba(22,51,41,0.08); }
+        .store-tx-totals span strong { color:#163329; }
+        .store-tx-totals .debt-val strong { color:#8b2222; }
+        .store-tx-pay-log { margin-top:6px; font-size:11px; color:#777; line-height:1.7; }
+        .store-tx-notes { font-size:11px; color:#888; margin-top:4px; }
+
+        /* ══ Store filter tabs ══ */
+        .store-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+        .store-tab {
+            padding:8px 18px; border-radius:24px; font-size:13px; font-weight:700; cursor:pointer;
+            border:2px solid rgba(22,51,41,0.15); background:#fff; color:#163329;
+            transition:all 0.15s;
+        }
+        .store-tab:hover { border-color:#163329; background:#f0ece0; }
+        .store-tab.active { background:#163329; color:#fff; border-color:#163329; }
+        .store-tab.active.has-debt { background:#8b2222; border-color:#8b2222; }
+
+        /* ══ History panel ══ */
+        .history-panel { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; }
+        .history-panel-header { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:#f0ece0; border-bottom:1px solid rgba(22,51,41,0.1); }
+        .history-panel-title { font-size:15px; font-weight:800; color:#163329; }
+        .history-panel-sub { font-size:12px; color:#888; }
+        .history-pay-strip { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:end; padding:14px 20px; background:#eef8ee; border-bottom:1px solid rgba(22,51,41,0.08); }
+        .history-pay-strip.hidden { display:none; }
+        .history-pay-strip .form-group { margin-bottom:0; }
+        .history-tx-list { padding:14px 20px; max-height:520px; overflow-y:auto; }
+        .history-tx-item { border:1px solid rgba(22,51,41,0.09); border-radius:10px; padding:14px 16px; margin-bottom:12px; background:#fffdf8; }
+        .history-tx-item:last-child { margin-bottom:0; }
+        .history-tx-head { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+        .history-tx-ref { font-weight:800; color:#163329; font-size:14px; }
+        .history-tx-store { display:inline-block; background:#163329; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; margin-left:6px; }
+        .history-tx-date { color:#888; font-size:12px; }
+        .history-tx-table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px; }
+        .history-tx-table th { background:#f0ece0; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; padding:6px 10px; color:#163329; text-align:right; border-bottom:1px solid rgba(22,51,41,0.12); }
+        .history-tx-table td { padding:6px 10px; border-bottom:1px solid rgba(22,51,41,0.06); color:#333; text-align:right; vertical-align:middle; }
+        .history-tx-table td.code-cell { color:#b89a3a; font-weight:800; }
+        .history-tx-table tr:last-child td { border-bottom:0; }
+        .history-tx-totals { display:flex; gap:20px; flex-wrap:wrap; font-size:13px; color:#555; padding-top:8px; border-top:1px solid rgba(22,51,41,0.08); }
+        .history-tx-totals .lbl { font-size:10px; display:block; text-transform:uppercase; font-weight:800; letter-spacing:0.5px; color:#aaa; margin-bottom:2px; }
+        .history-tx-totals .val { font-weight:800; color:#163329; font-size:15px; }
+        .history-tx-totals .val.debt { color:#8b2222; }
+        .history-tx-totals .val.paid { color:#2d7a44; }
+        .history-pay-log { margin-top:6px; font-size:11px; color:#777; line-height:1.8; background:#f5f5f5; border-radius:6px; padding:6px 10px; }
+        .history-empty { padding:40px 20px; text-align:center; color:#aaa; font-size:14px; }
+        .history-tx-date-badge { background:#163329; color:#fff; font-size:12px; font-weight:800; padding:4px 12px; border-radius:20px; letter-spacing:0.3px; }
+        .history-section-label { font-size:9px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:#888; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid rgba(22,51,41,0.1); }
+
+        @media print {
+            body { background:#fff; }
+            .sidebar,.store-accounts-section,.kpi-bar,.wh-section-label,.pay-panel-card,.items-mgmt-panel,.no-print { display:none !important; }
+            .receipt-card { box-shadow:none !important; border:1px solid #1b3d2e !important; border-radius:0 !important; }
+            .supply-layout { display:block !important; }
+            .receipt-head,.receipt-table th,.receipt-bottom-item:last-child { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+    </style>
 </head>
-<body class="ltr inventory-theme">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Inventory Unit</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html" class="active"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="sales.html"><span class="menu-icon">S</span><span>Sales</span></a></li>
-                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="reports.html"><span class="menu-icon">R</span><span>Reports</span></a></li>
-            </ul>
-            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-        </aside>
-        <div class="main-content">
-            <nav class="navbar"><div class="navbar-title">Inventory Dashboard</div><div class="navbar-actions"><span class="scope-pill">inventory scope</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
-            <main class="content">
-                <div class="page-header">
-                    <div><h1 class="page-title">Warehouse overview</h1><p class="page-subtitle">Wholesale sales, paid totals, client balances, category activity, and recent transactions.</p></div>
-                    <div class="filter-controls"><button class="filter-btn active">This month</button><button class="filter-btn">Client</button><button class="filter-btn">Category</button><button class="filter-btn">Debt status</button></div>
-                </div>
-                <div class="workspace-grid">
-                    <div class="metric-card"><span>Total inventory sales</span><strong id="sales"></strong><small>Wholesale total</small></div>
-                    <div class="metric-card"><span>Total paid</span><strong id="paid"></strong><small>Received amount</small></div>
-                    <div class="metric-card"><span>Total debts</span><strong id="debts"></strong><small>Unpaid balances</small></div>
-                    <div class="metric-card"><span>Client balances</span><strong id="balances"></strong><small>Ongoing accounts</small></div>
-                    <div class="metric-card"><span>Inventory clients</span><strong id="clients"></strong><small>Wholesale accounts</small></div>
-                </div>
-                <div class="module-grid">
-                    <div class="card">
-                        <div class="card-header"><h2 class="card-title">Sales by category</h2></div>
-                        <div class="card-body table-wrapper"><table><thead><tr><th>Category</th><th>Type</th><th>Quantity</th><th>Unit price</th><th>Total</th></tr></thead><tbody id="categoryRows"></tbody></table></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><h2 class="card-title">Recent client balances</h2></div>
-                        <div class="card-body table-wrapper"><table><thead><tr><th>Client</th><th>Balance</th><th>Total sales</th><th>Paid</th></tr></thead><tbody id="clientRows"></tbody></table></div>
-                    </div>
-                </div>
-            </main>
+<body class="ltr">
+
+<div class="layout">
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-title">Warehouse</div>
+        <div class="sidebar-store-name" id="sidebarStoreName">المستودع</div>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="menu-item"><a href="home.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+        <li class="menu-item"><a href="dashboard.html" class="active"><span class="menu-icon">S</span><span>Supply</span></a></li>
+        <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Inventory</span></a></li>
+    </ul>
+    <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+</aside>
+<div class="main-content">
+
+<nav class="navbar">
+    <div class="navbar-title">Central Warehouse — Supply</div>
+    <div class="navbar-actions">
+        <span class="scope-pill">warehouse scope</span>
+        <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div>
+    </div>
+</nav>
+<main class="content">
+<div class="wh-page">
+
+    <!-- KPI -->
+    <div class="kpi-bar">
+        <div class="kpi-card"><span>Total supplied</span><strong id="kpiSupplied">0 IQD</strong><small>All stores combined</small></div>
+        <div class="kpi-card"><span>Total paid</span><strong id="kpiPaid">0 IQD</strong><small>Received from stores</small></div>
+        <div class="kpi-card debt"><span>Total outstanding</span><strong id="kpiDebt">0 IQD</strong><small>Still owed to warehouse</small></div>
+        <div class="kpi-card"><span>Transactions</span><strong id="kpiCount">0</strong><small>All supply records</small></div>
+    </div>
+
+    <!-- Store History -->
+    <div class="wh-section-label" id="historySection">Transaction History</div>
+    <div class="store-tabs" id="storeTabs"></div>
+    <div style="margin-top:12px;" class="history-panel">
+        <div class="history-panel-header">
+            <div>
+                <div class="history-panel-title" id="historyTitle">All stores — full history</div>
+                <div class="history-panel-sub" id="historySub">Showing all supply transactions</div>
+            </div>
+        </div>
+        <div class="history-pay-strip hidden" id="historyPayStrip">
+            <div class="form-group">
+                <label id="historyPayLabel">Record payment</label>
+                <input id="historyPayAmt" type="number" min="0" step="1000" placeholder="Amount">
+            </div>
+            <div class="form-group">
+                <label>Note</label>
+                <input id="historyPayNote" placeholder="Optional">
+            </div>
+            <button class="btn btn-success" onclick="recordHistoryPayment()">Pay</button>
+        </div>
+        <div class="history-tx-list" id="historyTxList">
+            <div class="history-empty">Select a store tab above or click a store card below to view its history.</div>
         </div>
     </div>
-    <script src="../js/api.js"></script>
-    <script src="../js/demo-data.js?v=arabic-en-1"></script>
-    <script>
-        if (!checkAuth()) throw new Error('Not authenticated');
-        loadShell('Inventory / Warehouse');
-        document.getElementById('sales').textContent = money(inventoryDemo.stats.sales);
-        document.getElementById('paid').textContent = money(inventoryDemo.stats.paid);
-        document.getElementById('debts').textContent = money(inventoryDemo.stats.debts);
-        document.getElementById('balances').textContent = money(inventoryDemo.stats.balances);
-        document.getElementById('clients').textContent = inventoryDemo.stats.clients;
-        document.getElementById('categoryRows').innerHTML = inventoryDemo.categories.map(item => `<tr><td>${item.category}</td><td>${item.type}</td><td>${item.quantity}</td><td>${money(item.unitPrice)}</td><td>${money(item.quantity * item.unitPrice)}</td></tr>`).join('');
-        document.getElementById('clientRows').innerHTML = inventoryDemo.clients.map(client => `<tr><td>${client.name}</td><td>${money(client.balance)}</td><td>${money(client.totalSales)}</td><td>${money(client.paid)}</td></tr>`).join('');
-    </script>
-    <script src="../js/i18n.js?v=arabic-en-2"></script>
+
+    <!-- Items Management -->
+    <div class="wh-section-label">Items Management</div>
+    <div class="items-mgmt-panel">
+        <div class="items-mgmt-header" onclick="toggleItemsMgmt()">
+            <h3>Item codes — set codes for each warehouse item</h3>
+            <span id="itemsMgmtToggle">▼ Open</span>
+        </div>
+        <div class="items-mgmt-body" id="itemsMgmtBody">
+            <div class="items-mgmt-grid" id="itemCodesGrid"></div>
+            <button class="btn btn-success" onclick="saveItemCodes()">Save codes</button>
+            <span id="codesSavedMsg" style="margin-left:10px;font-size:13px;color:#2d7a44;display:none;">✓ Saved</span>
+        </div>
+    </div>
+
+    <!-- Supply Form -->
+    <div class="wh-section-label">New Supply</div>
+    <div class="supply-layout">
+        <section class="receipt-card">
+            <div class="receipt-head">
+                <div class="receipt-brand">DLOVAN PARDA</div>
+                <div class="receipt-subbrand">المستودع المركزي &nbsp;|&nbsp; Warehouse Supply</div>
+            </div>
+            <div class="receipt-meta">
+                <div class="form-group">
+                    <label>Date / التاريخ</label>
+                    <input type="date" id="supplyDate">
+                </div>
+                <div class="form-group">
+                    <label>Store / المتجر</label>
+                    <select id="storeSelect" onchange="onStoreChange()">
+                        <option value="">— Select store —</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes / ملاحظات</label>
+                    <input id="supplyNotes" placeholder="Optional">
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:right;min-width:130px;">الصنف / Item</th>
+                            <th style="min-width:100px;">الكود / Code</th>
+                            <th style="min-width:130px;">الكمية / Qty</th>
+                            <th style="min-width:60px;">الوحدة</th>
+                            <th style="min-width:110px;">سعر الوحدة</th>
+                            <th style="min-width:100px;">المجموع</th>
+                            <th style="min-width:70px;">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplyRows"></tbody>
+                </table>
+            </div>
+            <div class="table-reset-bar no-print">
+                <button class="btn btn-small btn-outline" onclick="resetRows()">↺ Reset all rows</button>
+            </div>
+
+            <div class="receipt-bottom">
+                <div class="receipt-bottom-item">
+                    <span>Store prev. debt / دين سابق</span>
+                    <strong id="storeDebtDisplay">—</strong>
+                </div>
+                <div class="receipt-bottom-item">
+                    <span>Subtotal / المجموع</span>
+                    <strong id="subtotalDisplay">0 IQD</strong>
+                </div>
+                <div class="receipt-bottom-item">
+                    <span>Invoice total / الإجمالي</span>
+                    <strong id="totalDisplay">0 IQD</strong>
+                </div>
+            </div>
+        </section>
+
+        <aside class="card pay-panel-card no-print" style="align-self:start;">
+            <div class="card-header"><h2 class="card-title">Payment / الدفع</h2></div>
+            <div class="card-body pay-panel">
+                <div id="submitMsg" class="alert" style="display:none;"></div>
+                <div class="form-group">
+                    <label>Paid now / المدفوع</label>
+                    <input type="number" id="paidAmount" min="0" step="1000" placeholder="0" oninput="updatePaySummary()">
+                </div>
+                <div class="pay-summary">
+                    <div class="pay-row"><span>Invoice total</span><strong id="sumTotal">0 IQD</strong></div>
+                    <div class="pay-row"><span>Paid now</span><strong id="sumPaid">0 IQD</strong></div>
+                    <div class="pay-row debt-row"><span>Remaining debt</span><strong id="sumRemaining">0 IQD</strong></div>
+                </div>
+                <button class="btn btn-success" onclick="submitSupply('cash')" style="width:100%;margin-bottom:8px;">Save — Cash Supply</button>
+                <button class="btn btn-danger" onclick="submitSupply('debt')" style="width:100%;margin-bottom:8px;">Save — Full Debt</button>
+                <button class="btn btn-outline" onclick="window.print()" style="width:100%;">Print receipt</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Store Accounts -->
+    <div class="wh-section-label store-accounts-section">Store Accounts</div>
+    <div class="store-accounts-grid" id="storeAccountsGrid"></div>
+
+</div><!-- /.wh-page -->
+</main>
+</div><!-- /.main-content -->
+</div><!-- /.layout -->
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=wh-2"></script>
+<script>
+if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
+loadShell('Warehouse');
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const WH_SALES_KEY     = 'wh_sales_v1';
+const WH_INV_KEY       = 'wh_inv_v1';
+const WH_CODES_KEY     = 'wh_item_codes_v1';
+
+const WH_STORES = [
+    { id: 1, name: 'Store 1', icon: 'S1' },
+    { id: 2, name: 'Store 2', icon: 'S2' },
+    { id: 3, name: 'Store 3', icon: 'S3' },
+    { id: 4, name: 'Store 4', icon: 'S4' },
+    { id: 5, name: 'Store 5', icon: 'S5' },
+];
+
+// All items in metres except مزهري and حبل (pieces). شري renamed to شريط.
+const WH_ITEMS = [
+    { name: 'سكة',    unit: 'متر',  step: 0.1 },
+    { name: 'حبل',    unit: 'قطعة', step: 1   },
+    { name: 'مزهري',  unit: 'قطعة', step: 1   },
+    { name: 'شريط',   unit: 'متر',  step: 0.1 },
+    { name: 'بطن',    unit: 'متر',  step: 0.1 },
+    { name: 'رول',    unit: 'متر',  step: 0.1 },
+    { name: 'اويه',   unit: 'متر',  step: 0.1 },
+];
+
+// ─── Data helpers ─────────────────────────────────────────────────────────────
+
+function getWhSales() { return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]'); }
+function saveWhSales(arr) { localStorage.setItem(WH_SALES_KEY, JSON.stringify(arr)); }
+function addWhSale(sale) { const s = getWhSales(); s.unshift(sale); saveWhSales(s); }
+function updateWhSale(updated) {
+    const s = getWhSales();
+    const i = s.findIndex(x => x.id === updated.id);
+    if (i >= 0) { s[i] = updated; saveWhSales(s); }
+}
+
+function getItemCodes() { return JSON.parse(localStorage.getItem(WH_CODES_KEY) || '{}'); }
+function saveItemCodes_() { localStorage.setItem(WH_CODES_KEY, JSON.stringify(getCodesFromInputs())); }
+
+function getCodesFromInputs() {
+    const codes = {};
+    WH_ITEMS.forEach(item => {
+        const inp = document.getElementById('codeInput_' + item.name);
+        if (inp) codes[item.name] = inp.value.trim();
+    });
+    return codes;
+}
+
+function getWhInv() {
+    const def = {};
+    WH_ITEMS.forEach(i => { def[i.name] = { qty: 0, minQty: 10, unit: i.unit, log: [] }; });
+    const saved = JSON.parse(localStorage.getItem(WH_INV_KEY) || '{}');
+    WH_ITEMS.forEach(i => { if (saved[i.name]) def[i.name] = { ...def[i.name], ...saved[i.name] }; });
+    return def;
+}
+function saveWhInv(inv) { localStorage.setItem(WH_INV_KEY, JSON.stringify(inv)); }
+
+function deductWhStock(items, ref) {
+    const inv = getWhInv();
+    items.forEach(({ item, quantity }) => {
+        if (!inv[item] || !quantity) return;
+        inv[item].qty = Math.max(0, (inv[item].qty || 0) - Number(quantity));
+        inv[item].log = inv[item].log || [];
+        inv[item].log.unshift({ date: new Date().toISOString().slice(0,10), delta: -Number(quantity), ref, type: 'supply' });
+    });
+    saveWhInv(inv);
+}
+
+function storeStats(storeId) {
+    const sales = getWhSales().filter(s => String(s.storeId) === String(storeId));
+    return {
+        total:     sales.reduce((s, x) => s + Number(x.finalTotal || 0), 0),
+        paid:      sales.reduce((s, x) => s + Number(x.paid || 0), 0),
+        remaining: sales.reduce((s, x) => s + Number(x.remaining || 0), 0),
+        count:     sales.length,
+        sales
+    };
+}
+
+function esc(v) { return String(v||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function todayVal() { const n=new Date(); return new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+
+// ─── Items Management ─────────────────────────────────────────────────────────
+
+function toggleItemsMgmt() {
+    const body   = document.getElementById('itemsMgmtBody');
+    const toggle = document.getElementById('itemsMgmtToggle');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    toggle.textContent = isOpen ? '▼ Open' : '▲ Close';
+}
+
+function renderItemCodesGrid() {
+    const codes = getItemCodes();
+    document.getElementById('itemCodesGrid').innerHTML = WH_ITEMS.map(item => `
+        <div class="item-code-box">
+            <label>${esc(item.name)}</label>
+            <div class="unit-tag">${esc(item.unit)}</div>
+            <input id="codeInput_${esc(item.name)}" type="text" placeholder="e.g. SK-001" value="${esc(codes[item.name] || '')}">
+        </div>
+    `).join('');
+}
+
+function saveItemCodes() {
+    const codes = getCodesFromInputs();
+    localStorage.setItem(WH_CODES_KEY, JSON.stringify(codes));
+    const msg = document.getElementById('codesSavedMsg');
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    // refresh supply rows to show updated codes
+    refreshRowCodes();
+}
+
+function getItemCode(itemName) {
+    return getItemCodes()[itemName] || '';
+}
+
+function refreshRowCodes() {
+    document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
+        const nameLabel = row.querySelector('.item-name-label');
+        if (!nameLabel) return;
+        const codeCell = row.querySelector('.row-code-cell');
+        if (!codeCell) return;
+        const code = getItemCode(nameLabel.dataset.item);
+        codeCell.innerHTML = code ? `<span style="color:#b89a3a;font-weight:800;">${esc(code)}</span>` : '<span style="color:#ccc;">—</span>';
+    });
+}
+
+// ─── Receipt rows ─────────────────────────────────────────────────────────────
+
+function makeRow(item) {
+    const code = getItemCode(item.name);
+    return `
+        <tr data-item="${esc(item.name)}">
+            <td class="item-name-cell" style="text-align:right;">
+                <span class="item-name-label" data-item="${esc(item.name)}">${esc(item.name)}</span>
+                <span class="item-unit-badge">${esc(item.unit)}</span>
+            </td>
+            <td class="row-code-cell" style="color:#b89a3a;font-weight:800;font-size:12px;letter-spacing:0.5px;">${code ? esc(code) : '<span style="color:#ccc;">—</span>'}</td>
+            <td>
+                <div class="qty-stepper">
+                    <button class="qty-btn" onclick="stepQty(this, -${item.step})">−</button>
+                    <input class="qty-input" type="number" min="0" step="${item.step}" value="0" oninput="calcTotals()">
+                    <button class="qty-btn" onclick="stepQty(this, ${item.step})">+</button>
+                </div>
+            </td>
+            <td style="font-size:12px;color:#555;font-weight:700;">${esc(item.unit)}</td>
+            <td><input class="price-input" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
+            <td class="row-total-cell">—</td>
+            <td>
+                <div class="row-actions">
+                    <button class="row-btn clone-btn" title="Add another row of this item" onclick="cloneRow(this)">+</button>
+                    <button class="row-btn del-btn" title="Remove row" onclick="deleteRow(this)">×</button>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+function resetRows() {
+    document.getElementById('supplyRows').innerHTML = WH_ITEMS.map(makeRow).join('');
+    calcTotals();
+}
+
+function stepQty(btn, delta) {
+    const input = btn.closest('.qty-stepper').querySelector('.qty-input');
+    const step  = parseFloat(input.step) || 1;
+    let val     = parseFloat(input.value) || 0;
+    val = Math.max(0, parseFloat((val + delta).toFixed(4)));
+    input.value = val;
+    calcTotals();
+}
+
+function cloneRow(btn) {
+    const sourceRow = btn.closest('tr');
+    const itemName  = sourceRow.dataset.item;
+    const item      = WH_ITEMS.find(i => i.name === itemName);
+    if (!item) return;
+    sourceRow.insertAdjacentHTML('afterend', makeRow(item));
+    calcTotals();
+}
+
+function deleteRow(btn) {
+    const tbody = document.getElementById('supplyRows');
+    const rows  = tbody.querySelectorAll('tr');
+    if (rows.length <= 1) return;
+    btn.closest('tr').remove();
+    calcTotals();
+}
+
+function calcTotals() {
+    let sub = 0;
+    document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
+        const qty   = parseFloat(row.querySelector('.qty-input').value) || 0;
+        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const lt    = qty * price;
+        const totalCell = row.querySelector('.row-total-cell');
+        if (lt > 0) {
+            totalCell.textContent = money(lt);
+            totalCell.classList.add('has-value');
+        } else {
+            totalCell.textContent = '—';
+            totalCell.classList.remove('has-value');
+        }
+        sub += lt;
+    });
+    document.getElementById('subtotalDisplay').textContent = money(sub);
+    document.getElementById('totalDisplay').textContent    = money(sub);
+    document.getElementById('sumTotal').textContent        = money(sub);
+    updatePaySummary();
+}
+
+function updatePaySummary() {
+    let sub = 0;
+    document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
+        sub += (parseFloat(row.querySelector('.qty-input').value)||0) * (parseFloat(row.querySelector('.price-input').value)||0);
+    });
+    const paid = Math.min(parseFloat(document.getElementById('paidAmount').value) || 0, sub);
+    document.getElementById('sumPaid').textContent      = money(paid);
+    document.getElementById('sumRemaining').textContent = money(Math.max(sub - paid, 0));
+}
+
+function onStoreChange() {
+    const storeId = document.getElementById('storeSelect').value;
+    const debt = storeId ? storeStats(storeId).remaining : 0;
+    document.getElementById('storeDebtDisplay').textContent = storeId ? money(debt) : '—';
+}
+
+// ─── Submit ──────────────────────────────────────────────────────────────────
+
+function submitSupply(mode) {
+    const msg = document.getElementById('submitMsg');
+    msg.style.display = 'none';
+
+    const storeId = document.getElementById('storeSelect').value;
+    if (!storeId) {
+        msg.textContent = 'Please select a store before saving.';
+        msg.className = 'alert alert-danger';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const codes  = getItemCodes();
+    const items  = [];
+    let subtotal = 0;
+
+    document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
+        const itemName = row.dataset.item;
+        const qty   = parseFloat(row.querySelector('.qty-input').value) || 0;
+        const unitEl= row.querySelector('.item-unit-badge');
+        const unit  = unitEl ? unitEl.textContent : '';
+        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const lt    = qty * price;
+        if (qty > 0 && price > 0) {
+            items.push({ item: itemName, code: codes[itemName] || '', quantity: qty, unit, price, lineTotal: lt });
+            subtotal += lt;
+        }
+    });
+
+    if (!items.length || subtotal <= 0) {
+        msg.textContent = 'Add at least one item with quantity and price.';
+        msg.className = 'alert alert-danger';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const storeName = WH_STORES.find(s => String(s.id) === String(storeId))?.name || 'Store';
+    const isDebt    = mode === 'debt';
+    const paid      = isDebt ? 0 : Math.min(parseFloat(document.getElementById('paidAmount').value) || 0, subtotal);
+    const remaining = Math.max(subtotal - paid, 0);
+    const status    = remaining <= 0 ? 'Paid' : (paid > 0 ? 'Partial' : 'Debt');
+    const id        = Date.now();
+    const reference = (isDebt ? 'WHD-' : 'WH-') + id;
+
+    const sale = {
+        id, reference, type: isDebt ? 'debt' : 'cash',
+        storeId: Number(storeId), storeName,
+        date: document.getElementById('supplyDate').value || todayVal(),
+        items, subtotal, finalTotal: subtotal, paid, remaining, status,
+        notes: document.getElementById('supplyNotes').value.trim(),
+        payments: paid > 0 ? [{ date: todayVal(), amount: paid, note: 'Initial payment' }] : []
+    };
+
+    addWhSale(sale);
+    deductWhStock(items, reference);
+
+    msg.textContent = `${reference} saved for ${storeName}. Status: ${status}`;
+    msg.className = 'alert alert-success';
+    msg.style.display = 'block';
+
+    document.getElementById('paidAmount').value  = '';
+    document.getElementById('supplyNotes').value = '';
+    resetRows();
+    onStoreChange();
+    refreshKPI();
+    initStoreTabs();
+    renderHistoryPanel();
+    renderStoreAccounts();
+}
+
+// ─── KPI ──────────────────────────────────────────────────────────────────────
+
+function refreshKPI() {
+    const all       = getWhSales();
+    const total     = all.reduce((s, x) => s + Number(x.finalTotal || 0), 0);
+    const paid      = all.reduce((s, x) => s + Number(x.paid || 0), 0);
+    const remaining = all.reduce((s, x) => s + Number(x.remaining || 0), 0);
+    document.getElementById('kpiSupplied').textContent = money(total);
+    document.getElementById('kpiPaid').textContent     = money(paid);
+    document.getElementById('kpiDebt').textContent     = money(remaining);
+    document.getElementById('kpiCount').textContent    = all.length;
+}
+
+// ─── Store History Panel ──────────────────────────────────────────────────────
+
+let activeHistoryStore = null; // null = all
+
+function initStoreTabs() {
+    const tabs = document.getElementById('storeTabs');
+    tabs.innerHTML = `<button class="store-tab active" onclick="selectHistoryStore(null)">All stores</button>` +
+        WH_STORES.map(s => {
+            const stats = storeStats(s.id);
+            const hasDebt = stats.remaining > 0;
+            return `<button class="store-tab${hasDebt?' has-debt':''}" id="tab${s.id}" onclick="selectHistoryStore(${s.id})">${esc(s.name)}${stats.count ? ` (${stats.count})` : ''}</button>`;
+        }).join('');
+}
+
+function selectHistoryStore(storeId) {
+    activeHistoryStore = storeId;
+
+    // update tab active state
+    document.querySelectorAll('.store-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = storeId ? document.getElementById('tab' + storeId) : document.querySelector('.store-tab');
+    if (activeTab) activeTab.classList.add('active');
+
+    renderHistoryPanel();
+
+    // scroll to history section
+    document.getElementById('historySection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderHistoryPanel() {
+    const sid   = activeHistoryStore;
+    const store = sid ? WH_STORES.find(s => s.id === sid) : null;
+    const all   = getWhSales();
+    const sales = sid ? all.filter(s => String(s.storeId) === String(sid)) : all;
+
+    // header
+    document.getElementById('historyTitle').textContent = store
+        ? `${store.name} — transaction history`
+        : 'All stores — full history';
+    document.getElementById('historySub').textContent = `${sales.length} transaction${sales.length !== 1 ? 's' : ''}${store ? '' : ' across all stores'}`;
+
+    // payment strip — only show for a specific store that has debt
+    const strip = document.getElementById('historyPayStrip');
+    if (store) {
+        const debt = sales.reduce((s, x) => s + Number(x.remaining || 0), 0);
+        if (debt > 0) {
+            strip.classList.remove('hidden');
+            document.getElementById('historyPayLabel').textContent = `Record payment — ${store.name} (owes ${money(debt)})`;
+        } else {
+            strip.classList.add('hidden');
+        }
+    } else {
+        strip.classList.add('hidden');
+    }
+
+    // transaction list
+    const list = document.getElementById('historyTxList');
+    if (!sales.length) {
+        list.innerHTML = `<div class="history-empty">${store ? `No transactions yet for ${esc(store.name)}.` : 'No supply transactions yet.'}</div>`;
+        return;
+    }
+
+    list.innerHTML = sales.map(s => {
+        const itemRows = (s.items || []).map(i => `
+            <tr>
+                <td style="font-weight:700;text-align:right;">${esc(i.item)}</td>
+                <td class="code-cell">${i.code ? esc(i.code) : '<span style="color:#ccc;">—</span>'}</td>
+                <td>${Number(i.quantity).toLocaleString('en-US').replace(/,/g,'.')}</td>
+                <td>${esc(i.unit)}</td>
+                <td>${money(i.price)}</td>
+                <td style="font-weight:800;">${money(i.lineTotal)}</td>
+            </tr>
+        `).join('');
+
+        const storeBadge = !sid ? `<span class="history-tx-store">${esc(s.storeName)}</span>` : '';
+        const fmtDate = s.date ? new Date(s.date + 'T00:00:00').toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' }) : '—';
+
+        return `
+            <div class="history-tx-item">
+
+                <!-- ── Transaction header ── -->
+                <div class="history-tx-head">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <div class="history-tx-date-badge">${esc(fmtDate)}</div>
+                        ${storeBadge}
+                    </div>
+                    ${statusBadge(s.status)}
+                </div>
+                <div style="font-size:12px;color:#888;margin:-4px 0 12px;font-weight:600;">Ref: <span style="color:#163329;font-weight:800;">${esc(s.reference)}</span>${s.notes ? ` &nbsp;·&nbsp; Note: ${esc(s.notes)}` : ''}</div>
+
+                <!-- ── Items supplied ── -->
+                <div class="history-section-label">Items Supplied / الأصناف المورَّدة</div>
+                <table class="history-tx-table">
+                    <thead>
+                        <tr>
+                            <th>الصنف / Item</th>
+                            <th>الكود / Code</th>
+                            <th>الكمية / Qty</th>
+                            <th>الوحدة / Unit</th>
+                            <th>سعر الوحدة / Price</th>
+                            <th>المجموع / Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemRows}</tbody>
+                </table>
+
+                <!-- ── Financial summary ── -->
+                <div class="history-section-label" style="margin-top:12px;">Financial Summary / الملخص المالي</div>
+                <div class="history-tx-totals">
+                    <div><span class="lbl">Invoice total / الإجمالي</span><span class="val">${money(s.finalTotal)}</span></div>
+                    <div><span class="lbl">Paid / المدفوع</span><span class="val paid">${money(s.paid)}</span></div>
+                    <div><span class="lbl">Remaining debt / المتبقي</span><span class="val ${Number(s.remaining)>0?'debt':''}">${money(s.remaining)}</span></div>
+                    <div><span class="lbl">Type / نوع</span><span style="font-size:13px;font-weight:800;color:#555;">${s.type === 'debt' ? 'Credit / دين' : 'Cash / نقدي'}</span></div>
+                </div>
+
+                <!-- ── Payment history ── -->
+                ${(s.payments||[]).length ? `
+                    <div class="history-section-label" style="margin-top:12px;">Payment History / سجل الدفعات</div>
+                    <div class="history-pay-log">
+                        ${(s.payments||[]).map((p,pi) => `
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(22,51,41,0.06);">
+                                <span style="color:#555;">Payment ${pi+1} &nbsp;·&nbsp; ${esc(p.date)}</span>
+                                <span style="font-weight:800;color:#2d7a44;">${money(p.amount)}${p.note ? ` <span style="color:#888;font-weight:400;">— ${esc(p.note)}</span>` : ''}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+            </div>
+        `;
+    }).join('');
+}
+
+function recordHistoryPayment() {
+    const storeId = activeHistoryStore;
+    if (!storeId) return;
+    const amtInput  = document.getElementById('historyPayAmt');
+    const noteInput = document.getElementById('historyPayNote');
+    let amount      = parseFloat(amtInput.value) || 0;
+    if (amount <= 0) { amtInput.focus(); return; }
+
+    const note  = noteInput.value.trim();
+    const sales = getWhSales();
+    sales
+        .filter(s => String(s.storeId) === String(storeId) && Number(s.remaining || 0) > 0)
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+        .forEach(sale => {
+            if (amount <= 0) return;
+            const apply    = Math.min(amount, Number(sale.remaining || 0));
+            sale.paid      = Number(sale.paid || 0) + apply;
+            sale.remaining = Math.max(Number(sale.finalTotal || 0) - sale.paid, 0);
+            sale.status    = sale.remaining <= 0 ? 'Paid' : 'Partial';
+            sale.payments  = sale.payments || [];
+            sale.payments.push({ date: todayVal(), amount: apply, note });
+            amount -= apply;
+        });
+    saveWhSales(sales);
+    amtInput.value  = '';
+    noteInput.value = '';
+    refreshKPI();
+    initStoreTabs();
+    renderHistoryPanel();
+    renderStoreAccounts();
+}
+
+// ─── Store Account Cards ──────────────────────────────────────────────────────
+
+function renderStoreAccounts() {
+    const grid = document.getElementById('storeAccountsGrid');
+    grid.innerHTML = WH_STORES.map(store => {
+        const stats   = storeStats(store.id);
+        const hasDebt = stats.remaining > 0;
+        return `
+            <div class="store-account-card" onclick="selectHistoryStore(${store.id})" style="cursor:pointer;">
+                <div class="store-account-head">
+                    <div class="store-account-icon">${esc(store.icon)}</div>
+                    <div class="store-account-name">${esc(store.name)}</div>
+                    <div class="store-account-badge ${hasDebt ? 'owed' : 'clear'}">${hasDebt ? 'Has debt' : 'Clear'}</div>
+                </div>
+                <div class="store-account-stats">
+                    <div class="store-account-stat"><label>Supplied</label><strong>${money(stats.total)}</strong></div>
+                    <div class="store-account-stat"><label>Paid</label><strong>${money(stats.paid)}</strong></div>
+                    <div class="store-account-stat ${hasDebt ? 'debt-stat' : ''}"><label>Remaining</label><strong>${money(stats.remaining)}</strong></div>
+                </div>
+                <div class="store-account-toggle">
+                    <span>${stats.count} transaction${stats.count !== 1 ? 's' : ''}</span>
+                    <span style="color:#b89a3a;">▲ View history above</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────────
+
+function initPage() {
+    document.getElementById('supplyDate').value = todayVal();
+
+    const sel = document.getElementById('storeSelect');
+    WH_STORES.forEach(s => {
+        sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${esc(s.name)}</option>`);
+    });
+
+    renderItemCodesGrid();
+    resetRows();
+    refreshKPI();
+    initStoreTabs();
+    renderHistoryPanel();
+    renderStoreAccounts();
+}
+
+initPage();
+</script>
+<script src="../js/i18n.js?v=wh-2"></script>
 </body>
 </html>
