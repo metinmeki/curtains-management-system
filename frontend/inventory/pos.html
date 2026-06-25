@@ -1,0 +1,454 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse POS - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <style>
+        /* ══ Premium Ledger Receipt Style ══ */
+        .receipt-card {
+            --receipt-ink:   #1b3d2e;
+            --receipt-gold:  #b89a3a;
+            --receipt-cream: #fdf9f0;
+            --receipt-sage:  #d8e8dc;
+            --receipt-line:  rgba(27,61,46,0.12);
+            background: var(--receipt-cream);
+            border: 1px solid rgba(27,61,46,0.14);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 10px 32px rgba(27,61,46,0.10), 0 28px 60px rgba(27,61,46,0.07);
+        }
+        .receipt-head {
+            position: relative; text-align: center;
+            background: linear-gradient(148deg,#163329 0%,#1f4a38 45%,#265c47 100%);
+            padding: 32px 24px 26px; overflow: hidden;
+        }
+        .receipt-head::before {
+            content:""; position:absolute; top:-44px; right:-44px; width:150px; height:150px;
+            border-radius:50%; border:2px solid rgba(184,154,58,0.15); pointer-events:none;
+        }
+        .receipt-head::after {
+            content:""; position:absolute; bottom:0; left:0; right:0; height:3px;
+            background:linear-gradient(90deg,transparent 5%,#b89a3a 30%,#d4b84e 50%,#b89a3a 70%,transparent 95%);
+        }
+        .receipt-brand { font-size:clamp(26px,4.5vw,44px); letter-spacing:8px; font-weight:900; color:#fff; line-height:1.1; text-shadow:0 2px 12px rgba(0,0,0,0.25); }
+        .receipt-subbrand { font-size:clamp(14px,2vw,22px); font-weight:700; color:rgba(255,255,255,0.84); margin-top:6px; letter-spacing:2px; }
+        .receipt-meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0; background:#f0ece0; border-bottom:1px solid var(--receipt-line); }
+        .receipt-meta .form-group { margin-bottom:0; padding:13px 16px 11px; border-right:1px solid var(--receipt-line); }
+        .receipt-meta .form-group:last-child { border-right:0; }
+        .receipt-meta label { display:block; color:var(--receipt-ink); font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-bottom:5px; }
+        .receipt-meta input, .receipt-meta select { background:transparent; border:0; border-bottom:1.5px solid rgba(27,61,46,0.2); border-radius:0; padding:4px 0 4px; box-shadow:none; color:var(--receipt-ink); font-size:14px; font-weight:700; width:100%; }
+        .receipt-meta input:focus, .receipt-meta select:focus { border-bottom-color:var(--receipt-gold); outline:none; }
+        .receipt-table { direction:rtl; table-layout:fixed; width:100%; border-collapse:collapse; color:var(--receipt-ink); }
+        .receipt-table th { background:var(--receipt-sage); font-weight:800; font-size:10px; letter-spacing:0.6px; text-transform:uppercase; padding:12px 6px; color:var(--receipt-ink); border-bottom:2px solid rgba(27,61,46,0.2); border-right:1px solid rgba(27,61,46,0.09); white-space:normal; word-break:keep-all; vertical-align:middle; }
+        .receipt-table th:last-child { border-right:0; }
+        .receipt-table td { height:54px; padding:0; border-bottom:1px solid rgba(27,61,46,0.07); border-right:1px solid rgba(27,61,46,0.05); vertical-align:middle; text-align:center; }
+        .receipt-table td:last-child { border-right:0; }
+        .receipt-table tbody tr:nth-child(even) td { background:rgba(216,232,220,0.28); }
+        .receipt-table tbody tr:hover td { background:rgba(27,61,46,0.04); }
+        .receipt-table input, .receipt-table select { border:0; box-shadow:none; border-radius:0; min-width:0; width:100%; height:100%; padding:8px 5px; background:transparent; color:var(--receipt-ink); text-align:center; font-weight:600; font-size:13px; }
+        .receipt-table input:focus, .receipt-table select:focus { outline:none; background:rgba(184,154,58,0.06); }
+        .receipt-table input::placeholder { color:rgba(27,61,46,0.28); font-weight:400; }
+        .receipt-table .row-unit { color:rgba(27,61,46,0.55); font-size:11px; }
+        .receipt-table .row-total { font-weight:800; font-size:13px; }
+        .receipt-actions-head, .receipt-action-cell { width:44px; background:rgba(216,232,220,0.45); padding:0; text-align:center; vertical-align:middle; border-right:0 !important; }
+        .receipt-row-actions { direction:ltr; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; height:54px; width:100%; padding:4px; }
+        .receipt-action-btn { display:inline-flex; align-items:center; justify-content:center; min-width:24px; width:24px; height:24px; padding:0; border-radius:50%; font-size:16px; font-weight:800; line-height:0; transition:background 0.15s,color 0.15s; }
+        .receipt-action-btn.delete-row-btn { background:rgba(180,83,74,0.08); color:#b4534a; border:1px solid rgba(180,83,74,0.2); }
+        .receipt-action-btn.delete-row-btn:hover { background:#b4534a; color:#fff; }
+        .receipt-bottom { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:2px solid rgba(27,61,46,0.14); }
+        .receipt-bottom-item { padding:16px 18px; border-right:1px solid rgba(27,61,46,0.1); background:var(--receipt-cream); }
+        .receipt-bottom-item:last-child { border-right:0; background:linear-gradient(135deg,#163329,#245f49); color:#fff; }
+        .receipt-bottom-item span { display:block; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; opacity:0.62; margin-bottom:5px; }
+        .receipt-bottom-item strong { display:block; font-size:19px; font-weight:800; }
+        .pay-panel { display:grid; gap:12px; }
+        .pay-summary { background:#f0f7f3; border:1px solid #c8dfd1; border-radius:10px; padding:16px; }
+        .pay-summary-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(27,61,46,0.08); }
+        .pay-summary-row:last-child { border-bottom:0; }
+        .pay-summary-row.total { font-size:18px; font-weight:800; color:#163329; }
+        .pay-summary-row.debt { color:#c0392b; font-weight:700; }
+        @media (max-width:900px) { .receipt-bottom { grid-template-columns:1fr; } }
+        @media print {
+            body { background:#fff; }
+            .sidebar,.navbar,.page-header,.two-column > aside,.receipt-action-cell,.receipt-actions-head { display:none !important; }
+            .layout,.main-content,.content,.two-column { display:block !important; height:auto !important; overflow:visible !important; padding:0 !important; margin:0 !important; }
+            .receipt-card { width:100% !important; max-width:none !important; border:1px solid #1b3d2e !important; border-radius:0 !important; box-shadow:none !important; }
+            .receipt-head { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .receipt-table th { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .receipt-bottom-item:last-child { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+    </style>
+</head>
+<body class="ltr">
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="sidebar-title">المستودع</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="pos.html" class="active"><span class="menu-icon">P</span><span>POS Supply</span></a></li>
+            <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debt Supply</span></a></li>
+            <li class="menu-item"><a href="clients.html"><span class="menu-icon">S</span><span>Store Accounts</span></a></li>
+            <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Inventory</span></a></li>
+        </ul>
+        <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+    </aside>
+    <div class="main-content">
+        <nav class="navbar">
+            <div class="navbar-title">Warehouse POS</div>
+            <div class="navbar-actions"><span class="scope-pill">warehouse supply</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
+        </nav>
+        <main class="content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Supply to Store — نقدي</h1>
+                    <p class="page-subtitle">Select a store, add warehouse items, set quantities and prices, then save the supply transaction.</p>
+                </div>
+                <button class="btn btn-outline" onclick="window.print()">Print receipt</button>
+            </div>
+
+            <div class="two-column">
+                <section class="card receipt-card">
+                    <div class="receipt-head">
+                        <div class="receipt-brand">DLOVAN PARDA</div>
+                        <div class="receipt-subbrand">المستودع المركزي &nbsp;|&nbsp; Central Warehouse</div>
+                    </div>
+                    <div class="receipt-meta">
+                        <div class="form-group">
+                            <label>Date / التاريخ</label>
+                            <input type="date" id="supplyDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Store / المتجر</label>
+                            <select id="storeSelect" onchange="onStoreChange()">
+                                <option value="">— Select store —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes / ملاحظات</label>
+                            <input id="supplyNotes" placeholder="Optional notes">
+                        </div>
+                    </div>
+                    <div class="card-body table-wrapper">
+                        <table class="receipt-table">
+                            <colgroup>
+                                <col style="width:28%">
+                                <col style="width:14%">
+                                <col style="width:12%">
+                                <col style="width:16%">
+                                <col style="width:22%">
+                                <col style="width:8%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>الصنف / Item</th>
+                                    <th>الكمية / Qty</th>
+                                    <th>الوحدة</th>
+                                    <th>سعر الوحدة</th>
+                                    <th>المجموع</th>
+                                    <th class="receipt-actions-head">+</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplyRows"></tbody>
+                        </table>
+                    </div>
+                    <div class="receipt-bottom">
+                        <div class="receipt-bottom-item">
+                            <span>Store prev. debt / دين سابق</span>
+                            <strong id="storeDebtDisplay">0 IQD</strong>
+                        </div>
+                        <div class="receipt-bottom-item">
+                            <span>Subtotal / المجموع</span>
+                            <strong id="subtotalDisplay">0 IQD</strong>
+                        </div>
+                        <div class="receipt-bottom-item">
+                            <span>Invoice total / الإجمالي</span>
+                            <strong id="totalDisplay">0 IQD</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="card" style="min-width:0;align-self:start;">
+                    <div class="card-header"><h2 class="card-title">Payment / الدفع</h2></div>
+                    <div class="card-body">
+                        <div id="submitMsg" class="alert" style="display:none;margin-bottom:12px;"></div>
+                        <div class="pay-panel">
+                            <div class="form-group">
+                                <label>Paid amount / المبلغ المدفوع</label>
+                                <input type="number" id="paidAmount" min="0" step="1000" placeholder="0" oninput="updatePaySummary()">
+                            </div>
+                            <div class="pay-summary">
+                                <div class="pay-summary-row"><span>Invoice total</span><strong id="sumTotal">0 IQD</strong></div>
+                                <div class="pay-summary-row"><span>Paid</span><strong id="sumPaid">0 IQD</strong></div>
+                                <div class="pay-summary-row total debt"><span>Remaining / Debt</span><strong id="sumRemaining">0 IQD</strong></div>
+                            </div>
+                            <button class="btn btn-success" onclick="submitSupply()">Save &amp; Record Supply</button>
+                            <button class="btn btn-outline" onclick="window.print()">Print receipt</button>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header">
+                    <h2 class="card-title">Recent warehouse supplies</h2>
+                    <select id="historyFilter" onchange="renderHistory()" style="width:auto;padding:6px 12px;">
+                        <option value="">All stores</option>
+                    </select>
+                </div>
+                <div class="card-body table-wrapper">
+                    <table>
+                        <thead><tr><th>Reference</th><th>Date</th><th>Store</th><th>Items</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th></tr></thead>
+                        <tbody id="historyRows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=wh-1"></script>
+<script>
+if (!checkAuth()) throw new Error('Not authenticated');
+loadShell('Warehouse');
+
+// ─── Warehouse Data Layer ────────────────────────────────────────────────────
+
+const WH_SALES_KEY = 'wh_sales_v1';
+const WH_INV_KEY   = 'wh_inv_v1';
+
+const WH_STORES = [
+    { id: 1, name: 'Store 1' },
+    { id: 2, name: 'Store 2' },
+    { id: 3, name: 'Store 3' },
+    { id: 4, name: 'Store 4' },
+];
+
+const WH_ITEMS = [
+    { name: 'سكة',   unit: 'قطعة', step: 1 },
+    { name: 'حبل',   unit: 'قطعة', step: 1 },
+    { name: 'مزهري', unit: 'قطعة', step: 1 },
+    { name: 'شري',   unit: 'متر',  step: 0.1 },
+    { name: 'بطن',   unit: 'متر',  step: 0.1 },
+    { name: 'رول',   unit: 'قطعة', step: 1 },
+    { name: 'اويه',  unit: 'قطعة', step: 1 },
+];
+
+function getWhSales() { return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]'); }
+function saveWhSales(arr) { localStorage.setItem(WH_SALES_KEY, JSON.stringify(arr)); }
+function addWhSale(sale) { const s = getWhSales(); s.unshift(sale); saveWhSales(s); }
+
+function getWhInv() {
+    const def = {};
+    WH_ITEMS.forEach(i => { def[i.name] = { qty: 0, minQty: 10, unit: i.unit, log: [] }; });
+    const saved = JSON.parse(localStorage.getItem(WH_INV_KEY) || '{}');
+    WH_ITEMS.forEach(i => { if (saved[i.name]) def[i.name] = { ...def[i.name], ...saved[i.name] }; });
+    return def;
+}
+function saveWhInv(inv) { localStorage.setItem(WH_INV_KEY, JSON.stringify(inv)); }
+
+function deductWhStock(items, ref) {
+    const inv = getWhInv();
+    items.forEach(({ item, quantity }) => {
+        if (!inv[item] || !quantity) return;
+        inv[item].qty = Math.max(0, (inv[item].qty || 0) - Number(quantity));
+        inv[item].log = inv[item].log || [];
+        inv[item].log.unshift({ date: new Date().toISOString().slice(0,10), delta: -Number(quantity), ref, type: 'supply' });
+    });
+    saveWhInv(inv);
+}
+
+function getStorePrevDebt(storeId) {
+    return getWhSales()
+        .filter(s => String(s.storeId) === String(storeId))
+        .reduce((sum, s) => sum + Number(s.remaining || 0), 0);
+}
+
+function esc(v) { return String(v||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function todayVal() { const n=new Date(); return new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+
+// ─── UI Init ────────────────────────────────────────────────────────────────
+
+function initPage() {
+    document.getElementById('supplyDate').value = todayVal();
+
+    const storeSelect = document.getElementById('storeSelect');
+    WH_STORES.forEach(s => {
+        storeSelect.insertAdjacentHTML('beforeend', `<option value="${s.id}">${esc(s.name)}</option>`);
+    });
+
+    const historyFilter = document.getElementById('historyFilter');
+    WH_STORES.forEach(s => {
+        historyFilter.insertAdjacentHTML('beforeend', `<option value="${s.id}">${esc(s.name)}</option>`);
+    });
+
+    addRow();
+    renderHistory();
+}
+
+// ─── Receipt Rows ────────────────────────────────────────────────────────────
+
+function itemOptions(selectedName) {
+    return WH_ITEMS.map(i =>
+        `<option value="${esc(i.name)}" data-unit="${esc(i.unit)}" data-step="${i.step}" ${i.name === selectedName ? 'selected' : ''}>${esc(i.name)}</option>`
+    ).join('');
+}
+
+function addRow() {
+    document.getElementById('supplyRows').insertAdjacentHTML('beforeend', `
+        <tr>
+            <td><select class="row-item" onchange="syncRow(this)">${itemOptions('')}</select></td>
+            <td><input class="row-qty" type="number" min="0" step="1" value="1" oninput="calcTotals()"></td>
+            <td><input class="row-unit" type="text" readonly tabindex="-1" style="color:rgba(27,61,46,0.55);font-size:11px;"></td>
+            <td><input class="row-price" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
+            <td class="row-total" style="font-weight:800;">—</td>
+            <td class="receipt-action-cell"><div class="receipt-row-actions"><button class="receipt-action-btn delete-row-btn" onclick="removeRow(this)" title="Remove row">×</button></div></td>
+        </tr>
+    `);
+    const rows = document.getElementById('supplyRows').querySelectorAll('tr');
+    const lastRow = rows[rows.length - 1];
+    syncRow(lastRow.querySelector('.row-item'));
+}
+
+function syncRow(select) {
+    const row = select.closest('tr');
+    const opt = select.selectedOptions[0];
+    const unit = opt ? opt.dataset.unit : '';
+    const step = opt ? opt.dataset.step : 1;
+    row.querySelector('.row-unit').value = unit;
+    row.querySelector('.row-qty').step = step;
+    calcTotals();
+}
+
+function removeRow(btn) {
+    const rows = document.getElementById('supplyRows').querySelectorAll('tr');
+    if (rows.length <= 1) return;
+    btn.closest('tr').remove();
+    calcTotals();
+}
+
+function calcTotals() {
+    let subtotal = 0;
+    document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
+        const price = parseFloat(row.querySelector('.row-price').value) || 0;
+        const lineTotal = qty * price;
+        row.querySelector('.row-total').textContent = lineTotal > 0 ? money(lineTotal) : '—';
+        subtotal += lineTotal;
+    });
+    document.getElementById('subtotalDisplay').textContent = money(subtotal);
+    document.getElementById('totalDisplay').textContent = money(subtotal);
+    document.getElementById('sumTotal').textContent = money(subtotal);
+    updatePaySummary();
+}
+
+function updatePaySummary() {
+    const total = parseFloat(document.getElementById('subtotalDisplay').textContent.replace(/[^0-9.]/g,'')) || 0;
+    const paid  = parseFloat(document.getElementById('paidAmount').value) || 0;
+    const capped = Math.min(paid, total);
+    const remaining = Math.max(total - capped, 0);
+    document.getElementById('sumPaid').textContent = money(capped);
+    document.getElementById('sumRemaining').textContent = money(remaining);
+}
+
+function onStoreChange() {
+    const storeId = document.getElementById('storeSelect').value;
+    const debt = storeId ? getStorePrevDebt(storeId) : 0;
+    document.getElementById('storeDebtDisplay').textContent = money(debt);
+}
+
+// ─── Submit ──────────────────────────────────────────────────────────────────
+
+function submitSupply() {
+    const msg = document.getElementById('submitMsg');
+    msg.style.display = 'none';
+
+    const storeId = document.getElementById('storeSelect').value;
+    if (!storeId) {
+        msg.textContent = 'Please select a store before saving.';
+        msg.className = 'alert alert-danger';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const items = [];
+    let subtotal = 0;
+    document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
+        const itemName = row.querySelector('.row-item').value;
+        const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
+        const unit = row.querySelector('.row-unit').value;
+        const price = parseFloat(row.querySelector('.row-price').value) || 0;
+        const lineTotal = qty * price;
+        if (qty > 0 && price > 0) {
+            items.push({ item: itemName, quantity: qty, unit, price, lineTotal });
+            subtotal += lineTotal;
+        }
+    });
+
+    if (items.length === 0 || subtotal <= 0) {
+        msg.textContent = 'Add at least one item with quantity and price before saving.';
+        msg.className = 'alert alert-danger';
+        msg.style.display = 'block';
+        return;
+    }
+
+    const storeName = WH_STORES.find(s => String(s.id) === String(storeId))?.name || 'Store';
+    const paid = Math.min(parseFloat(document.getElementById('paidAmount').value) || 0, subtotal);
+    const remaining = Math.max(subtotal - paid, 0);
+    const status = paid >= subtotal ? 'Paid' : (paid > 0 ? 'Partial' : 'Debt');
+    const id = Date.now();
+    const reference = 'WH-' + id;
+
+    const sale = {
+        id, reference, type: 'cash', storeId: Number(storeId), storeName,
+        date: document.getElementById('supplyDate').value || todayVal(),
+        items, subtotal, finalTotal: subtotal, paid, remaining, status,
+        notes: document.getElementById('supplyNotes').value.trim(),
+        payments: paid > 0 ? [{ date: new Date().toISOString().slice(0,10), amount: paid, note: 'Initial payment' }] : []
+    };
+
+    addWhSale(sale);
+    deductWhStock(items, reference);
+
+    msg.textContent = `Supply ${reference} saved. Status: ${status}`;
+    msg.className = 'alert alert-success';
+    msg.style.display = 'block';
+
+    document.getElementById('paidAmount').value = '';
+    document.getElementById('supplyNotes').value = '';
+    document.getElementById('supplyRows').innerHTML = '';
+    addRow();
+    calcTotals();
+    onStoreChange();
+    renderHistory();
+}
+
+// ─── History Table ───────────────────────────────────────────────────────────
+
+function renderHistory() {
+    const filterStore = document.getElementById('historyFilter').value;
+    let sales = getWhSales().filter(s => s.type === 'cash' || !s.type);
+    if (filterStore) sales = sales.filter(s => String(s.storeId) === filterStore);
+
+    document.getElementById('historyRows').innerHTML = sales.length
+        ? sales.map(s => `
+            <tr>
+                <td>${esc(s.reference)}</td>
+                <td>${esc(s.date)}</td>
+                <td>${esc(s.storeName)}</td>
+                <td style="font-size:12px;color:#555;">${(s.items||[]).map(i => `${esc(i.item)} ×${i.quantity}`).join(', ')}</td>
+                <td>${money(s.finalTotal)}</td>
+                <td>${money(s.paid)}</td>
+                <td>${money(s.remaining)}</td>
+                <td>${statusBadge(s.status)}</td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="8" style="text-align:center;color:#888;">No supply transactions yet.</td></tr>';
+}
+
+initPage();
+</script>
+<script src="../js/i18n.js?v=wh-1"></script>
+</body>
+</html>

@@ -161,15 +161,46 @@ function loadShell(sectionLabel) {
       layout.classList.add('sidebar-collapsed');
     }
 
+    // backdrop for mobile drawer
+    const backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    backdrop.addEventListener('click', function () {
+      closeDrawer();
+    });
+    layout.appendChild(backdrop);
+
     // inject button
     const btn = document.createElement('button');
     btn.className = 'sidebar-toggle-btn';
     btn.title = 'Toggle sidebar';
     btn.setAttribute('aria-label', 'Toggle sidebar');
     btn.textContent = '☰';
+    function getSidebar() { return document.querySelector('.sidebar'); }
+
+    function openDrawer() {
+      layout.classList.add('sidebar-open');
+      const s = getSidebar();
+      if (s) s.style.left = '0';
+    }
+
+    function closeDrawer() {
+      layout.classList.remove('sidebar-open');
+      const s = getSidebar();
+      if (s) s.style.left = '';
+    }
+
     btn.addEventListener('click', function () {
-      const now = layout.classList.toggle('sidebar-collapsed');
-      localStorage.setItem('sidebar_collapsed', now ? '1' : '0');
+      if (window.innerWidth <= 768) {
+        layout.classList.contains('sidebar-open') ? closeDrawer() : openDrawer();
+      } else {
+        const now = layout.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', now ? '1' : '0');
+      }
+    });
+
+    // Close mobile drawer on resize to desktop
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 768) closeDrawer();
     });
 
     navbar.insertBefore(btn, navbar.firstChild);

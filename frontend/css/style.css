@@ -831,55 +831,130 @@ textarea {
 }
 
 /* Responsive */
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet & Mobile
+═══════════════════════════════════════════════════════════════ */
+
+/* Touch devices — bigger tap targets & prevent iOS zoom on inputs */
+@media (pointer: coarse) {
+    .btn { min-height: 42px; }
+    .menu-item a { min-height: 46px; display: flex; align-items: center; }
+    input, select, textarea { min-height: 42px; font-size: 16px !important; }
+}
+
+/* ── Tablet landscape / small laptop (≤1024px) ── */
+@media (max-width: 1024px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .module-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Tablet portrait & mobile (≤768px) ── */
 @media (max-width: 768px) {
+    /* Sidebar becomes a slide-over overlay drawer */
     .sidebar {
-        position: fixed;
-        height: 100vh;
-        left: 0;
+        position: fixed !important;
         top: 0;
-        width: 250px;
-        transform: translateX(-100%);
-        transition: transform 0.3s;
-        z-index: 999;
+        left: -270px !important;
+        height: 100vh !important;
+        width: 270px !important;
+        min-width: 270px !important;
+        transition: left 0.3s ease !important;
+        z-index: 1001;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
-    .sidebar.open {
-        transform: translateX(0);
+    /* Desktop collapse has no effect on mobile */
+    .layout.sidebar-collapsed .sidebar {
+        left: -270px !important;
+        width: 270px !important;
+        min-width: 270px !important;
     }
 
-    .layout {
-        flex-direction: column;
+    /* Drawer open state */
+    .layout.sidebar-open .sidebar {
+        left: 0 !important;
     }
 
-    .main-content {
+    /* Semi-transparent backdrop behind open drawer */
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1000;
+        cursor: pointer;
+    }
+    .layout.sidebar-open .sidebar-backdrop {
+        display: block;
+    }
+
+    .layout { flex-direction: column; }
+    .main-content { width: 100%; overflow-x: hidden; }
+
+    /* Navbar */
+    .navbar { padding: 10px 12px; gap: 6px; flex-wrap: nowrap; overflow: hidden; }
+    .navbar-brand-text { display: none; }
+    .scope-pill { display: none; }
+    .user-name { display: none; }
+    .user-section { gap: 6px; }
+
+    /* Content */
+    .content { padding: 12px; }
+
+    /* Grids */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .module-grid { grid-template-columns: 1fr; }
+    .store-cards-grid { grid-template-columns: 1fr; }
+
+    /* Tables: always horizontally scrollable */
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 4px;
+    }
+    table { min-width: 480px; font-size: 12px; }
+    th, td { padding: 8px 10px; }
+
+    /* Forms */
+    .form-grid { grid-template-columns: 1fr !important; }
+    .two-column { grid-template-columns: 1fr !important; }
+
+    /* Modals */
+    .modal-overlay { padding: 10px; align-items: flex-end; }
+    .modal-box {
+        width: 100%;
+        max-width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        border-radius: 16px 16px 0 0;
         margin: 0;
     }
 
-    .content {
-        padding: 15px;
-    }
+    /* Page header */
+    .page-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .page-header .btn { width: 100%; justify-content: center; }
 
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+    /* Cashier section table wrapper */
+    #cashierSection .table-wrapper { overflow-x: auto; }
+}
 
-    .navbar {
-        padding: 12px 15px;
-    }
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    table {
-        font-size: 12px;
-    }
-
-    th,
-    td {
-        padding: 8px;
-    }
+/* ── Phone (≤480px) ── */
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .workspace-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    .content { padding: 8px; }
+    .card { border-radius: 8px; }
+    .navbar { padding: 8px 10px; }
+    .sidebar-toggle-btn,
+    .dark-mode-btn { padding: 5px 7px; font-size: 15px; }
+    .store-cards-grid { grid-template-columns: 1fr; gap: 14px; }
+    .module-grid { grid-template-columns: 1fr; }
+    /* POS: payment options row becomes column */
+    .payment-options { flex-direction: column; }
+    /* Login card full width */
+    .login-card { width: 100%; max-width: 100%; padding: 24px 16px; }
+    .login-container { padding: 10px; align-items: flex-start; padding-top: 20px; }
 }
 
 /* Loading Page */
