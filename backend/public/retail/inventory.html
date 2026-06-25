@@ -553,7 +553,8 @@
 
                 const cardsHtml = itemVariants.length === 0
                     ? `<p style="color:var(--text-gray);font-size:13px;padding:8px 0;">No variants yet. <button class="btn btn-primary" style="padding:3px 10px;font-size:12px;" onclick="openAddVariantFor('${cat.id}','${item.id}')">+ Add variant</button></p>`
-                    : `<div class="inv-variant-grid">${itemVariants.map(v => variantCard(v)).join('')}</div>`;
+                    : `<div class="inv-variant-grid">${itemVariants.map(v => variantCard(v)).join('')}</div>
+                       <button class="btn btn-primary" style="margin-top:8px;padding:4px 12px;font-size:12px;" onclick="openAddVariantFor('${cat.id}','${item.id}')">+ Add type</button>`;
 
                 itemsHtml += `
                     <div class="inv-item-block" id="item-block-${item.id}">
