@@ -890,6 +890,16 @@ textarea {
     font-size: 14px;
 }
 
+body.dark .login-card {
+    background: rgba(28, 40, 33, 0.97);
+}
+
+body.dark .login-demo-hint {
+    background: #1a2e22;
+    color: #8da898;
+    border-color: #2e4a3c;
+}
+
 /* Store Selection */
 .store-cards-grid {
     display: grid;
