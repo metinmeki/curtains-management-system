@@ -17,9 +17,9 @@
         .kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
         @media(max-width:1100px){ .kpi-row{ grid-template-columns:repeat(3,1fr); } }
         @media(max-width:700px) { .kpi-row{ grid-template-columns:repeat(2,1fr); } }
-        .kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:16px 18px; }
-        .kpi-card .k-label { font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#888; margin-bottom:6px; }
-        .kpi-card .k-value { font-size:22px; font-weight:800; color:#163329; line-height:1; }
+        .kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:16px 18px; min-width:0; overflow:hidden; }
+        .kpi-card .k-label { font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#888; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .kpi-card .k-value { font-size:clamp(14px,1.6vw,22px); font-weight:800; color:#163329; line-height:1.2; word-break:break-word; overflow-wrap:anywhere; }
         .kpi-card .k-sub   { font-size:11px; color:#aaa; margin-top:4px; }
         .kpi-card.red .k-value  { color:#8b2222; }
         .kpi-card.gold .k-value { color:#b89a3a; }

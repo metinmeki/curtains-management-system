@@ -10,9 +10,9 @@
 
         /* ── KPI ── */
         .inv-kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:8px; }
-        .inv-kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:18px 20px; }
-        .inv-kpi-card span { display:block; font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#666; margin-bottom:6px; }
-        .inv-kpi-card strong { display:block; font-size:22px; font-weight:800; color:#1b3d2e; }
+        .inv-kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:18px 20px; min-width:0; overflow:hidden; }
+        .inv-kpi-card span { display:block; font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#666; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .inv-kpi-card strong { display:block; font-size:clamp(14px,1.6vw,22px); font-weight:800; color:#1b3d2e; word-break:break-word; overflow-wrap:anywhere; line-height:1.2; }
         .inv-kpi-card small { display:block; font-size:11px; color:#888; margin-top:3px; }
         .inv-kpi-card.low strong { color:#b8860b; }
         .inv-kpi-card.critical strong { color:#8b2222; }
