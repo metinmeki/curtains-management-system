@@ -996,19 +996,19 @@ textarea {
     }
 }
 
-.store-card:nth-child(2) .store-card-icon {
+.store-card-wrapper:nth-child(2) .store-card-icon {
     background: linear-gradient(135deg, #3f8f67 0%, #b7cfa3 100%);
 }
 
-.store-card:nth-child(3) .store-card-icon {
+.store-card-wrapper:nth-child(3) .store-card-icon {
     background: linear-gradient(135deg, #6d9f71 0%, #d8d0a8 100%);
 }
 
-.store-card:nth-child(4) .store-card-icon {
+.store-card-wrapper:nth-child(4) .store-card-icon {
     background: linear-gradient(135deg, #2f7d5b 0%, #c8b98d 100%);
 }
 
-.store-card:nth-child(5) .store-card-icon {
+.store-card-wrapper:nth-child(5) .store-card-icon {
     background: linear-gradient(135deg, #214238 0%, #9bbf8a 100%);
 }
 
@@ -1041,4 +1041,51 @@ textarea {
     color: var(--primary-color);
     font-weight: 600;
     font-size: 13px;
+}
+
+.store-card-wrapper {
+    position: relative;
+}
+
+.store-rename-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+    z-index: 2;
+}
+
+.store-card-wrapper:hover .store-rename-btn {
+    opacity: 1;
+}
+
+.store-rename-btn:hover {
+    background: var(--border-color);
+    color: var(--text-dark);
+}
+
+.store-rename-input {
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: var(--bg-color);
+    border: 1.5px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 2px 6px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
 }

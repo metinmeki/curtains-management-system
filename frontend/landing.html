@@ -58,13 +58,33 @@
             window.location.href = 'index.html';
         }
 
-        const storesList = [
+        const STORE_NAMES_KEY = 'cms_store_custom_names';
+
+        const storeDefaults = [
             { id: 1, name: 'Store 1', description: 'Independent retail workspace for POS, debts, clients, expenses, and store reports.', icon: 'S1', type: 'retail' },
             { id: 2, name: 'Store 2', description: 'Separate sales and client records for the second retail branch.', icon: 'S2', type: 'retail' },
             { id: 3, name: 'Store 3', description: 'Dedicated dashboard and transactions for the third retail branch.', icon: 'S3', type: 'retail' },
             { id: 4, name: 'Store 4', description: 'Standalone retail workspace for the fourth branch.', icon: 'S4', type: 'retail' },
-            { id: null, name: 'Inventory / Warehouse', description: 'Wholesale workflow for categories, product types, clients, balances, sales, debts, and reports.', icon: 'INV', type: 'inventory' }
+            { id: 'wh', name: 'Inventory / Warehouse', description: 'Central warehouse: supply items to all 5 stores, track store accounts, balances, and debt records.', icon: 'WH', type: 'inventory' }
         ];
+
+        function getCustomNames() {
+            return JSON.parse(localStorage.getItem(STORE_NAMES_KEY) || '{}');
+        }
+
+        function saveCustomName(storeKey, name) {
+            const names = getCustomNames();
+            names[storeKey] = name.trim();
+            localStorage.setItem(STORE_NAMES_KEY, JSON.stringify(names));
+        }
+
+        function getStoresList() {
+            const custom = getCustomNames();
+            return storeDefaults.map(s => ({
+                ...s,
+                name: custom[String(s.id)] || s.name
+            }));
+        }
 
         function loadUserInfo() {
             const user = getUser();
@@ -76,29 +96,56 @@
 
         function renderStoreCards() {
             const container = document.getElementById('storeCardsContainer');
-            container.innerHTML = storesList.map(store => `
-                <a href="#" class="store-card" onclick="selectStore(${store.id}, '${store.name}', '${store.type}'); return false;">
-                    <div class="store-card-icon">${store.icon}</div>
-                    <div class="store-card-body">
-                        <div>
-                            <div class="store-card-title">${store.name}</div>
-                            <div class="store-card-description">${store.description}</div>
+            container.innerHTML = getStoresList().map(store => `
+                <div class="store-card-wrapper" style="position:relative;">
+                    <a href="#" class="store-card" id="card-${store.id}" onclick="selectStore('${store.id}', '${store.type}'); return false;">
+                        <div class="store-card-icon">${store.icon}</div>
+                        <div class="store-card-body">
+                            <div>
+                                <div class="store-card-title" id="title-${store.id}">${store.name}</div>
+                                <div class="store-card-description">${store.description}</div>
+                            </div>
+                            <div class="store-card-footer">Enter workspace</div>
                         </div>
-                        <div class="store-card-footer">Enter workspace</div>
-                    </div>
-                </a>
+                    </a>
+                    <button class="store-rename-btn" title="Rename" onclick="startRename('${store.id}', event)">✎</button>
+                </div>
             `).join('');
         }
 
-        function selectStore(storeId, storeName, type) {
-            if (storeId) {
-                setStoreSelection(storeId, storeName);
-            } else {
-                removeStoreSelection();
-                localStorage.setItem('store_name', storeName);
-                localStorage.setItem('inventory_unit_id', '1');
-            }
+        function startRename(storeKey, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const titleEl = document.getElementById('title-' + storeKey);
+            const current = titleEl.textContent;
+            titleEl.innerHTML = `<input id="rename-input-${storeKey}" class="store-rename-input" value="${current}" maxlength="40" onclick="event.stopPropagation()" />`;
+            const input = document.getElementById('rename-input-' + storeKey);
+            input.focus();
+            input.select();
+            input.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Enter') confirmRename(storeKey);
+                if (ev.key === 'Escape') renderStoreCards();
+            });
+            input.addEventListener('blur', function() { confirmRename(storeKey); });
+        }
 
+        function confirmRename(storeKey) {
+            const input = document.getElementById('rename-input-' + storeKey);
+            if (!input) return;
+            const newName = input.value.trim();
+            if (newName) saveCustomName(storeKey, newName);
+            renderStoreCards();
+        }
+
+        function selectStore(storeKey, type) {
+            const name = getStoresList().find(s => String(s.id) === String(storeKey))?.name || storeKey;
+            if (type === 'inventory') {
+                removeStoreSelection();
+                localStorage.setItem('store_name', name);
+                localStorage.setItem('inventory_unit_id', '1');
+            } else {
+                setStoreSelection(Number(storeKey), name);
+            }
             window.location.href = type === 'inventory'
                 ? 'inventory/dashboard.html'
                 : 'retail/dashboard.html';
