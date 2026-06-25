@@ -293,8 +293,11 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>Image URL (optional)</label>
-                <input id="variantImage" placeholder="https://… or leave empty">
+                <label>Photo (optional)</label>
+                <div id="variantImagePreview" style="display:none;margin-bottom:8px;"><img id="variantImageThumb" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);" /></div>
+                <input id="variantImageFile" type="file" accept="image/*" style="display:none;" onchange="onVariantFileChange(this)">
+                <button type="button" class="btn" style="width:100%;justify-content:center;" onclick="document.getElementById('variantImageFile').click()">📷 Upload photo</button>
+                <input id="variantImage" type="hidden" value="">
             </div>
         </div>
         <div class="modal-footer">
@@ -846,6 +849,8 @@
         document.getElementById('variantQty').value = 0;
         document.getElementById('variantMinQty').value = 5;
         document.getElementById('variantImage').value = '';
+        document.getElementById('variantImageFile').value = '';
+        document.getElementById('variantImagePreview').style.display = 'none';
         document.getElementById('variantCategorySelect').value = catId;
         populateVariantItems();
         if (itemId) document.getElementById('variantItemSelect').value = itemId;
@@ -875,6 +880,11 @@
         document.getElementById('variantQty').value = getVariantQty(v.id, STORE_ID);
         document.getElementById('variantMinQty').value = v.minQty || 5;
         document.getElementById('variantImage').value = v.image || '';
+        document.getElementById('variantImageFile').value = '';
+        const prev = document.getElementById('variantImagePreview');
+        const thumb = document.getElementById('variantImageThumb');
+        if (v.image) { thumb.src = v.image; prev.style.display = 'block'; }
+        else { prev.style.display = 'none'; }
         document.getElementById('codeUniqueTip').style.display = 'none';
         openModal('variantModal');
     }
@@ -1058,6 +1068,19 @@
             { id: 'seed-item-مزهرية', categoryId: catHardware.id,  name: 'مزهرية', description: '' },
             { id: 'seed-item-حبال',   categoryId: catHardware.id,  name: 'حبال',   description: '' },
         ]);
+    }
+
+    function onVariantFileChange(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            document.getElementById('variantImage').value = data;
+            document.getElementById('variantImageThumb').src = data;
+            document.getElementById('variantImagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
     }
 
     // ─── Init ─────────────────────────────────────────────────────
