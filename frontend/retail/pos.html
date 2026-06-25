@@ -810,7 +810,7 @@
             document.getElementById('saleDate').value = saleDate;
             const _activeCashier = (function(){ try { return JSON.parse(localStorage.getItem('cms_active_cashier') || 'null'); } catch(e){ return null; } })();
             const sale = {
-                id: Date.now(),
+                id: Date.now() + '_' + Math.random().toString(36).slice(2),
                 storeId: getStoreId(),
                 storeName: getStoreName(),
                 date: saleDate,

@@ -337,11 +337,11 @@
             document.getElementById('salesRows').innerHTML = dashboardSales.length
                 ? dashboardSales.map(sale => `
                     <tr>
-                        <td>#${sale.id}</td><td>${sale.client}</td>
-                        <td><span style="font-size:12px;color:var(--text-gray);">${sale.cashierName || '-'}</span></td>
+                        <td>#${sale.id}</td><td>${esc(sale.client)}</td>
+                        <td><span style="font-size:12px;color:var(--text-gray);">${esc(sale.cashierName || '-')}</span></td>
                         <td>${money(sale.total)}</td>
                         <td>${money(sale.paid)}</td><td>${money(sale.remaining)}</td>
-                        <td>${statusBadge(sale.status)}</td><td>${sale.date}</td>
+                        <td>${statusBadge(sale.status)}</td><td>${esc(sale.date)}</td>
                     </tr>
                 `).join('')
                 : '<tr><td colspan="8">No sales in this period.</td></tr>';
@@ -349,7 +349,7 @@
             document.getElementById('orderRows').innerHTML = localOrders.length
                 ? localOrders.map(order => `
                     <tr>
-                        <td>${order.reference}</td><td>${order.date}</td><td>${order.buyerName}</td><td>${order.supplierName}</td>
+                        <td>${esc(order.reference)}</td><td>${esc(order.date)}</td><td>${esc(order.buyerName)}</td><td>${esc(order.supplierName)}</td>
                         <td>${money(order.finalTotal)}</td><td>${money(order.ourProfit)}</td><td>${money(order.supplierDue)}</td><td>${money(order.buyerDue)}</td>
                     </tr>
                 `).join('')
@@ -359,9 +359,9 @@
             document.getElementById('discountRows').innerHTML = discountSales.length
                 ? discountSales.map(sale => `
                     <tr>
-                        <td>${sale.date}</td><td>#${sale.id}</td><td>${sale.clientName}</td><td>${sale.clientPhone}</td>
+                        <td>${esc(sale.date)}</td><td>#${sale.id}</td><td>${esc(sale.clientName)}</td><td>${esc(sale.clientPhone)}</td>
                         <td>${money(sale.subtotal || sale.total + Number(sale.discount || 0))}</td>
-                        <td>${money(sale.discount)}</td><td>${money(sale.total)}</td><td>${sale.discountNote || '-'}</td>
+                        <td>${money(sale.discount)}</td><td>${money(sale.total)}</td><td>${esc(sale.discountNote || '-')}</td>
                     </tr>
                 `).join('')
                 : '<tr><td colspan="8">No discounts in this period.</td></tr>';
@@ -375,7 +375,7 @@
 
             document.getElementById('debtRows').innerHTML = localDebts.length
                 ? localDebts.map(debt => `
-                    <tr><td>${debt.client}</td><td>${debt.phone}</td><td>${money(debt.remaining)}</td><td>${debt.status}</td></tr>
+                    <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td></tr>
                 `).join('')
                 : '<tr><td colspan="4">No debts in this period.</td></tr>';
 

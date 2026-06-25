@@ -166,6 +166,7 @@ async function logout() {
         removeToken();
         removeUser();
         removeStoreSelection();
+        localStorage.removeItem('cms_active_cashier');
     }
 }
 
