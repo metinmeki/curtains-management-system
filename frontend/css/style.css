@@ -87,13 +87,42 @@ button {
 /* Sidebar */
 .sidebar {
     width: 250px;
+    min-width: 250px;
     background-color: var(--sidebar-bg);
     color: var(--sidebar-text);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: width 0.25s ease, min-width 0.25s ease;
+}
+
+/* ── Sidebar collapsed state ── */
+.layout.sidebar-collapsed .sidebar {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+}
+
+/* ── Sidebar toggle button (auto-injected into .navbar) ── */
+.sidebar-toggle-btn {
+    background: none;
+    border: 1.5px solid var(--border-color);
+    border-radius: 7px;
+    cursor: pointer;
+    padding: 5px 9px;
+    font-size: 17px;
+    line-height: 1;
+    color: var(--text-dark);
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+    margin-right: 10px;
+}
+.sidebar-toggle-btn:hover {
+    background: var(--border-color);
+    border-color: var(--text-gray);
 }
 
 .sidebar-header {

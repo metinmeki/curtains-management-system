@@ -143,6 +143,39 @@ function loadShell(sectionLabel) {
   if (avatar) avatar.textContent = user && user.name ? user.name.charAt(0).toUpperCase() : 'A';
 }
 
+// ── Sidebar toggle ────────────────────────────────────────────────────────────
+(function initSidebarToggle() {
+  function setup() {
+    const layout = document.querySelector('.layout');
+    const navbar = document.querySelector('.navbar');
+    if (!layout || !navbar || !document.querySelector('.sidebar')) return;
+
+    // restore saved state
+    if (localStorage.getItem('sidebar_collapsed') === '1') {
+      layout.classList.add('sidebar-collapsed');
+    }
+
+    // inject button
+    const btn = document.createElement('button');
+    btn.className = 'sidebar-toggle-btn';
+    btn.title = 'Toggle sidebar';
+    btn.setAttribute('aria-label', 'Toggle sidebar');
+    btn.textContent = '☰';
+    btn.addEventListener('click', function () {
+      const now = layout.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('sidebar_collapsed', now ? '1' : '0');
+    });
+
+    navbar.insertBefore(btn, navbar.firstChild);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
 // ─── Variant Inventory Data Model ────────────────────────────────────────────
 
 function getInvCategories() {
