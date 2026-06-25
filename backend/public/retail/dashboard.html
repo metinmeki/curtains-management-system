@@ -91,22 +91,22 @@
                 </div>
 
                 <div class="workspace-grid dashboard-metrics">
-                    <div class="metric-card"><span>Total sales</span><strong id="totalSales"></strong><small>All sale totals</small></div>
-                    <div class="metric-card"><span>Fully paid</span><strong id="paidSales"></strong><small>Paid revenue</small></div>
-                    <div class="metric-card"><span>Debt sales</span><strong id="debtSales"></strong><small>Unpaid sales</small></div>
-                    <div class="metric-card"><span>Partial payments</span><strong id="partialSales"></strong><small>Paid partly</small></div>
-                    <div class="metric-card"><span>Expenses</span><strong id="expenses"></strong><small>Store costs</small></div>
-                    <div class="metric-card"><span>Net amount</span><strong id="netAmount"></strong><small>Paid minus expenses</small></div>
-                    <div class="metric-card"><span>Discounts</span><strong id="discounts"></strong><small>Tracked with notes</small></div>
-                    <div class="metric-card"><span>Clients</span><strong id="clients"></strong><small>Repeat customers</small></div>
-                    <div class="metric-card"><span>Order sales</span><strong id="orderSales"></strong><small>External supplier orders</small></div>
-                    <div class="metric-card"><span>Order profit</span><strong id="orderProfit"></strong><small>Profit from orders</small></div>
-                    <div class="metric-card"><span>Supplier paid</span><strong id="orderSupplierPaid"></strong><small>Paid to companies</small></div>
-                    <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid"></strong><small>We still owe</small></div>
-                    <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid"></strong><small>Collected from buyers</small></div>
-                    <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt"></strong><small>Customers still owe</small></div>
-                    <div class="metric-card"><span>خياطة account</span><strong id="sewingAccountTotal"></strong><small>1,000 IQD per meter</small></div>
-                    <div class="metric-card"><span>تركيب account</span><strong id="installationAccountTotal"></strong><small>10,000 IQD per window</small></div>
+                    <div class="metric-card"><span>Total sales</span><strong id="totalSales">...</strong><small>All sale totals</small></div>
+                    <div class="metric-card"><span>Fully paid</span><strong id="paidSales">...</strong><small>Paid revenue</small></div>
+                    <div class="metric-card"><span>Debt sales</span><strong id="debtSales">...</strong><small>Unpaid sales</small></div>
+                    <div class="metric-card"><span>Partial payments</span><strong id="partialSales">...</strong><small>Paid partly</small></div>
+                    <div class="metric-card"><span>Expenses</span><strong id="expenses">0 IQD</strong><small>Store costs</small></div>
+                    <div class="metric-card"><span>Net amount</span><strong id="netAmount">...</strong><small>Paid minus expenses</small></div>
+                    <div class="metric-card"><span>Discounts</span><strong id="discounts">...</strong><small>Tracked with notes</small></div>
+                    <div class="metric-card"><span>Clients</span><strong id="clients">...</strong><small>Repeat customers</small></div>
+                    <div class="metric-card"><span>Order sales</span><strong id="orderSales">0 IQD</strong><small>External supplier orders</small></div>
+                    <div class="metric-card"><span>Order profit</span><strong id="orderProfit">0 IQD</strong><small>Profit from orders</small></div>
+                    <div class="metric-card"><span>Supplier paid</span><strong id="orderSupplierPaid">0 IQD</strong><small>Paid to companies</small></div>
+                    <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid">0 IQD</strong><small>We still owe</small></div>
+                    <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid">0 IQD</strong><small>Collected from buyers</small></div>
+                    <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt">0 IQD</strong><small>Customers still owe</small></div>
+                    <div class="metric-card"><span>خياطة account</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
+                    <div class="metric-card"><span>تركيب account</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
                 </div>
 
                 <section class="module-grid">
@@ -127,7 +127,7 @@
                             <thead>
                                 <tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th></tr>
                             </thead>
-                            <tbody id="salesRows"></tbody>
+                            <tbody id="salesRows"><tr><td colspan="8">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -139,7 +139,7 @@
                             <thead>
                                 <tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th></tr>
                             </thead>
-                            <tbody id="orderRows"></tbody>
+                            <tbody id="orderRows"><tr><td colspan="8">No orders yet.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -216,18 +216,43 @@
 
         let currentPeriod = 'today';
         let customRange = { start: '', end: '' };
+        let allDbSales = [];
+
+        // Load sales from API on page load
+        async function loadSalesFromAPI() {
+            try {
+                const storeId = getStoreId();
+                const result = await apiCall('GET', `/retail/sales/${storeId}`);
+                if (result && result.data) {
+                    allDbSales = result.data.map(sale => ({
+                        id: sale.id,
+                        storeId: sale.store_id,
+                        clientName: sale.client_name || 'One-time customer',
+                        clientPhone: '-',
+                        cashierName: sale.created_by || '-',
+                        total: parseFloat(sale.total_amount || 0),
+                        paid: parseFloat(sale.paid_amount || 0),
+                        remaining: parseFloat(sale.remaining_amount || 0),
+                        discount: parseFloat(sale.discount_amount || 0),
+                        discountNote: sale.discount_note || '',
+                        subtotal: parseFloat(sale.total_amount || 0) + parseFloat(sale.discount_amount || 0),
+                        status: sale.payment_status === 'full' ? 'Paid' : sale.payment_status === 'debt' ? 'Debt' : 'Partial',
+                        date: sale.created_at ? sale.created_at.slice(0, 10) : '',
+                        note: sale.notes || '',
+                        workerAccounts: [],
+                        items: sale.items || []
+                    }));
+                }
+            } catch (err) {
+                console.error('Failed to load sales from API:', err);
+            }
+            renderDashboard();
+        }
 
         function parseDate(value) {
             if (!value) return null;
             const date = new Date(`${value}T00:00:00`);
             return Number.isNaN(date.getTime()) ? null : date;
-        }
-
-        function getDashboardSales() {
-            const selectedStoreId = String(getStoreId() || '');
-            return getStoreSales()
-                .filter(sale => !sale.storeId || String(sale.storeId) === selectedStoreId)
-                .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
         }
 
         function isSaleInPeriod(sale) {
@@ -286,58 +311,36 @@
         }
 
         function renderDashboard() {
-            const stats = retailDemo.stats;
-            const allStoreSales = getDashboardSales();
-            const localSales = allStoreSales.filter(isSaleInPeriod);
+            const localSales = allDbSales.filter(isSaleInPeriod);
             const localSaleTotal = localSales.reduce((sum, sale) => sum + sale.total, 0);
             const localPaidTotal = localSales.reduce((sum, sale) => sum + sale.paid, 0);
             const localDebtTotal = localSales.reduce((sum, sale) => sum + sale.remaining, 0);
             const localPartialTotal = localSales.filter(sale => sale.status === 'Partial').reduce((sum, sale) => sum + sale.total, 0);
             const localDiscountTotal = localSales.reduce((sum, sale) => sum + Number(sale.discount || 0), 0);
-            const localClientCount = new Set(localSales.map(sale => sale.clientPhone || sale.clientName).filter(Boolean)).size;
-            const localExpenses = getStoreExpenses().filter(isSaleInPeriod);
-            const localExpenseTotal = localExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
-            const localOrders = getStoreOrders().filter(isSaleInPeriod);
-            const orderSalesTotal = localOrders.reduce((sum, order) => sum + Number(order.finalTotal || 0), 0);
-            const orderProfitTotal = localOrders.reduce((sum, order) => sum + Number(order.ourProfit || 0), 0);
-            const orderSupplierPaidTotal = localOrders.reduce((sum, order) => sum + Number(order.supplierPaid || 0), 0);
-            const orderSupplierUnpaidTotal = localOrders.reduce((sum, order) => sum + Number(order.supplierDue || 0), 0);
-            const orderBuyerPaidTotal = localOrders.reduce((sum, order) => sum + Number(order.buyerPaid || 0), 0);
-            const orderBuyerDebtTotal = localOrders.reduce((sum, order) => sum + Number(order.buyerDue || 0), 0);
+            const localClientCount = new Set(localSales.map(sale => sale.clientName).filter(n => n && n !== 'One-time customer')).size;
             const accounts = getAccountsForSales(localSales);
 
-            document.getElementById('totalSales').textContent = money(stats.totalSales + localSaleTotal);
-            document.getElementById('paidSales').textContent = money(stats.paidSales + localPaidTotal);
-            document.getElementById('debtSales').textContent = money(stats.debtSales + localDebtTotal);
-            document.getElementById('partialSales').textContent = money(stats.partialSales + localPartialTotal);
-            document.getElementById('expenses').textContent = money(stats.expenses + localExpenseTotal);
-            document.getElementById('netAmount').textContent = money(stats.paidSales + localPaidTotal + orderProfitTotal - stats.expenses - localExpenseTotal);
-            document.getElementById('discounts').textContent = money(stats.discounts + localDiscountTotal);
-            document.getElementById('clients').textContent = stats.clients + localClientCount;
-            document.getElementById('orderSales').textContent = money(orderSalesTotal);
-            document.getElementById('orderProfit').textContent = money(orderProfitTotal);
-            document.getElementById('orderSupplierPaid').textContent = money(orderSupplierPaidTotal);
-            document.getElementById('orderSupplierUnpaid').textContent = money(orderSupplierUnpaidTotal);
-            document.getElementById('orderBuyerPaid').textContent = money(orderBuyerPaidTotal);
-            document.getElementById('orderBuyerDebt').textContent = money(orderBuyerDebtTotal);
+            document.getElementById('totalSales').textContent = money(localSaleTotal);
+            document.getElementById('paidSales').textContent = money(localPaidTotal);
+            document.getElementById('debtSales').textContent = money(localDebtTotal);
+            document.getElementById('partialSales').textContent = money(localPartialTotal);
+            document.getElementById('expenses').textContent = money(0);
+            document.getElementById('netAmount').textContent = money(localPaidTotal);
+            document.getElementById('discounts').textContent = money(localDiscountTotal);
+            document.getElementById('clients').textContent = localClientCount;
+            document.getElementById('orderSales').textContent = money(0);
+            document.getElementById('orderProfit').textContent = money(0);
+            document.getElementById('orderSupplierPaid').textContent = money(0);
+            document.getElementById('orderSupplierUnpaid').textContent = money(0);
+            document.getElementById('orderBuyerPaid').textContent = money(0);
+            document.getElementById('orderBuyerDebt').textContent = money(0);
             document.getElementById('sewingAccountTotal').textContent = money(accounts.sewing.total);
             document.getElementById('installationAccountTotal').textContent = money(accounts.installation.total);
 
-            const dashboardSales = localSales.map(sale => ({
-                id: sale.id,
-                client: sale.clientName,
-                cashierName: sale.cashierName || '-',
-                total: sale.total,
-                paid: sale.paid,
-                remaining: sale.remaining,
-                status: sale.status,
-                date: sale.date
-            })).concat(retailDemo.recentSales);
-
-            document.getElementById('salesRows').innerHTML = dashboardSales.length
-                ? dashboardSales.map(sale => `
+            document.getElementById('salesRows').innerHTML = localSales.length
+                ? localSales.map(sale => `
                     <tr>
-                        <td>#${sale.id}</td><td>${esc(sale.client)}</td>
+                        <td>#${sale.id}</td><td>${esc(sale.clientName)}</td>
                         <td><span style="font-size:12px;color:var(--text-gray);">${esc(sale.cashierName || '-')}</span></td>
                         <td>${money(sale.total)}</td>
                         <td>${money(sale.paid)}</td><td>${money(sale.remaining)}</td>
@@ -346,58 +349,37 @@
                 `).join('')
                 : '<tr><td colspan="8">No sales in this period.</td></tr>';
 
-            document.getElementById('orderRows').innerHTML = localOrders.length
-                ? localOrders.map(order => `
-                    <tr>
-                        <td>${esc(order.reference)}</td><td>${esc(order.date)}</td><td>${esc(order.buyerName)}</td><td>${esc(order.supplierName)}</td>
-                        <td>${money(order.finalTotal)}</td><td>${money(order.ourProfit)}</td><td>${money(order.supplierDue)}</td><td>${money(order.buyerDue)}</td>
-                    </tr>
-                `).join('')
-                : '<tr><td colspan="8">No orders in this period.</td></tr>';
+            document.getElementById('orderRows').innerHTML = '<tr><td colspan="8">No orders in this period.</td></tr>';
 
             const discountSales = localSales.filter(sale => Number(sale.discount || 0) > 0);
             document.getElementById('discountRows').innerHTML = discountSales.length
                 ? discountSales.map(sale => `
                     <tr>
                         <td>${esc(sale.date)}</td><td>#${sale.id}</td><td>${esc(sale.clientName)}</td><td>${esc(sale.clientPhone)}</td>
-                        <td>${money(sale.subtotal || sale.total + Number(sale.discount || 0))}</td>
+                        <td>${money(sale.subtotal)}</td>
                         <td>${money(sale.discount)}</td><td>${money(sale.total)}</td><td>${esc(sale.discountNote || '-')}</td>
                     </tr>
                 `).join('')
                 : '<tr><td colspan="8">No discounts in this period.</td></tr>';
 
-            const localDebts = localSales.filter(sale => sale.remaining > 0).map(sale => ({
-                client: sale.clientName,
-                phone: sale.clientPhone,
-                remaining: sale.remaining,
-                status: sale.status
-            }));
-
+            const localDebts = localSales.filter(sale => sale.remaining > 0);
             document.getElementById('debtRows').innerHTML = localDebts.length
-                ? localDebts.map(debt => `
-                    <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td></tr>
+                ? localDebts.map(sale => `
+                    <tr><td>${esc(sale.clientName)}</td><td>${esc(sale.clientPhone)}</td><td>${money(sale.remaining)}</td><td>${esc(sale.status)}</td></tr>
                 `).join('')
                 : '<tr><td colspan="4">No debts in this period.</td></tr>';
 
-            const dashboardExpenses = localExpenses.concat(retailDemo.expenses);
-            document.getElementById('expenseRows').innerHTML = dashboardExpenses.length
-                ? dashboardExpenses.map(expense => `
-                    <tr><td>${expense.category}</td><td>${money(expense.amount)}</td><td>${expense.date}</td></tr>
-                `).join('')
-                : '<tr><td colspan="3">No expenses yet.</td></tr>';
+            document.getElementById('expenseRows').innerHTML = '<tr><td colspan="3">No expenses yet.</td></tr>';
 
-        function workerRows(rows, emptyText) {
-            if (!rows.length) {
-                return `<tr><td colspan="6">${emptyText}</td></tr>`;
+            function workerRows(rows, emptyText) {
+                if (!rows.length) return `<tr><td colspan="6">${emptyText}</td></tr>`;
+                return rows.map(row => `
+                    <tr>
+                        <td>#${row.saleId}</td><td>${row.date}</td><td>${row.clientName}</td>
+                        <td>${row.quantity}</td><td>${money(row.price)}</td><td>${money(row.total)}</td>
+                    </tr>
+                `).join('');
             }
-
-            return rows.map(row => `
-                <tr>
-                    <td>#${row.saleId}</td><td>${row.date}</td><td>${row.clientName}</td>
-                    <td>${row.quantity}</td><td>${money(row.price)}</td><td>${money(row.total)}</td>
-                </tr>
-            `).join('');
-        }
 
             document.getElementById('sewingRows').innerHTML = workerRows(accounts.sewing.rows, 'No خياطة account entries in this period.');
             document.getElementById('installationRows').innerHTML = workerRows(accounts.installation.rows, 'No تركيب account entries in this period.');
@@ -434,7 +416,8 @@
             renderDashboard();
         }
 
-        renderDashboard();
+        // Load from API on startup
+        loadSalesFromAPI();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 </body>
