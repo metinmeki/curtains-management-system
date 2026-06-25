@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -44,7 +44,7 @@
                     <section class="card">
                         <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
                         <div class="card-body table-wrapper">
-                            <table><thead><tr><th>Category</th><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody id="expenseRows"></tbody></table>
+                            <table><thead><tr><th>Category</th><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody id="expenseRows"><tr><td colspan="4">Loading...</td></tr></tbody></table>
                         </div>
                     </section>
                 </div>
@@ -54,64 +54,36 @@
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
     <script>
-        if (!checkAuth()) throw new Error('Not authenticated');
-        if (!getStoreId()) window.location.href = '../landing.html';
+        if (!checkAuth()) throw new Error("Not authenticated");
+        if (!getStoreId()) window.location.href = "../landing.html";
         loadShell(getStoreName());
-
-        function todayInputValue() {
-            const now = new Date();
-            const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-            return localDate.toISOString().slice(0, 10);
-        }
-
-        document.getElementById('categorySelect').innerHTML = retailDemo.expenseCategories.map(item => `<option>${item}</option>`).join('');
-        document.getElementById('expenseDate').value = todayInputValue();
-
-        function renderExpenses() {
-            const expenses = getStoreExpenses().concat(retailDemo.expenses);
-            document.getElementById('expenseRows').innerHTML = expenses.length
-                ? expenses.map(expense => `
-                    <tr><td>${expense.category}</td><td>${money(expense.amount)}</td><td>${expense.date}</td><td>${expense.note || '-'}</td></tr>
-                `).join('')
-                : '<tr><td colspan="4">No expenses yet.</td></tr>';
-
+        function todayInputValue() { const now = new Date(); const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000); return localDate.toISOString().slice(0, 10); }
+        document.getElementById("categorySelect").innerHTML = retailDemo.expenseCategories.map(item => "<option>"+item+"</option>").join("");
+        document.getElementById("expenseDate").value = todayInputValue();
+        async function loadExpenses() {
+            try {
+                const result = await apiCall("GET", "/retail/expenses/" + getStoreId());
+                const expenses = (result && result.data) ? result.data : [];
+                document.getElementById("expenseRows").innerHTML = expenses.length
+                    ? expenses.map(e => "<tr><td>"+esc(e.category)+"</td><td>"+money(e.amount)+"</td><td>"+(e.date||"")+"</td><td>"+esc(e.note||"-")+"</td></tr>").join("")
+                    : "<tr><td colspan=\"4\">No expenses yet.</td></tr>";
+            } catch(err) { document.getElementById("expenseRows").innerHTML = "<tr><td colspan=\"4\">Failed to load.</td></tr>"; }
             if (window.applyLanguage) applyLanguage();
         }
-
-        function saveExpense() {
-            const amountInput = document.getElementById('expenseAmount');
+        async function saveExpense() {
+            const amountInput = document.getElementById("expenseAmount");
             const amount = Number(amountInput.value || 0);
-            const message = document.getElementById('expenseMessage');
-
-            if (amount <= 0) {
-                message.textContent = 'Enter an expense amount before saving.';
-                message.className = 'alert alert-danger';
-                message.style.display = 'block';
-                amountInput.focus();
-                return;
-            }
-
-            const expense = {
-                id: Date.now() + '_' + Math.random().toString(36).slice(2),
-                storeId: getStoreId(),
-                storeName: getStoreName(),
-                category: document.getElementById('categorySelect').value,
-                amount,
-                date: document.getElementById('expenseDate').value || todayInputValue(),
-                note: document.getElementById('expenseNote').value
-            };
-
-            saveStoreExpense(expense);
-            amountInput.value = '';
-            document.getElementById('expenseDate').value = todayInputValue();
-            document.getElementById('expenseNote').value = '';
-            message.textContent = 'Expense saved.';
-            message.className = 'alert alert-success';
-            message.style.display = 'block';
-            renderExpenses();
+            const message = document.getElementById("expenseMessage");
+            if (amount <= 0) { message.textContent = "Enter an expense amount before saving."; message.className = "alert alert-danger"; message.style.display = "block"; amountInput.focus(); return; }
+            const expense = { storeId: getStoreId(), category: document.getElementById("categorySelect").value, amount, date: document.getElementById("expenseDate").value || todayInputValue(), note: document.getElementById("expenseNote").value, createdBy: "Admin" };
+            try {
+                await apiCall("POST", "/retail/expenses", expense);
+                amountInput.value = ""; document.getElementById("expenseDate").value = todayInputValue(); document.getElementById("expenseNote").value = "";
+                message.textContent = "Expense saved to database."; message.className = "alert alert-success"; message.style.display = "block";
+                loadExpenses();
+            } catch(err) { message.textContent = "Failed to save expense."; message.className = "alert alert-danger"; message.style.display = "block"; }
         }
-
-        renderExpenses();
+        loadExpenses();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 </body>
