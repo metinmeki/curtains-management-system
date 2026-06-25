@@ -176,6 +176,43 @@ function loadShell(sectionLabel) {
   }
 })();
 
+// ── Dark mode toggle ──────────────────────────────────────────────────────────
+(function initDarkMode() {
+  function applyDark(on) {
+    document.body.classList.toggle('dark', on);
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = on ? '☀️' : '🌙';
+  }
+
+  function setup() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    const saved = localStorage.getItem('dark_mode') === '1';
+    applyDark(saved);
+
+    const btn = document.createElement('button');
+    btn.id = 'darkModeBtn';
+    btn.className = 'dark-mode-btn';
+    btn.title = 'Toggle dark mode';
+    btn.setAttribute('aria-label', 'Toggle dark mode');
+    btn.textContent = saved ? '☀️' : '🌙';
+    btn.addEventListener('click', function () {
+      const on = !document.body.classList.contains('dark');
+      applyDark(on);
+      localStorage.setItem('dark_mode', on ? '1' : '0');
+    });
+
+    navbar.appendChild(btn);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
 // ─── Variant Inventory Data Model ────────────────────────────────────────────
 
 function getInvCategories() {
