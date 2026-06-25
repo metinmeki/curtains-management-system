@@ -1,15 +1,45 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Dashboard - Curtains Management System</title>
     <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <style>
+        .dashboard-metrics .metric-card {
+            border-left: 5px solid var(--metric-accent, var(--primary-color));
+            background: linear-gradient(135deg, var(--metric-bg, #fffdf6), #fffdf6 72%);
+        }
+
+        .dashboard-metrics .metric-card strong {
+            color: var(--metric-strong, var(--text-dark));
+        }
+
+        .dashboard-metrics .metric-card:nth-child(1) { --metric-accent: #2f7d5b; --metric-bg: #eaf5ee; --metric-strong: #24583c; }
+        .dashboard-metrics .metric-card:nth-child(2) { --metric-accent: #3f8f67; --metric-bg: #e8f6ec; --metric-strong: #27684c; }
+        .dashboard-metrics .metric-card:nth-child(3) { --metric-accent: #b4534a; --metric-bg: #faebe8; --metric-strong: #7f332d; }
+        .dashboard-metrics .metric-card:nth-child(4) { --metric-accent: #c79543; --metric-bg: #fbf0d6; --metric-strong: #7a581d; }
+        .dashboard-metrics .metric-card:nth-child(5) { --metric-accent: #7f5f3f; --metric-bg: #f3eadf; --metric-strong: #5f4630; }
+        .dashboard-metrics .metric-card:nth-child(6) { --metric-accent: #3b7f88; --metric-bg: #e7f3f4; --metric-strong: #245a60; }
+        .dashboard-metrics .metric-card:nth-child(7) { --metric-accent: #8a6fb0; --metric-bg: #f0ebf7; --metric-strong: #5d4a7a; }
+        .dashboard-metrics .metric-card:nth-child(8) { --metric-accent: #4f7ca8; --metric-bg: #e8f0f7; --metric-strong: #355d82; }
+        .dashboard-metrics .metric-card:nth-child(9) { --metric-accent: #668f3f; --metric-bg: #eef5e5; --metric-strong: #44652a; }
+        .dashboard-metrics .metric-card:nth-child(10) { --metric-accent: #2f7d5b; --metric-bg: #e7f4ec; --metric-strong: #24583c; }
+        .dashboard-metrics .metric-card:nth-child(11) { --metric-accent: #5c8a7c; --metric-bg: #e8f2ef; --metric-strong: #3e6258; }
+        .dashboard-metrics .metric-card:nth-child(12) { --metric-accent: #b86755; --metric-bg: #f8ece7; --metric-strong: #844333; }
+        .dashboard-metrics .metric-card:nth-child(13) { --metric-accent: #6e8f4a; --metric-bg: #edf4e5; --metric-strong: #4d6b33; }
+        .dashboard-metrics .metric-card:nth-child(14) { --metric-accent: #a85c70; --metric-bg: #f7e9ee; --metric-strong: #763d4d; }
+        .dashboard-metrics .metric-card:nth-child(15) { --metric-accent: #8f7a3f; --metric-bg: #f6f0d8; --metric-strong: #6b5a2b; }
+        .dashboard-metrics .metric-card:nth-child(16) { --metric-accent: #52788f; --metric-bg: #e8f0f4; --metric-strong: #36596d; }
+    </style>
 </head>
 <body class="ltr">
     <div class="layout">
         <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+            <div class="sidebar-header">
+                <div class="sidebar-title">Retail Store</div>
+                <div class="sidebar-store-name" id="sidebarStoreName">Store</div>
+            </div>
             <ul class="sidebar-menu">
                 <li class="menu-item"><a href="dashboard.html" class="active"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
                 <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
@@ -19,106 +49,392 @@
                 <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
                 <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
             </ul>
-            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+            <div class="sidebar-footer">
+                <a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a>
+            </div>
         </aside>
+
         <div class="main-content">
             <nav class="navbar">
                 <div class="navbar-title">Retail Dashboard</div>
-                <div class="navbar-actions"><span class="scope-pill">store_id scoped</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
+                <div class="navbar-actions">
+                    <span class="scope-pill">store_id scoped</span>
+                    <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div>
+                </div>
             </nav>
+
             <main class="content">
                 <div class="page-header">
-                    <div><h1 class="page-title">Store performance</h1><p class="page-subtitle">Sales from database � synced across all browsers.</p></div>
+                    <div>
+                        <h1 class="page-title">Store performance</h1>
+                        <p class="page-subtitle">Sales, payments, debts, expenses, discounts, and recent activity for the selected store only.</p>
+                    </div>
                     <div class="filter-controls">
                         <button class="filter-btn active" onclick="setDashboardPeriod('today', this)">Today</button>
                         <button class="filter-btn" onclick="setDashboardPeriod('week', this)">This week</button>
                         <button class="filter-btn" onclick="setDashboardPeriod('month', this)">This month</button>
-                        <button class="filter-btn" onclick="setDashboardPeriod('all', this)">All time</button>
+                        <button class="filter-btn" onclick="toggleCustomRange(this)">Custom range</button>
+                    </div>
+                    <div id="customRangeForm" class="form-grid" style="display:none; width:100%; margin-top: 12px;">
+                        <div class="form-group">
+                            <label>Start date</label>
+                            <input type="date" id="customStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label>End date</label>
+                            <input type="date" id="customEndDate">
+                        </div>
+                        <div class="form-group" style="align-self:end;">
+                            <button class="btn btn-primary" onclick="applyCustomRange()">Apply</button>
+                        </div>
                     </div>
                 </div>
+
                 <div class="workspace-grid dashboard-metrics">
-                    <div class="metric-card"><span>Total sales</span><strong id="totalSales">...</strong><small>All sale totals</small></div>
-                    <div class="metric-card"><span>Fully paid</span><strong id="paidSales">...</strong><small>Paid revenue</small></div>
-                    <div class="metric-card"><span>Debt sales</span><strong id="debtSales">...</strong><small>Unpaid sales</small></div>
-                    <div class="metric-card"><span>Partial payments</span><strong id="partialSales">...</strong><small>Paid partly</small></div>
-                    <div class="metric-card"><span>Discounts</span><strong id="discounts">...</strong><small>Tracked with notes</small></div>
-                    <div class="metric-card"><span>Clients</span><strong id="clients">...</strong><small>Repeat customers</small></div>
+                    <div class="metric-card"><span>Total sales</span><strong id="totalSales"></strong><small>All sale totals</small></div>
+                    <div class="metric-card"><span>Fully paid</span><strong id="paidSales"></strong><small>Paid revenue</small></div>
+                    <div class="metric-card"><span>Debt sales</span><strong id="debtSales"></strong><small>Unpaid sales</small></div>
+                    <div class="metric-card"><span>Partial payments</span><strong id="partialSales"></strong><small>Paid partly</small></div>
+                    <div class="metric-card"><span>Expenses</span><strong id="expenses"></strong><small>Store costs</small></div>
+                    <div class="metric-card"><span>Net amount</span><strong id="netAmount"></strong><small>Paid minus expenses</small></div>
+                    <div class="metric-card"><span>Discounts</span><strong id="discounts"></strong><small>Tracked with notes</small></div>
+                    <div class="metric-card"><span>Clients</span><strong id="clients"></strong><small>Repeat customers</small></div>
+                    <div class="metric-card"><span>Order sales</span><strong id="orderSales"></strong><small>External supplier orders</small></div>
+                    <div class="metric-card"><span>Order profit</span><strong id="orderProfit"></strong><small>Profit from orders</small></div>
+                    <div class="metric-card"><span>Supplier paid</span><strong id="orderSupplierPaid"></strong><small>Paid to companies</small></div>
+                    <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid"></strong><small>We still owe</small></div>
+                    <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid"></strong><small>Collected from buyers</small></div>
+                    <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt"></strong><small>Customers still owe</small></div>
+                    <div class="metric-card"><span>خياطة account</span><strong id="sewingAccountTotal"></strong><small>1,000 IQD per meter</small></div>
+                    <div class="metric-card"><span>تركيب account</span><strong id="installationAccountTotal"></strong><small>10,000 IQD per window</small></div>
                 </div>
-                <div class="card" style="margin-top:20px;">
+
+                <section class="module-grid">
+                    <div class="module-card">
+                        <h3>Dashboard filters</h3>
+                        <p>Proposal filters: date range, payment status, client, and expense category. These controls are ready for backend connection.</p>
+                    </div>
+                    <div class="module-card">
+                        <h3>Data separation</h3>
+                        <p>This screen is visually scoped to the selected store. Other stores and inventory have separate workspaces.</p>
+                    </div>
+                </section>
+
+                <div class="card">
                     <div class="card-header"><h2 class="card-title">Recent sales</h2></div>
                     <div class="card-body table-wrapper">
                         <table>
-                            <thead><tr><th>Sale</th><th>Client</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th></tr></thead>
-                            <tbody id="salesRows"><tr><td colspan="7">Loading...</td></tr></tbody>
+                            <thead>
+                                <tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th></tr>
+                            </thead>
+                            <tbody id="salesRows"></tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header"><h2 class="card-title">Recent orders</h2></div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th></tr>
+                            </thead>
+                            <tbody id="orderRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header"><h2 class="card-title">Discount details</h2></div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Sale</th><th>Client</th><th>Phone</th><th>Subtotal</th><th>Discount</th><th>Final total</th><th>Note</th></tr>
+                            </thead>
+                            <tbody id="discountRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="module-grid" style="margin-top:20px;">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Recent debt payments</h2></div>
+                        <div class="card-body table-wrapper">
+                            <table>
+                                <thead><tr><th>Client</th><th>Phone</th><th>Remaining</th><th>Status</th></tr></thead>
+                                <tbody id="debtRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
+                        <div class="card-body table-wrapper">
+                            <table>
+                                <thead><tr><th>Category</th><th>Amount</th><th>Date</th></tr></thead>
+                                <tbody id="expenseRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header"><h2 class="card-title">Worker accounts from POS sales</h2></div>
+                    <div class="card-body">
+                        <div class="module-grid">
+                            <div class="card">
+                                <div class="card-header"><h3 class="card-title">خياطة monthly account</h3></div>
+                                <div class="card-body table-wrapper">
+                                    <table>
+                                        <thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Meters</th><th>Rate</th><th>Total</th></tr></thead>
+                                        <tbody id="sewingRows"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header"><h3 class="card-title">تركيب monthly account</h3></div>
+                                <div class="card-body table-wrapper">
+                                    <table>
+                                        <thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Windows</th><th>Rate</th><th>Total</th></tr></thead>
+                                        <tbody id="installationRows"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
+
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
+
         loadShell(getStoreName());
 
         let currentPeriod = 'today';
-        let allDbSales = [];
+        let customRange = { start: '', end: '' };
 
-        function parseDate(v) { if (!v) return null; const d = new Date(v + 'T00:00:00'); return isNaN(d.getTime()) ? null : d; }
+        function parseDate(value) {
+            if (!value) return null;
+            const date = new Date(`${value}T00:00:00`);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        function getDashboardSales() {
+            const selectedStoreId = String(getStoreId() || '');
+            return getStoreSales()
+                .filter(sale => !sale.storeId || String(sale.storeId) === selectedStoreId)
+                .sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+        }
 
         function isSaleInPeriod(sale) {
-            const d = parseDate(sale.date);
-            if (!d) return false;
-            const today = new Date(); today.setHours(0,0,0,0);
-            if (currentPeriod === 'all') return true;
-            if (currentPeriod === 'today') return d.getTime() === today.getTime();
-            if (currentPeriod === 'week') { const s = new Date(today); s.setDate(today.getDate()-today.getDay()); return d >= s && d <= today; }
-            if (currentPeriod === 'month') return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+            const saleDate = parseDate(sale.date);
+            if (!saleDate) return false;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (currentPeriod === 'today') {
+                return saleDate.getTime() === today.getTime();
+            }
+
+            if (currentPeriod === 'week') {
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay());
+                return saleDate >= startOfWeek && saleDate <= today;
+            }
+
+            if (currentPeriod === 'month') {
+                return saleDate.getFullYear() === today.getFullYear() && saleDate.getMonth() === today.getMonth();
+            }
+
+            if (currentPeriod === 'custom') {
+                const start = parseDate(customRange.start);
+                const end = parseDate(customRange.end);
+                if (!start || !end) return true;
+                return saleDate >= start && saleDate <= end;
+            }
+
             return true;
         }
 
-        async function loadSalesFromAPI() {
-            document.getElementById('salesRows').innerHTML = '<tr><td colspan="7">Loading from database...</td></tr>';
-            try {
-                const storeId = getStoreId();
-                const result = await apiCall('GET', '/retail/sales/' + storeId);
-                if (result && result.data) {
-                    allDbSales = result.data.map(sale => ({
-                        id: sale.id,
-                        clientName: sale.client_name || 'One-time customer',
-                        total: parseFloat(sale.total_amount || 0),
-                        paid: parseFloat(sale.paid_amount || 0),
-                        remaining: parseFloat(sale.remaining_amount || 0),
-                        discount: parseFloat(sale.discount_amount || 0),
-                        status: sale.payment_status === 'full' ? 'Paid' : sale.payment_status === 'debt' ? 'Debt' : 'Partial',
-                        date: sale.created_at ? sale.created_at.slice(0,10) : ''
-                    }));
-                }
-            } catch(e) { console.error('API error:', e); }
-            renderDashboard();
+        function getAccountsForSales(sales) {
+            const accounts = {
+                sewing: { total: 0, rows: [] },
+                installation: { total: 0, rows: [] }
+            };
+
+            sales.forEach(sale => {
+                (sale.workerAccounts || []).forEach(row => {
+                    if (!accounts[row.account]) return;
+                    accounts[row.account].total += row.total;
+                    accounts[row.account].rows.push({
+                        saleId: sale.id,
+                        date: sale.date,
+                        clientName: sale.clientName || '-',
+                        quantity: row.quantity,
+                        price: row.price,
+                        total: row.total
+                    });
+                });
+            });
+
+            return accounts;
         }
 
         function renderDashboard() {
-            const sales = allDbSales.filter(isSaleInPeriod);
-            document.getElementById('totalSales').textContent = money(sales.reduce((s,x) => s+x.total, 0));
-            document.getElementById('paidSales').textContent = money(sales.reduce((s,x) => s+x.paid, 0));
-            document.getElementById('debtSales').textContent = money(sales.reduce((s,x) => s+x.remaining, 0));
-            document.getElementById('partialSales').textContent = money(sales.filter(x=>x.status==='Partial').reduce((s,x)=>s+x.total,0));
-            document.getElementById('discounts').textContent = money(sales.reduce((s,x)=>s+x.discount,0));
-            document.getElementById('clients').textContent = new Set(sales.map(x=>x.clientName).filter(n=>n&&n!=='One-time customer')).size;
-            document.getElementById('salesRows').innerHTML = sales.length
-                ? sales.map(s => '<tr><td>#'+s.id+'</td><td>'+esc(s.clientName)+'</td><td>'+money(s.total)+'</td><td>'+money(s.paid)+'</td><td>'+money(s.remaining)+'</td><td>'+statusBadge(s.status)+'</td><td>'+esc(s.date)+'</td></tr>').join('')
-                : '<tr><td colspan="7">No sales in this period.</td></tr>';
+            const stats = retailDemo.stats;
+            const allStoreSales = getDashboardSales();
+            const localSales = allStoreSales.filter(isSaleInPeriod);
+            const localSaleTotal = localSales.reduce((sum, sale) => sum + sale.total, 0);
+            const localPaidTotal = localSales.reduce((sum, sale) => sum + sale.paid, 0);
+            const localDebtTotal = localSales.reduce((sum, sale) => sum + sale.remaining, 0);
+            const localPartialTotal = localSales.filter(sale => sale.status === 'Partial').reduce((sum, sale) => sum + sale.total, 0);
+            const localDiscountTotal = localSales.reduce((sum, sale) => sum + Number(sale.discount || 0), 0);
+            const localClientCount = new Set(localSales.map(sale => sale.clientPhone || sale.clientName).filter(Boolean)).size;
+            const localExpenses = getStoreExpenses().filter(isSaleInPeriod);
+            const localExpenseTotal = localExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
+            const localOrders = getStoreOrders().filter(isSaleInPeriod);
+            const orderSalesTotal = localOrders.reduce((sum, order) => sum + Number(order.finalTotal || 0), 0);
+            const orderProfitTotal = localOrders.reduce((sum, order) => sum + Number(order.ourProfit || 0), 0);
+            const orderSupplierPaidTotal = localOrders.reduce((sum, order) => sum + Number(order.supplierPaid || 0), 0);
+            const orderSupplierUnpaidTotal = localOrders.reduce((sum, order) => sum + Number(order.supplierDue || 0), 0);
+            const orderBuyerPaidTotal = localOrders.reduce((sum, order) => sum + Number(order.buyerPaid || 0), 0);
+            const orderBuyerDebtTotal = localOrders.reduce((sum, order) => sum + Number(order.buyerDue || 0), 0);
+            const accounts = getAccountsForSales(localSales);
+
+            document.getElementById('totalSales').textContent = money(stats.totalSales + localSaleTotal);
+            document.getElementById('paidSales').textContent = money(stats.paidSales + localPaidTotal);
+            document.getElementById('debtSales').textContent = money(stats.debtSales + localDebtTotal);
+            document.getElementById('partialSales').textContent = money(stats.partialSales + localPartialTotal);
+            document.getElementById('expenses').textContent = money(stats.expenses + localExpenseTotal);
+            document.getElementById('netAmount').textContent = money(stats.paidSales + localPaidTotal + orderProfitTotal - stats.expenses - localExpenseTotal);
+            document.getElementById('discounts').textContent = money(stats.discounts + localDiscountTotal);
+            document.getElementById('clients').textContent = stats.clients + localClientCount;
+            document.getElementById('orderSales').textContent = money(orderSalesTotal);
+            document.getElementById('orderProfit').textContent = money(orderProfitTotal);
+            document.getElementById('orderSupplierPaid').textContent = money(orderSupplierPaidTotal);
+            document.getElementById('orderSupplierUnpaid').textContent = money(orderSupplierUnpaidTotal);
+            document.getElementById('orderBuyerPaid').textContent = money(orderBuyerPaidTotal);
+            document.getElementById('orderBuyerDebt').textContent = money(orderBuyerDebtTotal);
+            document.getElementById('sewingAccountTotal').textContent = money(accounts.sewing.total);
+            document.getElementById('installationAccountTotal').textContent = money(accounts.installation.total);
+
+            const dashboardSales = localSales.map(sale => ({
+                id: sale.id,
+                client: sale.clientName,
+                cashierName: sale.cashierName || '-',
+                total: sale.total,
+                paid: sale.paid,
+                remaining: sale.remaining,
+                status: sale.status,
+                date: sale.date
+            })).concat(retailDemo.recentSales);
+
+            document.getElementById('salesRows').innerHTML = dashboardSales.length
+                ? dashboardSales.map(sale => `
+                    <tr>
+                        <td>#${sale.id}</td><td>${esc(sale.client)}</td>
+                        <td><span style="font-size:12px;color:var(--text-gray);">${esc(sale.cashierName || '-')}</span></td>
+                        <td>${money(sale.total)}</td>
+                        <td>${money(sale.paid)}</td><td>${money(sale.remaining)}</td>
+                        <td>${statusBadge(sale.status)}</td><td>${esc(sale.date)}</td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="8">No sales in this period.</td></tr>';
+
+            document.getElementById('orderRows').innerHTML = localOrders.length
+                ? localOrders.map(order => `
+                    <tr>
+                        <td>${esc(order.reference)}</td><td>${esc(order.date)}</td><td>${esc(order.buyerName)}</td><td>${esc(order.supplierName)}</td>
+                        <td>${money(order.finalTotal)}</td><td>${money(order.ourProfit)}</td><td>${money(order.supplierDue)}</td><td>${money(order.buyerDue)}</td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="8">No orders in this period.</td></tr>';
+
+            const discountSales = localSales.filter(sale => Number(sale.discount || 0) > 0);
+            document.getElementById('discountRows').innerHTML = discountSales.length
+                ? discountSales.map(sale => `
+                    <tr>
+                        <td>${esc(sale.date)}</td><td>#${sale.id}</td><td>${esc(sale.clientName)}</td><td>${esc(sale.clientPhone)}</td>
+                        <td>${money(sale.subtotal || sale.total + Number(sale.discount || 0))}</td>
+                        <td>${money(sale.discount)}</td><td>${money(sale.total)}</td><td>${esc(sale.discountNote || '-')}</td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="8">No discounts in this period.</td></tr>';
+
+            const localDebts = localSales.filter(sale => sale.remaining > 0).map(sale => ({
+                client: sale.clientName,
+                phone: sale.clientPhone,
+                remaining: sale.remaining,
+                status: sale.status
+            }));
+
+            document.getElementById('debtRows').innerHTML = localDebts.length
+                ? localDebts.map(debt => `
+                    <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td></tr>
+                `).join('')
+                : '<tr><td colspan="4">No debts in this period.</td></tr>';
+
+            const dashboardExpenses = localExpenses.concat(retailDemo.expenses);
+            document.getElementById('expenseRows').innerHTML = dashboardExpenses.length
+                ? dashboardExpenses.map(expense => `
+                    <tr><td>${expense.category}</td><td>${money(expense.amount)}</td><td>${expense.date}</td></tr>
+                `).join('')
+                : '<tr><td colspan="3">No expenses yet.</td></tr>';
+
+        function workerRows(rows, emptyText) {
+            if (!rows.length) {
+                return `<tr><td colspan="6">${emptyText}</td></tr>`;
+            }
+
+            return rows.map(row => `
+                <tr>
+                    <td>#${row.saleId}</td><td>${row.date}</td><td>${row.clientName}</td>
+                    <td>${row.quantity}</td><td>${money(row.price)}</td><td>${money(row.total)}</td>
+                </tr>
+            `).join('');
+        }
+
+            document.getElementById('sewingRows').innerHTML = workerRows(accounts.sewing.rows, 'No خياطة account entries in this period.');
+            document.getElementById('installationRows').innerHTML = workerRows(accounts.installation.rows, 'No تركيب account entries in this period.');
+
             if (window.applyLanguage) applyLanguage();
         }
 
-        function setActiveFilter(btn) { document.querySelectorAll('.filter-controls .filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
-        function setDashboardPeriod(period, btn) { currentPeriod = period; setActiveFilter(btn); renderDashboard(); }
+        function setActiveFilter(button) {
+            document.querySelectorAll('.filter-controls .filter-btn').forEach(filterButton => {
+                filterButton.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
 
-        loadSalesFromAPI();
-        setInterval(loadSalesFromAPI, 30000);
+        function setDashboardPeriod(period, button) {
+            currentPeriod = period;
+            document.getElementById('customRangeForm').style.display = 'none';
+            setActiveFilter(button);
+            renderDashboard();
+        }
+
+        function toggleCustomRange(button) {
+            currentPeriod = 'custom';
+            setActiveFilter(button);
+            document.getElementById('customRangeForm').style.display = 'grid';
+            renderDashboard();
+        }
+
+        function applyCustomRange() {
+            customRange = {
+                start: document.getElementById('customStartDate').value,
+                end: document.getElementById('customEndDate').value
+            };
+            renderDashboard();
+        }
+
+        renderDashboard();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 </body>
