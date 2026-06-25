@@ -213,6 +213,42 @@ function loadShell(sectionLabel) {
   }
 })();
 
+// ── Cashier mode restriction ──────────────────────────────────────────────────
+(function initCashierMode() {
+  function setup() {
+    const raw = localStorage.getItem('cms_active_cashier');
+    if (!raw) return;
+    let cashier;
+    try { cashier = JSON.parse(raw); } catch(e) { return; }
+
+    // Hide all sidebar links except POS and Debts
+    document.querySelectorAll('.sidebar .menu-item a, .sidebar li a').forEach(function(link) {
+      const href = (link.getAttribute('href') || '').toLowerCase();
+      const allowed = href.includes('pos.html') || href.includes('debts.html');
+      if (!allowed) {
+        const li = link.closest('li');
+        if (li) li.style.display = 'none';
+      }
+    });
+
+    // Show cashier badge in navbar and a logout button
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+      const badge = document.createElement('div');
+      badge.className = 'cashier-mode-badge';
+      const landingPath = (window.location.pathname.includes('/retail/') || window.location.pathname.includes('/inventory/')) ? '../landing.html' : 'landing.html';
+      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="localStorage.removeItem('cms_active_cashier');window.location.href='${landingPath}'">✕ Exit</button>`;
+      navbar.appendChild(badge);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
 // ─── Variant Inventory Data Model ────────────────────────────────────────────
 
 function getInvCategories() {

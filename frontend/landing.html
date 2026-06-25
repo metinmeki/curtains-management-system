@@ -37,7 +37,60 @@
 
         <div id="storeCardsContainer" class="store-cards-grid"></div>
 
-        <section class="module-grid">
+        <!-- ══════════ Cashier Management ══════════ -->
+        <section id="cashierSection" style="margin-top:36px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div>
+                    <h2 style="font-size:20px;font-weight:800;color:var(--text-dark);margin:0;">👥 Cashiers</h2>
+                    <p style="font-size:13px;color:var(--text-gray);margin:3px 0 0;">Cashiers can only access POS and Debts pages. Click Enter to open a store in cashier mode.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openAddCashier()" id="addCashierBtn" style="padding:7px 16px;font-size:13px;">+ Add Cashier</button>
+            </div>
+
+            <!-- Add form -->
+            <div id="addCashierForm" style="display:none;background:var(--surface-soft);border:1px solid var(--border-color);border-radius:10px;padding:18px;margin-bottom:16px;">
+                <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">New Cashier</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+                    <div>
+                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Name <span style="color:#b4534a;">*</span></label>
+                        <input id="cashierNameInput" type="text" placeholder="e.g. Ahmed" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">PIN (4 digits)</label>
+                        <input id="cashierPinInput" type="text" inputmode="numeric" maxlength="4" placeholder="e.g. 1234" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Assigned Store</label>
+                        <select id="cashierStoreInput" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
+                            <option value="">Any store</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-success" onclick="saveCashier()" style="padding:8px 14px;font-size:13px;">Save</button>
+                        <button class="btn" onclick="closeAddCashier()" style="padding:8px 14px;font-size:13px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div id="cashierTableWrap">
+                <table style="width:100%;border-collapse:collapse;background:var(--surface-color);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                    <thead>
+                        <tr style="background:var(--surface-soft);">
+                            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Name</th>
+                            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-gray);border-bottom:1px solid var(--border-color);">PIN</th>
+                            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Assigned Store</th>
+                            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Enter</th>
+                            <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-gray);border-bottom:1px solid var(--border-color);"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cashierTableBody"></tbody>
+                </table>
+                <div id="cashierEmpty" style="display:none;text-align:center;padding:32px;color:var(--text-gray);font-size:14px;background:var(--surface-color);border-radius:10px;border:1px dashed var(--border-color);">No cashiers yet. Click + Add Cashier to get started.</div>
+            </div>
+        </section>
+
+        <section class="module-grid" style="margin-top:32px;">
             <div class="module-card">
                 <h3>Retail store modules</h3>
                 <p>Dashboard, POS sales, debts, clients, expenses, discounts, payment status, and date-based filters.</p>
@@ -154,6 +207,7 @@
         }
 
         function selectStore(storeKey, type) {
+            localStorage.removeItem('cms_active_cashier'); // admin entering store — clear cashier session
             const name = getStoresList().find(s => String(s.id) === String(storeKey))?.name || storeKey;
             if (type === 'inventory') {
                 removeStoreSelection();
@@ -174,9 +228,111 @@
             }
         }
 
+        // ── Cashier management ─────────────────────────────────────────────────
+        const CASHIERS_KEY = 'cms_cashiers';
+
+        function getCashiers() { return JSON.parse(localStorage.getItem(CASHIERS_KEY) || '[]'); }
+        function saveCashiers(arr) { localStorage.setItem(CASHIERS_KEY, JSON.stringify(arr)); }
+        function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+        function getStoreOptions() {
+            return getStoresList()
+                .filter(s => s.type === 'retail')
+                .map(s => `<option value="${s.id}">${s.name}</option>`)
+                .join('');
+        }
+
+        function openAddCashier() {
+            const form = document.getElementById('addCashierForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            if (form.style.display === 'block') {
+                document.getElementById('cashierStoreInput').innerHTML = '<option value="">Any store</option>' + getStoreOptions();
+                document.getElementById('cashierNameInput').value = '';
+                document.getElementById('cashierPinInput').value = '';
+                document.getElementById('cashierNameInput').focus();
+            }
+        }
+
+        function closeAddCashier() {
+            document.getElementById('addCashierForm').style.display = 'none';
+        }
+
+        function saveCashier() {
+            const name = document.getElementById('cashierNameInput').value.trim();
+            const pin  = document.getElementById('cashierPinInput').value.trim();
+            const storeId = document.getElementById('cashierStoreInput').value;
+            if (!name) { document.getElementById('cashierNameInput').focus(); return; }
+            if (pin && !/^\d{4}$/.test(pin)) { alert('PIN must be exactly 4 digits'); return; }
+            const cashiers = getCashiers();
+            cashiers.push({ id: uid(), name, pin: pin || '', storeId: storeId ? Number(storeId) : null });
+            saveCashiers(cashiers);
+            closeAddCashier();
+            renderCashierTable();
+        }
+
+        function deleteCashier(id) {
+            if (!confirm('Remove this cashier?')) return;
+            saveCashiers(getCashiers().filter(c => c.id !== id));
+            renderCashierTable();
+        }
+
+        function renderCashierTable() {
+            const cashiers = getCashiers();
+            const tbody = document.getElementById('cashierTableBody');
+            const empty = document.getElementById('cashierEmpty');
+            const table = document.querySelector('#cashierTableWrap table');
+            if (!cashiers.length) {
+                if (table) table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            if (table) table.style.display = '';
+            empty.style.display = 'none';
+            tbody.innerHTML = cashiers.map(c => {
+                const storeLabel = c.storeId
+                    ? (getStoresList().find(s => String(s.id) === String(c.storeId))?.name || 'Store ' + c.storeId)
+                    : 'Any store';
+                return `
+                <tr style="border-bottom:1px solid var(--border-color);">
+                    <td style="padding:12px 16px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:32px;height:32px;border-radius:50%;background:var(--primary-color);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">${c.name.charAt(0).toUpperCase()}</div>
+                            <span style="font-weight:700;color:var(--text-dark);">${c.name}</span>
+                        </div>
+                    </td>
+                    <td style="padding:12px 16px;color:var(--text-gray);font-family:monospace;">${c.pin ? '••••' : '<span style="color:var(--text-gray);font-size:12px;">No PIN</span>'}</td>
+                    <td style="padding:12px 16px;color:var(--text-gray);">${storeLabel}</td>
+                    <td style="padding:12px 16px;">
+                        ${c.storeId ? `<button class="btn btn-primary" style="padding:4px 12px;font-size:12px;" onclick="enterAsCashier('${c.id}')">→ Enter Store</button>` : getStoresList().filter(s=>s.type==='retail').map(s=>`<button class="btn" style="padding:3px 9px;font-size:11px;margin-right:4px;" onclick="enterAsCashierStore('${c.id}',${s.id})">${s.name}</button>`).join('')}
+                    </td>
+                    <td style="padding:12px 16px;">
+                        <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteCashier('${c.id}')">Remove</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function enterAsCashier(cashierId) {
+            const c = getCashiers().find(x => x.id === cashierId);
+            if (!c || !c.storeId) return;
+            enterAsCashierStore(cashierId, c.storeId);
+        }
+
+        function enterAsCashierStore(cashierId, storeId) {
+            const c = getCashiers().find(x => x.id === cashierId);
+            if (!c) return;
+            const storeName = getStoresList().find(s => String(s.id) === String(storeId))?.name || 'Store ' + storeId;
+            localStorage.setItem('cms_active_cashier', JSON.stringify({ id: c.id, name: c.name, storeId: Number(storeId) }));
+            localStorage.setItem('store_id', String(storeId));
+            localStorage.setItem('store_name', storeName);
+            localStorage.setItem('auth_token', 'demo-frontend-token');
+            window.location.href = 'retail/pos.html';
+        }
+
         window.addEventListener('load', () => {
             loadUserInfo();
             renderStoreCards();
+            renderCashierTable();
             if (window.applyLanguage) applyLanguage();
         });
     </script>

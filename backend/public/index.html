@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -6,23 +6,22 @@
     <title>Login - Curtains Management System</title>
     <link rel="stylesheet" href="css/style.css?v=restore-2">
     <style>
-        .login-errors {
-            color: #991b1b;
-            font-size: 13px;
-            margin-top: 8px;
-            display: none;
-        }
-
-        .login-demo-hint {
-            background-color: #eef5e8;
-            color: #31533f;
-            padding: 14px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 13px;
-            text-align: left;
-            border: 1px solid #c9dcbf;
-        }
+        .login-tabs { display:flex; gap:0; margin-bottom:24px; border:1px solid var(--border-color); border-radius:8px; overflow:hidden; }
+        .login-tab  { flex:1; padding:10px; font-size:13px; font-weight:700; cursor:pointer; background:var(--surface-soft); color:var(--text-gray); border:none; transition:background 0.15s,color 0.15s; }
+        .login-tab.active { background:var(--primary-color); color:#fff; }
+        .login-panel { display:none; }
+        .login-panel.active { display:block; }
+        .login-errors { color:#991b1b; font-size:13px; margin-top:8px; display:none; }
+        .login-demo-hint { background-color:#eef5e8; color:#31533f; padding:14px; border-radius:8px; margin-top:20px; font-size:13px; text-align:left; border:1px solid #c9dcbf; }
+        body.dark .login-demo-hint { background:#1a2e22; color:#8da898; border-color:#2e4a3c; }
+        .pin-input { letter-spacing:6px; font-size:20px; font-weight:700; text-align:center; }
+        .cashier-select-row { display:flex; align-items:center; gap:10px; background:var(--surface-soft); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s; }
+        .cashier-select-row:hover { border-color:var(--primary-color); }
+        .cashier-select-row.selected { border-color:var(--primary-color); background:rgba(47,125,91,0.08); }
+        .cashier-avatar { width:36px; height:36px; border-radius:50%; background:var(--primary-color); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; flex-shrink:0; }
+        .cashier-row-name { font-weight:700; font-size:14px; color:var(--text-dark); }
+        .cashier-row-store { font-size:12px; color:var(--text-gray); }
+        #noCashiersMsg { text-align:center; color:var(--text-gray); font-size:13px; padding:16px; }
     </style>
 </head>
 <body class="ltr">
@@ -30,40 +29,50 @@
         <div class="login-card">
             <div class="login-logo">CMS</div>
             <h1 class="login-title">Curtains Management System</h1>
-            <p class="login-subtitle">Centralized retail and inventory management for four stores and one warehouse.</p>
+            <p class="login-subtitle">Sign in to your account</p>
 
-            <form id="loginForm">
-                <div id="successMessage" class="alert alert-success" style="display: none;">
-                    Login successful. Redirecting to workspace selection...
+            <!-- Tabs -->
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchTab('admin')">🔑 Admin</button>
+                <button class="login-tab" onclick="switchTab('cashier')">👤 Cashier</button>
+            </div>
+
+            <!-- Admin panel -->
+            <div class="login-panel active" id="panel-admin">
+                <form id="loginForm">
+                    <div id="successMessage" class="alert alert-success" style="display:none;">
+                        Login successful. Redirecting…
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="admin@curtains.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" value="admin123" required>
+                    </div>
+                    <div id="adminError" class="alert alert-danger" style="display:none;"></div>
+                    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                        <span id="btnText">Login as Admin</span>
+                        <span id="btnLoader" style="display:none;"><span class="spinner" style="width:16px;height:16px;border-width:2px;margin:0;"></span></span>
+                    </button>
+                    <div class="login-demo-hint">
+                        <strong>Demo access:</strong><br>Email: admin@curtains.com<br>Password: admin123
+                    </div>
+                </form>
+            </div>
+
+            <!-- Cashier panel -->
+            <div class="login-panel" id="panel-cashier">
+                <div id="noCashiersMsg" style="display:none;">No cashiers have been added yet.<br>Ask your admin to add you from the main page.</div>
+                <div id="cashierList"></div>
+                <div class="form-group" id="pinGroup" style="display:none;margin-top:16px;">
+                    <label>PIN for <span id="selectedCashierName" style="color:var(--primary-color);"></span></label>
+                    <input id="cashierPin" type="password" inputmode="numeric" maxlength="4" class="pin-input" placeholder="••••" autocomplete="off">
                 </div>
-
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" value="admin@curtains.com" required>
-                    <div class="login-errors" id="emailError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" value="admin123" required>
-                    <div class="login-errors" id="passwordError"></div>
-                </div>
-
-                <div id="generalError" class="alert alert-danger" style="display: none;"></div>
-
-                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
-                    <span id="btnText">Login</span>
-                    <span id="btnLoader" style="display: none;">
-                        <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></span>
-                    </span>
-                </button>
-
-                <div class="login-demo-hint">
-                    <strong>Demo access:</strong><br>
-                    Email: admin@curtains.com<br>
-                    Password: admin123
-                </div>
-            </form>
+                <div id="cashierError" class="alert alert-danger" style="display:none;margin-top:8px;"></div>
+                <button class="btn btn-primary btn-block" id="cashierLoginBtn" style="display:none;margin-top:12px;" onclick="cashierLogin()">Enter as Cashier</button>
+            </div>
         </div>
     </div>
 
@@ -71,29 +80,112 @@
 
     <script src="js/api.js"></script>
     <script>
+        const CASHIERS_KEY = 'cms_cashiers';
+        let selectedCashier = null;
+
+        function getCashiers() {
+            return JSON.parse(localStorage.getItem(CASHIERS_KEY) || '[]');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.login-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'admin')));
+            document.getElementById('panel-admin').classList.toggle('active', tab === 'admin');
+            document.getElementById('panel-cashier').classList.toggle('active', tab === 'cashier');
+            if (tab === 'cashier') renderCashierList();
+        }
+
+        function getStoreLabel(storeId) {
+            const names = JSON.parse(localStorage.getItem('cms_store_custom_names') || '{}');
+            const defaults = { '1':'Store 1','2':'Store 2','3':'Store 3','4':'Store 4' };
+            if (!storeId) return 'Any store';
+            return names[String(storeId)] || defaults[String(storeId)] || 'Store ' + storeId;
+        }
+
+        function renderCashierList() {
+            const cashiers = getCashiers();
+            const list = document.getElementById('cashierList');
+            const empty = document.getElementById('noCashiersMsg');
+            if (!cashiers.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+            empty.style.display = 'none';
+            list.innerHTML = cashiers.map(c => `
+                <div class="cashier-select-row ${selectedCashier && selectedCashier.id === c.id ? 'selected' : ''}"
+                     onclick="selectCashier('${c.id}')">
+                    <div class="cashier-avatar">${c.name.charAt(0).toUpperCase()}</div>
+                    <div>
+                        <div class="cashier-row-name">${c.name}</div>
+                        <div class="cashier-row-store">${getStoreLabel(c.storeId)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCashier(id) {
+            selectedCashier = getCashiers().find(c => c.id === id);
+            renderCashierList();
+            document.getElementById('selectedCashierName').textContent = selectedCashier.name;
+            document.getElementById('pinGroup').style.display = 'block';
+            document.getElementById('cashierLoginBtn').style.display = 'block';
+            document.getElementById('cashierError').style.display = 'none';
+            document.getElementById('cashierPin').value = '';
+            document.getElementById('cashierPin').focus();
+        }
+
+        function cashierLogin() {
+            if (!selectedCashier) return;
+            const pin = document.getElementById('cashierPin').value.trim();
+            const errEl = document.getElementById('cashierError');
+            if (selectedCashier.pin && pin !== selectedCashier.pin) {
+                errEl.textContent = 'Incorrect PIN. Try again.';
+                errEl.style.display = 'block';
+                document.getElementById('cashierPin').value = '';
+                document.getElementById('cashierPin').focus();
+                return;
+            }
+            errEl.style.display = 'none';
+            // Set cashier session
+            localStorage.setItem('cms_active_cashier', JSON.stringify({
+                id: selectedCashier.id,
+                name: selectedCashier.name,
+                storeId: selectedCashier.storeId || 1
+            }));
+            // Set store context
+            const storeId = selectedCashier.storeId || 1;
+            const storeName = getStoreLabel(storeId);
+            localStorage.setItem('store_id', String(storeId));
+            localStorage.setItem('store_name', storeName);
+            localStorage.setItem('auth_token', 'demo-frontend-token');
+            window.location.href = 'retail/pos.html';
+        }
+
+        // Allow Enter key in PIN field
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('cashierPin').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') cashierLogin();
+            });
+        });
+
+        // Admin login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
-
-            document.getElementById('generalError').style.display = 'none';
+            const errEl = document.getElementById('adminError');
+            errEl.style.display = 'none';
             loginBtn.disabled = true;
             btnText.style.display = 'none';
             btnLoader.style.display = 'inline';
-
             try {
                 await login(email, password);
+                // Clear any cashier session on admin login
+                localStorage.removeItem('cms_active_cashier');
                 document.getElementById('successMessage').style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'landing.html';
-                }, 600);
+                setTimeout(() => { window.location.href = 'landing.html'; }, 600);
             } catch (error) {
-                document.getElementById('generalError').textContent = error.message || 'Login failed';
-                document.getElementById('generalError').style.display = 'block';
+                errEl.textContent = error.message || 'Login failed';
+                errEl.style.display = 'block';
                 loginBtn.disabled = false;
                 btnText.style.display = 'inline';
                 btnLoader.style.display = 'none';
@@ -101,7 +193,10 @@
         });
 
         if (getToken()) {
-            window.location.href = 'landing.html';
+            // If returning as admin, clear cashier session
+            if (!localStorage.getItem('cms_active_cashier')) {
+                window.location.href = 'landing.html';
+            }
         }
 
         // Dark mode

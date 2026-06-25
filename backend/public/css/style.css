@@ -102,6 +102,40 @@ body.dark .app-shell-note {
     color: var(--text-gray);
 }
 
+/* ── Cashier mode badge ──────────────────────────────────────────────────── */
+.cashier-mode-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(184,154,58,0.15);
+    border: 1px solid rgba(184,154,58,0.4);
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #7a6520;
+    margin-left: 8px;
+}
+
+body.dark .cashier-mode-badge {
+    background: rgba(184,154,58,0.1);
+    border-color: rgba(184,154,58,0.3);
+    color: #c8a84a;
+}
+
+.cashier-mode-badge button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: inherit;
+    padding: 0 2px;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+.cashier-mode-badge button:hover { opacity: 1; }
+
 /* ── Dark mode toggle button ─────────────────────────────────────────────── */
 .dark-mode-btn {
     background: none;
