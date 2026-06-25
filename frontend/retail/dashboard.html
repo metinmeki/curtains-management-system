@@ -47,6 +47,7 @@
                 <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
                 <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
                 <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+                <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
             </ul>
             <div class="sidebar-footer">
                 <a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a>
@@ -124,7 +125,7 @@
                     <div class="card-body table-wrapper">
                         <table>
                             <thead>
-                                <tr><th>Sale</th><th>Client</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th></tr>
+                                <tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th></tr>
                             </thead>
                             <tbody id="salesRows"></tbody>
                         </table>
@@ -325,6 +326,7 @@
             const dashboardSales = localSales.map(sale => ({
                 id: sale.id,
                 client: sale.clientName,
+                cashierName: sale.cashierName || '-',
                 total: sale.total,
                 paid: sale.paid,
                 remaining: sale.remaining,
@@ -335,12 +337,14 @@
             document.getElementById('salesRows').innerHTML = dashboardSales.length
                 ? dashboardSales.map(sale => `
                     <tr>
-                        <td>#${sale.id}</td><td>${sale.client}</td><td>${money(sale.total)}</td>
+                        <td>#${sale.id}</td><td>${sale.client}</td>
+                        <td><span style="font-size:12px;color:var(--text-gray);">${sale.cashierName || '-'}</span></td>
+                        <td>${money(sale.total)}</td>
                         <td>${money(sale.paid)}</td><td>${money(sale.remaining)}</td>
                         <td>${statusBadge(sale.status)}</td><td>${sale.date}</td>
                     </tr>
                 `).join('')
-                : '<tr><td colspan="7">No sales in this period.</td></tr>';
+                : '<tr><td colspan="8">No sales in this period.</td></tr>';
 
             document.getElementById('orderRows').innerHTML = localOrders.length
                 ? localOrders.map(order => `

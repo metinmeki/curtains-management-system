@@ -808,6 +808,7 @@
             const remaining = finalTotal - paid;
             const saleDate = document.getElementById('saleDate').value || todayInputValue();
             document.getElementById('saleDate').value = saleDate;
+            const _activeCashier = (function(){ try { return JSON.parse(localStorage.getItem('cms_active_cashier') || 'null'); } catch(e){ return null; } })();
             const sale = {
                 id: Date.now(),
                 storeId: getStoreId(),
@@ -815,6 +816,7 @@
                 date: saleDate,
                 clientName: document.getElementById('clientName').value || 'One-time customer',
                 clientPhone: document.getElementById('clientPhone').value || '-',
+                cashierName: _activeCashier ? _activeCashier.name : 'Admin',
                 subtotal: data.saleTotal,
                 discount,
                 discountNote: document.getElementById('discountNote').value,

@@ -466,7 +466,7 @@
                     <div class="card-header"><h2 class="card-title">Outstanding debts</h2></div>
                     <div class="card-body table-wrapper">
                         <table>
-                            <thead><tr><th>Client</th><th>Phone</th><th>Original sale</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Sale date</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Client</th><th>Phone</th><th>Cashier</th><th>Original sale</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Sale date</th><th>Action</th></tr></thead>
                             <tbody id="debtRows"></tbody>
                         </table>
                     </div>
@@ -652,6 +652,7 @@
                 .map(sale => ({
                     client: sale.clientName,
                     phone: sale.clientPhone,
+                    cashierName: sale.cashierName || '-',
                     original: sale.subtotal || sale.total,
                     paid: sale.paid,
                     remaining: sale.remaining,
@@ -679,9 +680,11 @@
             const debts = getLocalDebtSales().concat(retailDemo.debts);
             document.getElementById('debtRows').innerHTML = debts.length
                 ? debts.map(debt => `
-                    <tr><td>${debt.client}</td><td>${debt.phone}</td><td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${debt.status}</td><td>${debt.date}</td><td><button class="btn btn-small btn-primary">Add payment</button></td></tr>
+                    <tr><td>${debt.client}</td><td>${debt.phone}</td>
+                    <td><span style="font-size:12px;color:var(--text-gray);">${debt.cashierName || '-'}</span></td>
+                    <td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${debt.status}</td><td>${debt.date}</td><td><button class="btn btn-small btn-primary">Add payment</button></td></tr>
                 `).join('')
-                : '<tr><td colspan="8">No debts yet.</td></tr>';
+                : '<tr><td colspan="9">No debts yet.</td></tr>';
         }
 
         function resetDebtForm() {
@@ -720,6 +723,7 @@
                 return;
             }
 
+            const _activeCashier = (function(){ try { return JSON.parse(localStorage.getItem('cms_active_cashier') || 'null'); } catch(e){ return null; } })();
             const sale = {
                 id: Date.now(),
                 source: 'manual-debt',
@@ -728,6 +732,7 @@
                 date: document.getElementById('debtDate').value || todayInputValue(),
                 clientName: document.getElementById('debtClientName').value || 'Debt customer',
                 clientPhone: document.getElementById('debtClientPhone').value || '-',
+                cashierName: _activeCashier ? _activeCashier.name : 'Admin',
                 subtotal: original,
                 discount: 0,
                 discountNote: '',
