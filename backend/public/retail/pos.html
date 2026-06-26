@@ -659,10 +659,7 @@
         }
 
         function syncRow(select) {
-            // FIX: guard against undefined option (e.g. empty select or called before options load)
             const option = select.selectedOptions[0];
-            if (!option) return;
-
             const row = select.closest('tr');
             const priceInput = row.querySelector('.row-price');
             const qtyInput = row.querySelector('.row-qty');
@@ -727,7 +724,6 @@
             document.querySelectorAll('.invoice-row').forEach(row => {
                 const select = row.querySelector('.material-select');
                 const option = select.selectedOptions[0];
-                if (!option) return;
                 const material = select.value;
                 const code = (row.querySelector('.row-code') || {}).value || '';
                 const quantity = Number(row.querySelector('.row-qty').value || 0);
@@ -835,9 +831,6 @@
 
             saveStoreSale(sale);
             localStorage.setItem('last_saved_sale_id', String(sale.id));
-
-            // Also save to backend API
-            apiCall('POST', '/retail/sales', sale).then(res => { console.log('Saved to DB:', res); }).catch(err => { console.error('DB save failed:', err); });
 
             // Deduct inventory stock for any row that matched a variant code
             const missingVariants = [];
