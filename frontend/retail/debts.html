@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -6,9 +6,9 @@
     <title>Retail Debts - Curtains Management System</title>
     <link rel="stylesheet" href="../css/style.css?v=mobile-1">
     <style>
-        /* --------------------------------------------------
-           RECEIPT CARD � Premium Ledger Style
-        -------------------------------------------------- */
+        /* ══════════════════════════════════════════════════
+           RECEIPT CARD — Premium Ledger Style
+        ══════════════════════════════════════════════════ */
         .receipt-card {
             --receipt-ink:   #1b3d2e;
             --receipt-gold:  #b89a3a;
@@ -25,7 +25,7 @@
                 0 28px 60px rgba(27, 61, 46, 0.07);
         }
 
-        /* -- Header -- */
+        /* ── Header ── */
         .receipt-head {
             position: relative;
             text-align: center;
@@ -69,7 +69,7 @@
             letter-spacing: 2px;
         }
 
-        /* -- Meta row -- */
+        /* ── Meta row ── */
         .receipt-meta {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -115,7 +115,7 @@
             outline: none;
         }
 
-        /* -- Table -- */
+        /* ── Table ── */
         .receipt-table {
             direction: rtl;
             table-layout: fixed;
@@ -200,7 +200,7 @@
             overflow-wrap: anywhere;
         }
 
-        /* -- Row action buttons -- */
+        /* ── Row action buttons ── */
         .receipt-actions-head,
         .receipt-action-cell {
             width: 44px;
@@ -260,7 +260,7 @@
             color: #fff;
         }
 
-        /* -- Totals footer -- */
+        /* ── Totals footer ── */
         .receipt-bottom {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -380,7 +380,7 @@
                     <section class="card receipt-card" id="debtReceipt">
                         <div class="receipt-head">
                             <div class="receipt-brand">DLOVAN PARDA</div>
-                            <div class="receipt-subbrand">?????? ???????</div>
+                            <div class="receipt-subbrand">دلوفان للستائر</div>
                         </div>
                         <div class="receipt-meta">
                             <div class="form-group">
@@ -410,14 +410,14 @@
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>??????</th>
-                                        <th>??? / Code</th>
-                                        <th>??? / ?????</th>
-                                        <th>??? ?????</th>
-                                        <th>???????</th>
-                                        <th>??????</th>
-                                        <th>???????</th>
-                                        <th class="receipt-actions-head">?????</th>
+                                        <th>المواد</th>
+                                        <th>كود / Code</th>
+                                        <th>متر / نافذة</th>
+                                        <th>سعر المتر</th>
+                                        <th>المجموع</th>
+                                        <th>الحساب</th>
+                                        <th>ملاحظات</th>
+                                        <th class="receipt-actions-head">إضافة</th>
                                     </tr>
                                 </thead>
                                 <tbody id="invoiceRows"></tbody>
@@ -501,7 +501,7 @@
             `).join('');
         }
 
-        function addInvoiceRow(materialName = '????', afterRow = null) {
+        function addInvoiceRow(materialName = 'قماش', afterRow = null) {
             const wrapper = document.createElement('tr');
             wrapper.className = afterRow ? 'invoice-row is-added-row' : 'invoice-row';
             wrapper.innerHTML = `
@@ -518,7 +518,7 @@
                 <td class="receipt-action-cell">
                     <div class="receipt-row-actions">
                         <button class="btn btn-primary btn-small receipt-action-btn" title="Add another line below" onclick="duplicateInvoiceRow(this)">+</button>
-                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete this added line" onclick="deleteInvoiceRow(this)">�</button>
+                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete this added line" onclick="deleteInvoiceRow(this)">×</button>
                     </div>
                 </td>
             `;
@@ -535,7 +535,6 @@
 
         function syncRow(select) {
             const option = select.selectedOptions[0];
-            if (!option) return;
             const row = select.closest('tr');
             const priceInput = row.querySelector('.row-price');
             const qtyInput = row.querySelector('.row-qty');
@@ -548,14 +547,14 @@
             if (isWorker) {
                 priceInput.value = option.dataset.price;
                 priceInput.readOnly = true;
-                note.placeholder = option.value === '?????'
+                note.placeholder = option.value === 'خياطة'
                     ? 'Enter sewing meter price; khayat gets 1,000 IQD per meter'
-                    : '10,000 IQD per window to ????? account';
+                    : '10,000 IQD per window to تركيب account';
             } else {
                 priceInput.readOnly = false;
                 if (Number(priceInput.value) === 1000 || Number(priceInput.value) === 10000) priceInput.value = '';
                 if (unit === 'window') note.placeholder = 'Count windows';
-                else if (unit === 'piece') note.placeholder = 'Count pieces / ???';
+                else if (unit === 'piece') note.placeholder = 'Count pieces / قطع';
                 else note.placeholder = 'Count meters';
             }
 
@@ -590,9 +589,9 @@
             const variant = findVariantByCode(code);
             if (!variant) { tip.style.color = '#b4534a'; tip.textContent = '? not found'; return; }
             const qty = getVariantQty(variant.id, getStoreId());
-            if (qty <= 0) { tip.style.color = '#b4534a'; tip.textContent = '? out'; }
-            else if (qty <= (variant.minQty || 5)) { tip.style.color = '#c79543'; tip.textContent = '? ' + qty + ' left'; }
-            else { tip.style.color = '#2f7d5b'; tip.textContent = '? ' + qty + ' avail'; }
+            if (qty <= 0) { tip.style.color = '#b4534a'; tip.textContent = '✗ out'; }
+            else if (qty <= (variant.minQty || 5)) { tip.style.color = '#c79543'; tip.textContent = '⚠ ' + qty + ' left'; }
+            else { tip.style.color = '#2f7d5b'; tip.textContent = '✓ ' + qty + ' avail'; }
         }
 
         function getInvoiceData() {
@@ -605,7 +604,6 @@
             document.querySelectorAll('.invoice-row').forEach(row => {
                 const select = row.querySelector('.material-select');
                 const option = select.selectedOptions[0];
-                if (!option) return;
                 const material = select.value;
                 const code = (row.querySelector('.row-code') || {}).value || '';
                 const quantity = Number(row.querySelector('.row-qty').value || 0);
@@ -681,25 +679,12 @@
         async function loadDebtsFromAPI() {
             try {
                 const result = await apiCall('GET', '/retail/sales/' + getStoreId());
-                if (result && result.data) {
-                    window._apiDebts = result.data
-                        .filter(s => parseFloat(s.remaining_amount) > 0)
-                        .map(s => ({
-                            client: s.client_name || 'One-time customer',
-                            phone: '-',
-                            cashierName: s.created_by || '-',
-                            original: parseFloat(s.total_amount),
-                            paid: parseFloat(s.paid_amount),
-                            remaining: parseFloat(s.remaining_amount),
-                            status: s.payment_status === 'debt' ? 'Debt' : 'Partial',
-                            date: s.created_at ? s.created_at.slice(0,10) : ''
-                        }));
-                }
+                if (result && result.data) window._apiDebts = result.data;
             } catch(e) { window._apiDebts = []; }
-            renderDebtRows();
         }
+
         function renderDebtRows() {
-            const debts = (window._apiDebts || []).concat(getLocalDebtSales());
+            const debts = (window._apiDebts && window._apiDebts.length ? window._apiDebts : getLocalDebtSales()).concat(retailDemo.debts);
             document.getElementById('debtRows').innerHTML = debts.length
                 ? debts.map(debt => `
                     <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td>
@@ -768,8 +753,8 @@
             };
 
             saveStoreSale(sale);
-            apiCall('POST', '/retail/sales', sale).then(res => { console.log('Debt saved to DB:', res); }).catch(err => { console.error('DB save failed:', err); });
             localStorage.setItem('last_saved_sale_id', String(sale.id));
+            apiCall('POST', '/retail/sales', sale).then(res => { console.log('Debt saved to DB:', res); }).catch(err => { console.error('DB save failed:', err); });
 
             // Deduct inventory stock for rows with matched variant codes
             sale.items.forEach(item => {
@@ -793,14 +778,10 @@
             window.print();
         }
 
-        ['????', '???', '?????', '????', '?????', '???', '?????', '??????', '????'].forEach(material => addInvoiceRow(material));
+        ['قماش', 'تول', 'بطانة', 'زبرا', 'خياطة', 'سكة', 'تركيب', 'مزهرية', 'حبال'].forEach(material => addInvoiceRow(material));
         calculateDebtReceipt();
-        loadDebtsFromAPI();
+        loadDebtsFromAPI().then(() => renderDebtRows());
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 </body>
 </html>
-
-
-
-
