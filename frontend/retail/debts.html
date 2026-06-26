@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/style.css?v=mobile-1">
     <style>
         /* --------------------------------------------------
-           RECEIPT CARD — Premium Ledger Style
+           RECEIPT CARD ï¿½ Premium Ledger Style
         -------------------------------------------------- */
         .receipt-card {
             --receipt-ink:   #1b3d2e;
@@ -518,7 +518,7 @@
                 <td class="receipt-action-cell">
                     <div class="receipt-row-actions">
                         <button class="btn btn-primary btn-small receipt-action-btn" title="Add another line below" onclick="duplicateInvoiceRow(this)">+</button>
-                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete this added line" onclick="deleteInvoiceRow(this)">×</button>
+                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete this added line" onclick="deleteInvoiceRow(this)">ï¿½</button>
                     </div>
                 </td>
             `;
@@ -535,6 +535,7 @@
 
         function syncRow(select) {
             const option = select.selectedOptions[0];
+            if (!option) return;
             const row = select.closest('tr');
             const priceInput = row.querySelector('.row-price');
             const qtyInput = row.querySelector('.row-qty');
@@ -604,6 +605,7 @@
             document.querySelectorAll('.invoice-row').forEach(row => {
                 const select = row.querySelector('.material-select');
                 const option = select.selectedOptions[0];
+                if (!option) return;
                 const material = select.value;
                 const code = (row.querySelector('.row-code') || {}).value || '';
                 const quantity = Number(row.querySelector('.row-qty').value || 0);
@@ -798,6 +800,7 @@
     <script src="../js/i18n.js?v=orders-1"></script>
 </body>
 </html>
+
 
 
 
