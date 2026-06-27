@@ -274,7 +274,7 @@ function loadShell(sectionLabel) {
       const badge = document.createElement('div');
       badge.className = 'cashier-mode-badge';
       const loginPath = (window.location.pathname.includes('/retail/') || window.location.pathname.includes('/inventory/')) ? '../index.html' : 'index.html';
-      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="localStorage.removeItem('cms_active_cashier');window.location.href='${loginPath}'">✕ Exit</button>`;
+      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="localStorage.removeItem('cms_active_cashier');localStorage.removeItem('auth_token');localStorage.removeItem('user');window.location.href='${loginPath}'">✕ Exit</button>`;
       navbar.appendChild(badge);
     }
   }
