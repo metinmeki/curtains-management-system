@@ -40,7 +40,7 @@ class RetailSaleController extends Controller
             "total_amount"    => $data["total"] ?? 0,
             "paid_amount"     => $data["paid"] ?? 0,
             "remaining_amount"=> $data["remaining"] ?? 0,
-            "payment_status"  => $data["status"] ?? "partial",
+            "payment_status"  => $this->mapStatus($data["status"] ?? "partial"),
             "discount_amount" => $data["discount"] ?? 0,
             "discount_note"   => $data["discountNote"] ?? null,
             "notes"           => $data["note"] ?? null,
@@ -66,6 +66,12 @@ class RetailSaleController extends Controller
         }
 
         return response()->json(["status" => "success", "sale_id" => $saleId, "store_id" => $storeId]);
+    }
+
+    private function mapStatus($status)
+    {
+        $map = ['Paid' => 'full', 'Debt' => 'debt', 'Partial' => 'partial', 'full' => 'full', 'debt' => 'debt', 'partial' => 'partial'];
+        return $map[$status] ?? 'partial';
     }
 
     public function index(Request $request, $storeId)
