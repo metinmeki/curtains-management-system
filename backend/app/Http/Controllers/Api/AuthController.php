@@ -16,12 +16,16 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:1',
+            'store_id' => 'nullable|integer',
+            'role'     => 'nullable|string|in:admin,cashier',
         ]);
 
         $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'store_id' => $validated['store_id'] ?? null,
+            'role'     => $validated['role'] ?? 'cashier',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

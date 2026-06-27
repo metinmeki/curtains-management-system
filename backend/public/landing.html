@@ -252,14 +252,14 @@
             const cashiers = getCashiers();
             cashiers.push({ id: uid(), name, pin: pin || '', storeId: storeId ? Number(storeId) : null });
             saveCashiers(cashiers);
-            // Auto-create cashier user in Laravel database
+            // Auto-create cashier user in Laravel database with store_id and role
             try {
                 const token = localStorage.getItem('auth_token');
                 const email = name.toLowerCase().replace(/\s+/g, '') + '@curtains.com';
                 await fetch('http://127.0.0.1:8000/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ name, email, password: pin || '0000', password_confirmation: pin || '0000' })
+                    body: JSON.stringify({ name, email, password: pin || '0000', store_id: storeId ? Number(storeId) : null, role: 'cashier' })
                 });
             } catch(e) {}
             closeAddCashier();
