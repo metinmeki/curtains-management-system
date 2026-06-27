@@ -412,9 +412,13 @@
         // Try loading sales from API, fall back to localStorage
         (async function() {
             try {
-                const result = await apiCall('GET', '/retail/clients/' + getStoreId());
-                if (result && result.data && result.data.length) {
-                    window._apiSales = result.data;
+                const token = getToken();
+                if (token) {
+                    const response = await fetch(API_BASE_URL + '/retail/clients/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result && result.data && result.data.length) window._apiSales = result.data;
+                    }
                 }
             } catch(e) {}
             renderClients();

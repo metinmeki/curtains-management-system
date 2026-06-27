@@ -70,8 +70,14 @@
         async function renderExpenses() {
             let apiExpenses = [];
             try {
-                const result = await apiCall('GET', '/retail/expenses/' + getStoreId());
-                if (result && result.data) apiExpenses = result.data;
+                const token = getToken();
+                if (token) {
+                    const response = await fetch(API_BASE_URL + '/retail/expenses/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result && result.data) apiExpenses = result.data;
+                    }
+                }
             } catch(e) {}
             const expenses = apiExpenses.length ? apiExpenses : getStoreExpenses().concat(retailDemo.expenses);
             document.getElementById('expenseRows').innerHTML = expenses.length
