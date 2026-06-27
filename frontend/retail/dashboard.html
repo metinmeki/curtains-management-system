@@ -77,8 +77,8 @@
                     <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid">0 IQD</strong><small>We still owe</small></div>
                     <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid">0 IQD</strong><small>Collected from buyers</small></div>
                     <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt">0 IQD</strong><small>Customers still owe</small></div>
-                    <div class="metric-card"><span>????? account</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
-                    <div class="metric-card"><span>????? account</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
+                    <div class="metric-card"><span>حساب الخياطة</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
+                    <div class="metric-card"><span>حساب التركيب</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
                 </div>
 
                 <div class="card">
@@ -123,14 +123,14 @@
                     <div class="card-body">
                         <div class="module-grid">
                             <div class="card">
-                                <div class="card-header"><h3 class="card-title">????? monthly account</h3></div>
+                                <div class="card-header"><h3 class="card-title">حساب الخياط الشهري</h3></div>
                                 <div class="card-body table-wrapper">
                                     <table><thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Meters</th><th>Rate</th><th>Total</th></tr></thead>
                                     <tbody id="sewingRows"></tbody></table>
                                 </div>
                             </div>
                             <div class="card">
-                                <div class="card-header"><h3 class="card-title">????? monthly account</h3></div>
+                                <div class="card-header"><h3 class="card-title">حساب التركيب الشهري</h3></div>
                                 <div class="card-body table-wrapper">
                                     <table><thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Windows</th><th>Rate</th><th>Total</th></tr></thead>
                                     <tbody id="installationRows"></tbody></table>
@@ -251,8 +251,8 @@
                 if (!rows.length) return "<tr><td colspan=\"6\">"+emptyText+"</td></tr>";
                 return rows.map(r => "<tr><td>#"+r.saleId+"</td><td>"+r.date+"</td><td>"+r.clientName+"</td><td>"+r.quantity+"</td><td>"+money(r.price)+"</td><td>"+money(r.total)+"</td></tr>").join("");
             }
-            document.getElementById("sewingRows").innerHTML = workerRows(accounts.sewing.rows, "No ????? entries in this period.");
-            document.getElementById("installationRows").innerHTML = workerRows(accounts.installation.rows, "No ????? entries in this period.");
+            document.getElementById("sewingRows").innerHTML = workerRows(accounts.sewing.rows, "No sewing entries in this period.");
+            document.getElementById("installationRows").innerHTML = workerRows(accounts.installation.rows, "No installation entries in this period.");
 
             if (window.applyLanguage) applyLanguage();
         }
