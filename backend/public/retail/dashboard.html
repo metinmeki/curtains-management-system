@@ -184,7 +184,7 @@
                         subtotal: parseFloat(sale.total_amount || 0) + parseFloat(sale.discount_amount || 0),
                         status: sale.payment_status === "full" ? "Paid" : sale.payment_status === "debt" ? "Debt" : "Partial",
                         date: sale.created_at ? sale.created_at.slice(0,10) : "",
-                        workerAccounts: [],
+                        workerAccounts: sale.worker_accounts ? (typeof sale.worker_accounts === 'string' ? JSON.parse(sale.worker_accounts) : sale.worker_accounts) : [],
                         items: sale.items || []
                     }));
                 }
