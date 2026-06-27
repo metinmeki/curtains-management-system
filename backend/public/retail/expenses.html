@@ -113,7 +113,7 @@
             };
 
             saveStoreExpense(expense);
-            apiCall('POST', '/retail/expenses', expense).then(res => { console.log('Expense saved to DB:', res); }).catch(err => { console.error('DB save failed:', err); });
+            (function(){ const t=getToken(); if(!t) return; fetch(API_BASE_URL+'/retail/expenses',{method:'POST',headers:{'Authorization':'Bearer '+t,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(expense)}).then(r=>r.ok?r.json():null).then(res=>{ if(res) console.log('Expense saved to DB:',res); }).catch(err=>console.error('DB save failed:',err)); })();
             amountInput.value = '';
             document.getElementById('expenseDate').value = todayInputValue();
             document.getElementById('expenseNote').value = '';

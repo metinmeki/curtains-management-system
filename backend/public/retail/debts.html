@@ -758,7 +758,7 @@
 
             saveStoreSale(sale);
             localStorage.setItem('last_saved_sale_id', String(sale.id));
-            apiCall('POST', '/retail/sales', sale).then(res => { console.log('Debt saved to DB:', res); }).catch(err => { console.error('DB save failed:', err); });
+            (function(){ const t=getToken(); if(!t) return; fetch(API_BASE_URL+'/retail/sales',{method:'POST',headers:{'Authorization':'Bearer '+t,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(sale)}).then(r=>r.ok?r.json():null).then(res=>{ if(res) console.log('Debt saved to DB:',res); }).catch(err=>console.error('DB save failed:',err)); })();
 
             // Deduct inventory stock for rows with matched variant codes
             sale.items.forEach(item => {
