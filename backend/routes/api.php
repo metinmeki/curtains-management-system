@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\RetailExpenseController;
 use App\Http\Controllers\Api\RetailClientController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
+Route::post("/auth/register", [AuthController::class, "register"]);
 Route::post("/auth/logout", [AuthController::class, "logout"])->middleware("auth:sanctum");
 Route::get("/auth/user", [AuthController::class, "user"])->middleware("auth:sanctum");
 

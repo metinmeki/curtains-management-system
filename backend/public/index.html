@@ -136,7 +136,7 @@
             document.getElementById('cashierPin').focus();
         }
 
-        function cashierLogin() {
+        async function cashierLogin() {
             if (!selectedCashier) return;
             const pin = document.getElementById('cashierPin').value.trim();
             const errEl = document.getElementById('cashierError');
@@ -149,17 +149,32 @@
             }
             errEl.style.display = 'none';
             // Set cashier session
+            const storeId = selectedCashier.storeId || 1;
+            const storeName = getStoreLabel(storeId);
             localStorage.setItem('cms_active_cashier', JSON.stringify({
                 id: selectedCashier.id,
                 name: selectedCashier.name,
-                storeId: selectedCashier.storeId || 1
+                storeId: storeId
             }));
-            // Set store context
-            const storeId = selectedCashier.storeId || 1;
-            const storeName = getStoreLabel(storeId);
             localStorage.setItem('store_id', String(storeId));
             localStorage.setItem('store_name', storeName);
-            localStorage.setItem('auth_token', 'demo-frontend-token');
+            // Try to get a real API token using cashier name as email and PIN as password
+            try {
+                const email = selectedCashier.name.toLowerCase().replace(/\s+/g, '') + '@curtains.com';
+                const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ email, password: pin })
+                });
+                const data = await response.json();
+                if (response.ok && data.data && data.data.token) {
+                    localStorage.setItem('auth_token', data.data.token);
+                } else {
+                    localStorage.setItem('auth_token', 'demo-frontend-token');
+                }
+            } catch(e) {
+                localStorage.setItem('auth_token', 'demo-frontend-token');
+            }
             window.location.href = 'retail/pos.html';
         }
 

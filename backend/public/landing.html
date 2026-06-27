@@ -243,7 +243,7 @@
             document.getElementById('addCashierForm').style.display = 'none';
         }
 
-        function saveCashier() {
+        async function saveCashier() {
             const name = document.getElementById('cashierNameInput').value.trim();
             const pin  = document.getElementById('cashierPinInput').value.trim();
             const storeId = document.getElementById('cashierStoreInput').value;
@@ -252,6 +252,16 @@
             const cashiers = getCashiers();
             cashiers.push({ id: uid(), name, pin: pin || '', storeId: storeId ? Number(storeId) : null });
             saveCashiers(cashiers);
+            // Auto-create cashier user in Laravel database
+            try {
+                const token = localStorage.getItem('auth_token');
+                const email = name.toLowerCase().replace(/\s+/g, '') + '@curtains.com';
+                await fetch('http://127.0.0.1:8000/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ name, email, password: pin || '0000', password_confirmation: pin || '0000' })
+                });
+            } catch(e) {}
             closeAddCashier();
             renderCashierTable();
         }
