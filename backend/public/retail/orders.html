@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -221,7 +221,7 @@
                 <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
                 <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
             </ul>
-            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+            <div class="sidebar-footer"><a class="logout-btn" href="../index.html" style="display:block;text-align:center;">Exit</a></div>
         </aside>
         <div class="main-content">
             <nav class="navbar"><div class="navbar-title">Retail Orders</div><div class="navbar-actions"><span class="scope-pill">external supplier orders</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
@@ -251,7 +251,7 @@
                         <section class="card order-receipt">
                             <div class="order-receipt-head">
                                 <div class="order-brand">DLOVAN PARDA</div>
-                                <div class="order-subbrand">دلوفان للستائر</div>
+                                <div class="order-subbrand">?????? ???????</div>
                             </div>
                             <div class="order-meta">
                                 <div class="form-group"><label>Order date</label><input type="date" id="orderDate"></div>
@@ -369,9 +369,9 @@
         loadShell(getStoreName());
 
         const orderTypes = [
-            { name: 'قماش', unit: 'metres' },
-            { name: 'التوب', unit: 'metres' },
-            { name: 'سلايد', unit: 'cubic metres' }
+            { name: '????', unit: 'metres' },
+            { name: '?????', unit: 'metres' },
+            { name: '?????', unit: 'cubic metres' }
         ];
 
         function todayInputValue() {
@@ -823,14 +823,14 @@
             return `
                 <div style="text-align:center;color:#1f315f;">
                     <h1 style="letter-spacing:2px;margin:0;">DLOVAN PARDA</h1>
-                    <h2 style="margin:4px 0 10px;">دلوفان للستائر</h2>
+                    <h2 style="margin:4px 0 10px;">?????? ???????</h2>
                     <strong>${order.reference}</strong>
                 </div>
-                <p>التاريخ: ${order.date} ${order.time || ''}</p>
-                <p>الزبون: ${order.buyerName} - ${order.buyerPhone}</p>
-                <p>الشركة: ${order.supplierName}</p>
+                <p>???????: ${order.date} ${order.time || ''}</p>
+                <p>??????: ${order.buyerName} - ${order.buyerPhone}</p>
+                <p>??????: ${order.supplierName}</p>
                 <table class="print-order-table">
-                    <thead><tr><th>النوع</th><th>الكود</th><th>الكمية</th><th>الوحدة</th><th>السعر</th><th>المجموع</th></tr></thead>
+                    <thead><tr><th>?????</th><th>?????</th><th>??????</th><th>??????</th><th>?????</th><th>???????</th></tr></thead>
                     <tbody>${order.items.map(item => `<tr><td>${item.itemType}</td><td>${item.code || '-'}</td><td>${item.quantity}</td><td>${item.unit}</td><td>${money(item.price)}</td><td>${money(item.lineTotal)}</td></tr>`).join('')}</tbody>
                 </table>
                 <p>Subtotal: ${money(order.subtotal)}</p>

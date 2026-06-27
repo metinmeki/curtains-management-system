@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <title>Store Inventory - Curtains Management System</title>
     <link rel="stylesheet" href="../css/style.css?v=mobile-1">
     <style>
-        /* ── Stats ── */
+        /* -- Stats -- */
         .inv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
         .inv-stat { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--primary-color); }
         .inv-stat:nth-child(1) { border-left-color: #2f7d5b; }
@@ -16,7 +16,7 @@
         .inv-stat-label { font-size: 12px; color: var(--text-gray); font-weight: 700; margin-bottom: 4px; }
         .inv-stat-value { font-size: 22px; font-weight: 800; color: var(--text-dark); }
 
-        /* ── Toolbar ── */
+        /* -- Toolbar -- */
         .inv-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
         .inv-toolbar .form-group { margin-bottom: 0; min-width: 160px; }
         .inv-toolbar input, .inv-toolbar select { height: 38px; padding: 6px 10px; font-size: 13px; }
@@ -24,7 +24,7 @@
         .view-toggle button { border: 0; background: var(--surface-color); padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-gray); }
         .view-toggle button.active { background: var(--primary-color); color: #fff; }
 
-        /* ── Hierarchy view ── */
+        /* -- Hierarchy view -- */
         .inv-category-block { border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 14px; background: var(--surface-color); }
         .inv-category-header { display: flex; align-items: center; gap: 12px; padding: 13px 16px; cursor: pointer; background: #f0f6f1; user-select: none; }
         .inv-category-header:hover { background: #e5f0e8; }
@@ -59,7 +59,7 @@
         .inv-variant-actions button:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
         .inv-variant-actions button.danger:hover { background: #b4534a; border-color: #b4534a; }
 
-        /* ── Table view ── */
+        /* -- Table view -- */
         #tableView { display: none; }
         #tableView.active { display: block; }
         #hierarchyView.active { display: block; }
@@ -68,12 +68,12 @@
         .inv-table-img img { width: 40px; height: 40px; object-fit: cover; border-radius: 5px; }
         .code-chip { font-family: monospace; font-size: 11px; background: #f3f0e6; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
 
-        /* ── Status badges ── */
+        /* -- Status badges -- */
         .status-in { color: #2f7d5b; background: #e8f5ec; border: 1px solid #b8dec8; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .status-low { color: #8a6010; background: #fdf3d8; border: 1px solid #e8d090; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .status-out { color: #8c3028; background: #fbeae8; border: 1px solid #e0b0aa; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
-        /* ── Modal ── */
+        /* -- Modal -- */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.46); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.open { display: flex; }
         .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.22); }
@@ -85,7 +85,7 @@
         .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
         .modal-footer button { min-width: 90px; }
 
-        /* ── Movement log ── */
+        /* -- Movement log -- */
         .movement-entry { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
         .movement-entry:last-child { border-bottom: 0; }
         .movement-delta { font-weight: 800; font-size: 15px; min-width: 48px; text-align: right; }
@@ -97,10 +97,10 @@
         .movement-meta { flex: 1; font-size: 13px; color: var(--text-dark); }
         .movement-meta small { color: var(--text-gray); font-size: 11px; }
 
-        /* ── Add buttons row ── */
+        /* -- Add buttons row -- */
         .add-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 
-        /* ── Empty state ── */
+        /* -- Empty state -- */
         .inv-empty { text-align: center; padding: 60px 20px; color: var(--text-gray); }
         .inv-empty-icon { font-size: 48px; margin-bottom: 14px; }
         .inv-empty h3 { font-size: 18px; color: var(--text-dark); margin-bottom: 8px; }
@@ -122,7 +122,7 @@
             <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
             <li class="menu-item"><a href="inventory.html" class="active"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
         </ul>
-        <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+        <div class="sidebar-footer"><a class="logout-btn" href="../index.html" style="display:block;text-align:center;">Exit</a></div>
     </aside>
 
     <div class="main-content">
@@ -138,7 +138,7 @@
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Variant Inventory</h1>
-                    <p class="page-subtitle">Category → Item → Variant structure. Each variant has its own code, quantity, and stock history per store.</p>
+                    <p class="page-subtitle">Category ? Item ? Variant structure. Each variant has its own code, quantity, and stock history per store.</p>
                 </div>
             </div>
 
@@ -154,7 +154,7 @@
             <!-- Toolbar -->
             <div class="inv-toolbar">
                 <div class="form-group">
-                    <input id="searchInput" type="text" placeholder="Search by name or code…" oninput="renderAll()">
+                    <input id="searchInput" type="text" placeholder="Search by name or code�" oninput="renderAll()">
                 </div>
                 <div class="form-group">
                     <select id="filterCategory" onchange="renderAll()">
@@ -202,7 +202,7 @@
                 </div>
             </div>
 
-            <!-- ── Last activities footer ── -->
+            <!-- -- Last activities footer -- -->
             <div id="footerActivities" style="margin-top:24px;border-top:2px solid var(--border-color);padding-top:18px;">
                 <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">Last Activities</div>
                 <div id="footerActivityList"></div>
@@ -212,12 +212,12 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Add/Edit Category ════════════════ -->
+<!-- ---------------- MODAL: Add/Edit Category ---------------- -->
 <div class="modal-overlay" id="catModal">
     <div class="modal-box">
         <div class="modal-header">
             <h3 id="catModalTitle">Add Category</h3>
-            <button class="modal-close" onclick="closeModal('catModal')">×</button>
+            <button class="modal-close" onclick="closeModal('catModal')">�</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="catEditId">
@@ -231,12 +231,12 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Add/Edit Item ════════════════ -->
+<!-- ---------------- MODAL: Add/Edit Item ---------------- -->
 <div class="modal-overlay" id="itemModal">
     <div class="modal-box">
         <div class="modal-header">
             <h3 id="itemModalTitle">Add Item</h3>
-            <button class="modal-close" onclick="closeModal('itemModal')">×</button>
+            <button class="modal-close" onclick="closeModal('itemModal')">�</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="itemEditId">
@@ -254,12 +254,12 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Add/Edit Variant ════════════════ -->
+<!-- ---------------- MODAL: Add/Edit Variant ---------------- -->
 <div class="modal-overlay" id="variantModal">
     <div class="modal-box">
         <div class="modal-header">
             <h3 id="variantModalTitle">Add Variant</h3>
-            <button class="modal-close" onclick="closeModal('variantModal')">×</button>
+            <button class="modal-close" onclick="closeModal('variantModal')">�</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="variantEditId">
@@ -299,7 +299,7 @@
                 <label>Photo (optional)</label>
                 <div id="variantImagePreview" style="display:none;margin-bottom:8px;"><img id="variantImageThumb" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);" /></div>
                 <input id="variantImageFile" type="file" accept="image/*" style="display:none;" onchange="onVariantFileChange(this)">
-                <button type="button" class="btn" style="width:100%;justify-content:center;" onclick="document.getElementById('variantImageFile').click()">📷 Upload photo</button>
+                <button type="button" class="btn" style="width:100%;justify-content:center;" onclick="document.getElementById('variantImageFile').click()">?? Upload photo</button>
                 <input id="variantImage" type="hidden" value="">
             </div>
         </div>
@@ -310,12 +310,12 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Adjust Stock ════════════════ -->
+<!-- ---------------- MODAL: Adjust Stock ---------------- -->
 <div class="modal-overlay" id="adjustModal">
     <div class="modal-box">
         <div class="modal-header">
             <h3>Adjust Stock</h3>
-            <button class="modal-close" onclick="closeModal('adjustModal')">×</button>
+            <button class="modal-close" onclick="closeModal('adjustModal')">�</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="adjustVariantId">
@@ -338,7 +338,7 @@
             </div>
             <div class="form-group">
                 <label>Reason / note (optional)</label>
-                <input id="adjustReason" placeholder="e.g. Received shipment, annual count…">
+                <input id="adjustReason" placeholder="e.g. Received shipment, annual count�">
             </div>
             <div class="summary-line" style="margin-top:10px;">
                 <span>Resulting quantity</span>
@@ -352,24 +352,24 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Movement Log ════════════════ -->
+<!-- ---------------- MODAL: Movement Log ---------------- -->
 <div class="modal-overlay" id="movLogModal">
     <div class="modal-box" style="max-width:640px;">
         <div class="modal-header">
             <h3>Inventory Movement Log</h3>
-            <button class="modal-close" onclick="closeModal('movLogModal')">×</button>
+            <button class="modal-close" onclick="closeModal('movLogModal')">�</button>
         </div>
         <div class="modal-body" id="movLogBody" style="max-height:60vh;overflow-y:auto;">
         </div>
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Delete confirm ════════════════ -->
+<!-- ---------------- MODAL: Delete confirm ---------------- -->
 <div class="modal-overlay" id="deleteModal">
     <div class="modal-box" style="max-width:380px;">
         <div class="modal-header">
             <h3>Confirm Delete</h3>
-            <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+            <button class="modal-close" onclick="closeModal('deleteModal')">�</button>
         </div>
         <div class="modal-body">
             <p id="deleteModalMsg" style="color:var(--text-dark);font-size:14px;"></p>
@@ -391,7 +391,7 @@
     const STORE_ID = getStoreId();
     let currentView = 'hierarchy';
 
-    // ─── Helpers ─────────────────────────────────────────────────
+    // --- Helpers -------------------------------------------------
     function uid() { return Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
 
     function stockStatus(qty, minQty) {
@@ -402,11 +402,11 @@
 
     function variantImgHtml(image, size) {
         const s = size || 40;
-        if (image) return `<img src="${image}" style="width:${s}px;height:${s}px;object-fit:cover;border-radius:5px;" onerror="this.parentElement.innerHTML='📦'">`;
-        return '📦';
+        if (image) return `<img src="${image}" style="width:${s}px;height:${s}px;object-fit:cover;border-radius:5px;" onerror="this.parentElement.innerHTML='??'">`;
+        return '??';
     }
 
-    // ─── Modal helpers ────────────────────────────────────────────
+    // --- Modal helpers --------------------------------------------
     function openModal(id) {
         document.getElementById(id).classList.add('open');
         if (id === 'movLogModal') renderMovLog();
@@ -418,7 +418,7 @@
 
     function getItemUnit(itemId) {
         const item = getInvItems().find(i => String(i.id) === String(itemId));
-        return (item && (item.name === 'مزهرية' || item.name === 'حبال')) ? 'قطعة' : 'متر';
+        return (item && (item.name === '??????' || item.name === '????')) ? '????' : '???';
     }
 
     function updateVariantQtyLabel() {
@@ -426,8 +426,8 @@
         const unit = getItemUnit(itemId);
         const label = document.getElementById('variantQtyLabel');
         const qtyInput = document.getElementById('variantQty');
-        if (unit === 'قطعة') {
-            label.textContent = 'Starting quantity (pieces / قطع)';
+        if (unit === '????') {
+            label.textContent = 'Starting quantity (pieces / ???)';
             qtyInput.step = '1';
         } else {
             label.textContent = 'Starting quantity (metres)';
@@ -435,7 +435,7 @@
         }
     }
 
-    // ─── Stats ───────────────────────────────────────────────────
+    // --- Stats ---------------------------------------------------
     function renderStats() {
         const variants = getInvVariants();
         let totalQty = 0, low = 0, out = 0;
@@ -485,15 +485,15 @@
         const s = stockStatus(qty, v.minQty);
         document.getElementById('statLabel1').textContent = 'Type name';
         document.getElementById('statLabel2').textContent = 'Code';
-        document.getElementById('statLabel3').textContent = 'Quantity (متر)';
+        document.getElementById('statLabel3').textContent = 'Quantity (???)';
         document.getElementById('statLabel4').textContent = 'Status';
         document.getElementById('statCodes').textContent = v.name;
-        document.getElementById('statQty').textContent = v.code || '—';
+        document.getElementById('statQty').textContent = v.code || '�';
         document.getElementById('statLow').textContent = qty.toLocaleString();
         document.getElementById('statOut').innerHTML = `<span class="${s.cls}">${s.label}</span>`;
     }
 
-    // ─── Filter state ─────────────────────────────────────────────
+    // --- Filter state ---------------------------------------------
     function getFilters() {
         return {
             search: (document.getElementById('searchInput').value || '').toLowerCase().trim(),
@@ -527,7 +527,7 @@
         return true;
     }
 
-    // ─── Hierarchy view ───────────────────────────────────────────
+    // --- Hierarchy view -------------------------------------------
     function renderHierarchy() {
         const cats = getInvCategories();
         const items = getInvItems();
@@ -536,7 +536,7 @@
         const container = document.getElementById('hierarchyView');
 
         if (cats.length === 0) {
-            container.innerHTML = `<div class="inv-empty"><div class="inv-empty-icon">📦</div><h3>No inventory yet</h3><p>Start by adding a category, then items, then variants.</p></div>`;
+            container.innerHTML = `<div class="inv-empty"><div class="inv-empty-icon">??</div><h3>No inventory yet</h3><p>Start by adding a category, then items, then variants.</p></div>`;
             return;
         }
 
@@ -562,7 +562,7 @@
                 itemsHtml += `
                     <div class="inv-item-block" id="item-block-${item.id}">
                         <div class="inv-item-header" onclick="toggleItem('${item.id}');selectItemStats('${item.id}')">
-                            <span class="inv-item-chevron">▶</span>
+                            <span class="inv-item-chevron">?</span>
                             <span class="inv-item-name">${esc(item.name)}</span>
                             <span class="inv-item-meta">${itemVariants.length} <span>variants</span></span>
                             <button class="btn" style="padding:2px 8px;font-size:11px;margin-left:8px;" onclick="event.stopPropagation();openEditItem('${item.id}')">Edit</button>
@@ -577,9 +577,9 @@
             html += `
                 <div class="inv-category-block open" id="cat-block-${cat.id}">
                     <div class="inv-category-header" onclick="toggleCategory('${cat.id}')">
-                        <span class="inv-category-chevron">▶</span>
+                        <span class="inv-category-chevron">?</span>
                         <span class="inv-category-name">${esc(cat.name)}</span>
-                        <span class="inv-category-meta">${catItems.length} <span>items</span> · ${catVariantCount} <span>variants</span></span>
+                        <span class="inv-category-meta">${catItems.length} <span>items</span> � ${catVariantCount} <span>variants</span></span>
                         <button class="btn" style="padding:2px 8px;font-size:11px;margin-left:8px;" onclick="event.stopPropagation();openEditCategory('${cat.id}')">Edit</button>
                         <button class="btn btn-danger" style="padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();confirmDeleteCategory('${cat.id}')">Delete</button>
                     </div>
@@ -590,7 +590,7 @@
                 </div>`;
         });
 
-        container.innerHTML = html || `<div class="inv-empty"><div class="inv-empty-icon">🔍</div><h3>No results</h3><p>Try a different search or filter.</p></div>`;
+        container.innerHTML = html || `<div class="inv-empty"><div class="inv-empty-icon">??</div><h3>No results</h3><p>Try a different search or filter.</p></div>`;
     }
 
     function variantCard(v) {
@@ -615,7 +615,7 @@
             </div>`;
     }
 
-    // ─── Table view ───────────────────────────────────────────────
+    // --- Table view -----------------------------------------------
     function renderTable() {
         const cats = getInvCategories();
         const items = getInvItems();
@@ -638,8 +638,8 @@
             return `
                 <tr>
                     <td><div class="inv-table-img">${variantImgHtml(v.image, 40)}</div></td>
-                    <td>${esc(cat ? cat.name : '—')}</td>
-                    <td>${esc(item ? item.name : '—')}</td>
+                    <td>${esc(cat ? cat.name : '�')}</td>
+                    <td>${esc(item ? item.name : '�')}</td>
                     <td>${esc(v.name)}${v.color || v.size ? `<br><small style="color:var(--text-gray);">${esc([v.color,v.size].filter(Boolean).join(' / '))}</small>` : ''}</td>
                     <td><span class="code-chip">${esc(v.code)}</span></td>
                     <td style="font-weight:800;font-size:15px;">${qty.toLocaleString()}</td>
@@ -656,7 +656,7 @@
         }).join('');
     }
 
-    // ─── View switch ──────────────────────────────────────────────
+    // --- View switch ----------------------------------------------
     function switchView(v) {
         currentView = v;
         document.getElementById('hierarchyView').classList.toggle('active', v === 'hierarchy');
@@ -692,7 +692,7 @@
             return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-color);">
                 <span class="mov-delta ${isNeg ? 'mov-neg' : 'mov-pos'}" style="min-width:44px;text-align:center;">${sign}${m.delta}</span>
                 <div style="flex:1;">
-                    <span style="font-weight:700;font-size:13px;">${v ? v.name : (m.variantName || '—')}</span>
+                    <span style="font-weight:700;font-size:13px;">${v ? v.name : (m.variantName || '�')}</span>
                     ${v && v.code ? `<span style="margin-left:6px;font-size:11px;background:var(--surface-hover);border-radius:4px;padding:2px 6px;">${v.code}</span>` : ''}
                     <span style="margin-left:8px;font-size:12px;color:var(--text-gray);">${typeMap[m.type] || m.type}</span>
                     ${m.note ? `<span style="margin-left:8px;font-size:11px;color:var(--text-gray);">${m.note}</span>` : ''}
@@ -702,7 +702,7 @@
         }).join('');
     }
 
-    // ─── Toggle accordion ─────────────────────────────────────────
+    // --- Toggle accordion -----------------------------------------
     function toggleCategory(id) {
         const el = document.getElementById('cat-block-' + id);
         if (el) el.classList.toggle('open');
@@ -712,7 +712,7 @@
         if (el) el.classList.toggle('open');
     }
 
-    // ─── Category CRUD ────────────────────────────────────────────
+    // --- Category CRUD --------------------------------------------
     function populateCategoryFilter() {
         const cats = getInvCategories();
         const sel = document.getElementById('filterCategory');
@@ -776,7 +776,7 @@
         renderAll();
     }
 
-    // ─── Item CRUD ────────────────────────────────────────────────
+    // --- Item CRUD ------------------------------------------------
     function openAddItemFor(catId) {
         populateCategorySelects();
         document.getElementById('itemModalTitle').textContent = (window.translateText && window.getLanguage) ? translateText('Add Item', getLanguage()) : 'Add Item';
@@ -833,7 +833,7 @@
         renderAll();
     }
 
-    // ─── Variant CRUD ─────────────────────────────────────────────
+    // --- Variant CRUD ---------------------------------------------
     function populateVariantItems() {
         const catId = document.getElementById('variantCategorySelect').value;
         const items = getInvItems().filter(i => !catId || String(i.categoryId) === catId);
@@ -951,13 +951,13 @@
         renderAll();
     }
 
-    // ─── Adjust stock ─────────────────────────────────────────────
+    // --- Adjust stock ---------------------------------------------
     function openAdjust(variantId) {
         const v = getInvVariants().find(x => String(x.id) === String(variantId));
         if (!v) return;
         const qty = getVariantQty(variantId, STORE_ID);
         document.getElementById('adjustVariantId').value = variantId;
-        document.getElementById('adjustVariantLabel').textContent = `${v.name} · ${v.code}`;
+        document.getElementById('adjustVariantLabel').textContent = `${v.name} � ${v.code}`;
         document.getElementById('adjustCurrentQty').textContent = qty + ' ' + getItemUnit(v.itemId);
         document.getElementById('adjustType').value = 'add';
         document.getElementById('adjustQty').value = 1;
@@ -983,7 +983,7 @@
         else if (type === 'remove' || type === 'damaged') result = Math.max(0, current - qty);
         else if (type === 'set') result = qty;
         const adjVariant = getInvVariants().find(x => String(x.id) === String(document.getElementById('adjustVariantId').value));
-        document.getElementById('adjustResultPreview').textContent = result + ' ' + (adjVariant ? getItemUnit(adjVariant.itemId) : 'متر');
+        document.getElementById('adjustResultPreview').textContent = result + ' ' + (adjVariant ? getItemUnit(adjVariant.itemId) : '???');
     }
 
     function applyAdjust() {
@@ -1016,7 +1016,7 @@
         renderAll();
     }
 
-    // ─── Movement log ─────────────────────────────────────────────
+    // --- Movement log ---------------------------------------------
     function renderMovLog() {
         const movements = getInvMovements(STORE_ID);
         const body = document.getElementById('movLogBody');
@@ -1027,50 +1027,50 @@
         body.innerHTML = movements.map(m => {
             const isNeg = m.delta < 0;
             const sign = m.delta > 0 ? '+' : '';
-            const typeLabels = { sale: '🛒 Sale', add: '📦 Add', remove: '↩️ Remove', adjust: '✏️ Adjust', set: '📐 Set', damaged: '🗑️ Damaged' };
+            const typeLabels = { sale: '?? Sale', add: '?? Add', remove: '?? Remove', adjust: '?? Adjust', set: '?? Set', damaged: '??? Damaged' };
             const dateStr = m.date ? new Date(m.date).toLocaleString() : '';
             return `
                 <div class="movement-entry">
                     <div class="movement-delta ${isNeg ? 'neg' : 'pos'}">${sign}${m.delta}</div>
                     <div class="movement-meta">
-                        <strong>${esc(m.variantName || '—')}</strong> <span class="code-chip">${esc(m.variantCode || '—')}</span>
-                        <br>${typeLabels[m.type] || m.type} · ${m.prevQty} → ${m.nextQty}
-                        ${m.reason ? ` · <em>${esc(m.reason)}</em>` : ''}
-                        <br><small>${dateStr}${m.ref ? ` · ref: ${esc(m.ref)}` : ''}</small>
+                        <strong>${esc(m.variantName || '�')}</strong> <span class="code-chip">${esc(m.variantCode || '�')}</span>
+                        <br>${typeLabels[m.type] || m.type} � ${m.prevQty} ? ${m.nextQty}
+                        ${m.reason ? ` � <em>${esc(m.reason)}</em>` : ''}
+                        <br><small>${dateStr}${m.ref ? ` � ref: ${esc(m.ref)}` : ''}</small>
                     </div>
                 </div>`;
         }).join('');
     }
 
-    // ─── Escape helper ────────────────────────────────────────────
+    // --- Escape helper --------------------------------------------
     function esc(str) {
         return String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    // ─── Seed POS materials (runs once if inventory is empty) ──────
+    // --- Seed POS materials (runs once if inventory is empty) ------
     function migrateRemoveServices() {
         const cats = getInvCategories();
         if (!cats.find(c => c.id === 'seed-cat-services')) return;
         saveInvCategories(cats.filter(c => c.id !== 'seed-cat-services'));
         saveInvItems(getInvItems().filter(i => i.categoryId !== 'seed-cat-services'));
-        saveInvVariants(getInvVariants().filter(v => v.itemId !== 'seed-item-خياطة' && v.itemId !== 'seed-item-تركيب'));
+        saveInvVariants(getInvVariants().filter(v => v.itemId !== 'seed-item-?????' && v.itemId !== 'seed-item-?????'));
     }
 
     function initSeedData() {
         if (getInvCategories().length > 0) return;
 
-        const catFabrics  = { id: 'seed-cat-fabrics',  name: 'أقمشة', description: 'القماش والمواد الأساسية' };
-        const catHardware = { id: 'seed-cat-hardware', name: 'أدوات', description: 'السكك والإكسسوارات' };
+        const catFabrics  = { id: 'seed-cat-fabrics',  name: '?????', description: '?????? ??????? ????????' };
+        const catHardware = { id: 'seed-cat-hardware', name: '?????', description: '????? ????????????' };
         saveInvCategories([catFabrics, catHardware]);
 
         saveInvItems([
-            { id: 'seed-item-قماش',   categoryId: catFabrics.id,   name: 'قماش',   description: '' },
-            { id: 'seed-item-تول',    categoryId: catFabrics.id,   name: 'تول',    description: '' },
-            { id: 'seed-item-بطانة',  categoryId: catFabrics.id,   name: 'بطانة',  description: '' },
-            { id: 'seed-item-زبرا',   categoryId: catFabrics.id,   name: 'زبرا',   description: '' },
-            { id: 'seed-item-سكة',    categoryId: catHardware.id,  name: 'سكة',    description: '' },
-            { id: 'seed-item-مزهرية', categoryId: catHardware.id,  name: 'مزهرية', description: '' },
-            { id: 'seed-item-حبال',   categoryId: catHardware.id,  name: 'حبال',   description: '' },
+            { id: 'seed-item-????',   categoryId: catFabrics.id,   name: '????',   description: '' },
+            { id: 'seed-item-???',    categoryId: catFabrics.id,   name: '???',    description: '' },
+            { id: 'seed-item-?????',  categoryId: catFabrics.id,   name: '?????',  description: '' },
+            { id: 'seed-item-????',   categoryId: catFabrics.id,   name: '????',   description: '' },
+            { id: 'seed-item-???',    categoryId: catHardware.id,  name: '???',    description: '' },
+            { id: 'seed-item-??????', categoryId: catHardware.id,  name: '??????', description: '' },
+            { id: 'seed-item-????',   categoryId: catHardware.id,  name: '????',   description: '' },
         ]);
     }
 
@@ -1087,7 +1087,7 @@
         reader.readAsDataURL(file);
     }
 
-    // ─── Init ─────────────────────────────────────────────────────
+    // --- Init -----------------------------------------------------
     migrateRemoveServices();
     initSeedData();
     populateCategorySelects();
