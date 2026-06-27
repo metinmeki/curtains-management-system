@@ -158,16 +158,34 @@
             }));
             localStorage.setItem('store_id', String(storeId));
             localStorage.setItem('store_name', storeName);
-            // Try to get a real API token using cashier name as email and PIN as password
+            // Try to get a real API token — auto-register if account doesn't exist yet
             try {
                 const email = selectedCashier.name.toLowerCase().replace(/\s+/g, '') + '@curtains.com';
-                const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ email, password: pin })
+                const password = pin || '0000';
+                const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+
+                // First attempt login
+                let res = await fetch('http://127.0.0.1:8000/api/auth/login', {
+                    method: 'POST', headers,
+                    body: JSON.stringify({ email, password })
                 });
-                const data = await response.json();
-                if (response.ok && data.data && data.data.token) {
+                let data = await res.json();
+
+                if (!res.ok || !data.data?.token) {
+                    // Login failed — try to register the account first
+                    await fetch('http://127.0.0.1:8000/api/auth/register', {
+                        method: 'POST', headers,
+                        body: JSON.stringify({ name: selectedCashier.name, email, password, store_id: storeId, role: 'cashier' })
+                    });
+                    // Try login again after registration
+                    res = await fetch('http://127.0.0.1:8000/api/auth/login', {
+                        method: 'POST', headers,
+                        body: JSON.stringify({ email, password })
+                    });
+                    data = await res.json();
+                }
+
+                if (res.ok && data.data?.token) {
                     localStorage.setItem('auth_token', data.data.token);
                 } else {
                     localStorage.setItem('auth_token', 'demo-frontend-token');
