@@ -36,6 +36,41 @@ class AuthController extends Controller
         ], 201);
     }
 
+    public function cashierLogin(Request $request)
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string',
+            'pin'      => 'nullable|string',
+            'store_id' => 'nullable|integer',
+        ]);
+
+        $email    = strtolower(preg_replace('/\s+/', '', $validated['name'])) . '@curtains.com';
+        $password = $validated['pin'] ?: '0000';
+        $storeId  = $validated['store_id'] ?? null;
+
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            // Always sync the PIN and store_id so it stays up to date
+            $user->password = Hash::make($password);
+            $user->store_id = $storeId;
+            $user->role     = 'cashier';
+            $user->save();
+        } else {
+            $user = User::create([
+                'name'     => $validated['name'],
+                'email'    => $email,
+                'password' => Hash::make($password),
+                'store_id' => $storeId,
+                'role'     => 'cashier',
+            ]);
+        }
+
+        $token = $user->createToken('cashier_token')->plainTextToken;
+
+        return response()->json(['status' => 'success', 'data' => ['token' => $token, 'user' => $user]]);
+    }
+
     public function login(Request $request)
     {
         $validated = $request->validate([
