@@ -273,8 +273,8 @@ function loadShell(sectionLabel) {
     if (navbar) {
       const badge = document.createElement('div');
       badge.className = 'cashier-mode-badge';
-      const landingPath = (window.location.pathname.includes('/retail/') || window.location.pathname.includes('/inventory/')) ? '../landing.html' : 'landing.html';
-      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="localStorage.removeItem('cms_active_cashier');window.location.href='${landingPath}'">✕ Exit</button>`;
+      const loginPath = (window.location.pathname.includes('/retail/') || window.location.pathname.includes('/inventory/')) ? '../index.html' : 'index.html';
+      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="localStorage.removeItem('cms_active_cashier');window.location.href='${loginPath}'">✕ Exit</button>`;
       navbar.appendChild(badge);
     }
   }
