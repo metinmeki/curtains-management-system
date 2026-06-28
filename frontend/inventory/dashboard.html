@@ -583,6 +583,42 @@ function refreshRowCodes() {
     });
 }
 
+// ─── Code availability lookup ────────────────────────────────────────────────
+
+function findVariantByCode(code) {
+    if (!code) return null;
+    const variants = JSON.parse(localStorage.getItem('wh_variants_v1') || '{}');
+    for (const itemName of Object.keys(variants)) {
+        const v = variants[itemName].find(x => x.code === code.trim());
+        if (v) return { itemName, variant: v };
+    }
+    return null;
+}
+
+function onCodeInput(input) {
+    const code = input.value.trim();
+    const row = input.closest('tr');
+    let badge = row.querySelector('.avail-badge');
+    if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'avail-badge';
+        badge.style.cssText = 'font-size:10px;font-weight:800;letter-spacing:0.5px;margin-top:2px;text-align:center;';
+        input.parentNode.appendChild(badge);
+    }
+    if (!code) { badge.textContent = ''; return; }
+    const found = findVariantByCode(code);
+    if (found) {
+        const qty = parseFloat(found.variant.qty) || 0;
+        const unit = found.variant.unit || '';
+        const color = qty <= 0 ? '#b4534a' : qty < (found.variant.minQty || 10) ? '#b8860b' : '#2d7a44';
+        badge.style.color = color;
+        badge.textContent = `متوفر: ${qty} ${unit}`;
+    } else {
+        badge.style.color = '#aaa';
+        badge.textContent = 'كود غير موجود';
+    }
+}
+
 // ─── Receipt rows ─────────────────────────────────────────────────────────────
 
 function makeRow(item) {
@@ -593,7 +629,7 @@ function makeRow(item) {
                 <span class="item-name-label" data-item="${esc(item.name)}">${esc(item.name)}</span>
                 <span class="item-unit-badge">${esc(item.unit)}</span>
             </td>
-            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" style="width:100%;border:0;background:transparent;color:#b89a3a;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
+            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" oninput="onCodeInput(this)" style="width:100%;border:0;background:transparent;color:#b89a3a;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
             <td>
                 <div class="qty-stepper">
                     <button class="qty-btn" onclick="stepQty(this, -${item.step})">−</button>
