@@ -231,10 +231,22 @@ function todayVal() { const n=new Date(); return new Date(n-n.getTimezoneOffset(
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 function getVariants() { return JSON.parse(localStorage.getItem(VARIANTS_KEY) || '{}'); }
-function saveVariants(v) { localStorage.setItem(VARIANTS_KEY, JSON.stringify(v)); }
+function saveVariants(v) {
+    localStorage.setItem(VARIANTS_KEY, JSON.stringify(v));
+    const token = getToken();
+    if (token && token !== 'demo-frontend-token') {
+        fetch(API_BASE_URL + '/warehouse/kv/variants', { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(v) }).catch(()=>{});
+    }
+}
 
 function getMov() { return JSON.parse(localStorage.getItem(MOV_KEY) || '[]'); }
-function saveMov(a) { localStorage.setItem(MOV_KEY, JSON.stringify(a)); }
+function saveMov(a) {
+    localStorage.setItem(MOV_KEY, JSON.stringify(a));
+    const token = getToken();
+    if (token && token !== 'demo-frontend-token') {
+        fetch(API_BASE_URL + '/warehouse/kv/movements', { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(a.slice(0,500)) }).catch(()=>{});
+    }
+}
 
 function addMov(entry) {
     const list = getMov();
@@ -731,10 +743,24 @@ function populateItemFilter() {
         WH_ITEMS.map(i => `<option value="${esc(i.name)}">${esc(i.name)}</option>`).join('');
 }
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     populateItemFilter();
     renderAll();
     if (window.applyLanguage) applyLanguage();
+    // Load from DB (overrides localStorage if DB has data)
+    const token = getToken();
+    if (token && token !== 'demo-frontend-token') {
+        try {
+            const [vRes, mRes] = await Promise.all([
+                fetch(API_BASE_URL + '/warehouse/kv/variants',  { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } }),
+                fetch(API_BASE_URL + '/warehouse/kv/movements', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } })
+            ]);
+            if (vRes.ok) { const r = await vRes.json(); if (r.data && Object.keys(r.data).length) { localStorage.setItem(VARIANTS_KEY, JSON.stringify(r.data)); } }
+            if (mRes.ok) { const r = await mRes.json(); if (r.data && r.data.length) { localStorage.setItem(MOV_KEY, JSON.stringify(r.data)); } }
+            renderAll();
+            renderMovHistory();
+        } catch(e) {}
+    }
 });
 </script>
 <script src="../js/i18n.js?v=arabic-en-2"></script>

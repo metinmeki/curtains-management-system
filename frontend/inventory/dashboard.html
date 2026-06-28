@@ -420,13 +420,43 @@ const WH_ITEMS = [
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
-function getWhSales() { return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]'); }
+let _dbSupplies = []; // populated from DB on load
+
+function getWhSales() {
+    if (_dbSupplies.length) return _dbSupplies;
+    return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]');
+}
 function saveWhSales(arr) { localStorage.setItem(WH_SALES_KEY, JSON.stringify(arr)); }
-function addWhSale(sale) { const s = getWhSales(); s.unshift(sale); saveWhSales(s); }
+function addWhSale(sale) { _dbSupplies.unshift(sale); const s = JSON.parse(localStorage.getItem(WH_SALES_KEY)||'[]'); s.unshift(sale); saveWhSales(s); }
 function updateWhSale(updated) {
-    const s = getWhSales();
-    const i = s.findIndex(x => x.id === updated.id);
-    if (i >= 0) { s[i] = updated; saveWhSales(s); }
+    const i = _dbSupplies.findIndex(x => String(x.id) === String(updated.id) || x.reference === updated.reference);
+    if (i >= 0) _dbSupplies[i] = updated;
+    const s = JSON.parse(localStorage.getItem(WH_SALES_KEY)||'[]');
+    const j = s.findIndex(x => x.id === updated.id);
+    if (j >= 0) { s[j] = updated; saveWhSales(s); }
+}
+
+async function loadSuppliesFromDB() {
+    const token = getToken();
+    if (!token || token === 'demo-frontend-token') return;
+    try {
+        const res = await fetch(API_BASE_URL + '/warehouse/supplies', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+        if (res.ok) {
+            const r = await res.json();
+            if (r.data && r.data.length) {
+                _dbSupplies = r.data.map(s => ({
+                    id: s.id, reference: s.reference,
+                    storeId: s.store_id, storeName: WH_STORES.find(x => x.id == s.store_id)?.name || 'Store ' + s.store_id,
+                    date: (s.date||'').slice(0,10), finalTotal: parseFloat(s.total||0),
+                    paid: parseFloat(s.paid||0), remaining: parseFloat(s.remaining||0),
+                    status: s.status === 'paid' ? 'Paid' : s.status === 'partial' ? 'Partial' : 'Debt',
+                    notes: s.notes || '', type: s.status === 'debt' ? 'debt' : 'cash',
+                    items: (s.items||[]).map(i => ({ item: i.item_name, code: '', quantity: parseFloat(i.quantity), unit: i.unit||'', price: parseFloat(i.price), lineTotal: parseFloat(i.line_total) })),
+                    payments: s.payments || []
+                }));
+            }
+        }
+    } catch(e) { console.error('Warehouse load error:', e); }
 }
 
 function getItemCodes() { return JSON.parse(localStorage.getItem(WH_CODES_KEY) || '{}'); }
@@ -679,6 +709,16 @@ function submitSupply(mode) {
     addWhSale(sale);
     deductWhStock(items, reference);
 
+    // Save to DB
+    const token = getToken();
+    if (token && token !== 'demo-frontend-token') {
+        fetch(API_BASE_URL + '/warehouse/supplies', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(sale)
+        }).then(r => r.ok ? r.json() : null).then(res => { if (res) { sale.id = res.id; } }).catch(e => console.error('WH supply save error:', e));
+    }
+
     msg.textContent = `${reference} saved for ${storeName}. Status: ${status}`;
     msg.className = 'alert alert-success';
     msg.style.display = 'block';
@@ -862,6 +902,22 @@ function recordHistoryPayment() {
             amount -= apply;
         });
     saveWhSales(sales);
+
+    // Pay each supply via DB API
+    const token = getToken();
+    if (token && token !== 'demo-frontend-token') {
+        const modified = sales.filter(s => String(s.storeId) === String(storeId) && (s.payments||[]).some(p => p.note === note && p.date === todayVal()));
+        modified.forEach(s => {
+            const lastPay = (s.payments||[]).slice(-1)[0];
+            if (!lastPay || !s.id) return;
+            fetch(API_BASE_URL + '/warehouse/supplies/' + s.id + '/pay', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ amount: lastPay.amount, note: lastPay.note })
+            }).catch(e => console.error('WH pay error:', e));
+        });
+    }
+
     amtInput.value  = '';
     noteInput.value = '';
     refreshKPI();
@@ -917,6 +973,7 @@ function initPage() {
 }
 
 initPage();
+loadSuppliesFromDB().then(() => { refreshKPI(); initStoreTabs(); renderHistoryPanel(); renderStoreAccounts(); });
 </script>
 <script src="../js/i18n.js?v=wh-2"></script>
 </body>

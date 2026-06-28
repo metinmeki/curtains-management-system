@@ -51,13 +51,35 @@
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         loadShell('Inventory / Warehouse');
-        document.getElementById('clientSelect').innerHTML = inventoryDemo.clients.map(client => `<option>${client.name}</option>`).join('');
-        document.getElementById('categorySelect').innerHTML = [...new Set(inventoryDemo.categories.map(item => item.category))].map(item => `<option>${item}</option>`).join('');
-        document.getElementById('categoryRows').innerHTML = inventoryDemo.categories.map(item => `<tr><td>${item.category}</td><td>${item.type}</td><td>${item.quantity}</td><td>${money(item.unitPrice)}</td></tr>`).join('');
+        function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
         function calcInventorySale() {
             document.getElementById('lineTotal').textContent = money(Number(document.getElementById('qty').value || 0) * Number(document.getElementById('unitPrice').value || 0));
         }
+        const WH_STORES = [{id:1,name:'Store 1'},{id:2,name:'Store 2'},{id:3,name:'Store 3'},{id:4,name:'Store 4'}];
+        async function loadPage() {
+            const token = getToken();
+            // Populate store select
+            document.getElementById('clientSelect').innerHTML = WH_STORES.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+            // Load supplies from DB for the category rows (recent supply history)
+            if (token && token !== 'demo-frontend-token') {
+                try {
+                    const res = await fetch(API_BASE_URL + '/warehouse/supplies', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                    if (res.ok) {
+                        const r = await res.json();
+                        const supplies = r.data || [];
+                        document.getElementById('categoryRows').innerHTML = supplies.length
+                            ? supplies.slice(0,20).map(s=>`<tr><td>${esc(s.reference)}</td><td>${esc(WH_STORES.find(x=>x.id==s.store_id)?.name||'Store '+s.store_id)}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.remaining)}</td><td>${esc((s.date||'').slice(0,10))}</td></tr>`).join('')
+                            : '<tr><td colspan="6" style="text-align:center;color:#888;">No supply history yet.</td></tr>';
+                        // Update table headers
+                        document.querySelector('#categoryRows').closest('table').querySelector('thead tr').innerHTML = '<th>Reference</th><th>Store</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Date</th>';
+                        return;
+                    }
+                } catch(e) {}
+            }
+            document.getElementById('categoryRows').innerHTML = inventoryDemo.categories.map(item=>`<tr><td>${item.category}</td><td>${item.type}</td><td>${item.quantity}</td><td>${money(item.unitPrice)}</td></tr>`).join('');
+        }
         calcInventorySale();
+        loadPage();
     </script>
     <script src="../js/i18n.js?v=arabic-en-2"></script>
 </body>
