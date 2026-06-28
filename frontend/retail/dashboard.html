@@ -114,8 +114,8 @@
                     <div class="card">
                         <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
                         <div class="card-body table-wrapper">
-                            <table><thead><tr><th>Category</th><th>Amount</th><th>Date</th></tr></thead>
-                            <tbody id="expenseRows"><tr><td colspan="3">No expenses yet.</td></tr></tbody></table>
+                            <table><thead><tr><th>Category</th><th>Amount</th><th>Note</th><th>Date</th></tr></thead>
+                            <tbody id="expenseRows"><tr><td colspan="4">No expenses yet.</td></tr></tbody></table>
                         </div>
                     </div>
                 </div>
@@ -232,8 +232,8 @@
             document.getElementById("expenses").textContent = money(expenseTotal);
             document.getElementById("netAmount").textContent = money(paidTotal - expenseTotal);
             document.getElementById("expenseRows").innerHTML = periodExpenses.length
-                ? periodExpenses.map(e => `<tr><td>${esc(e.category||'-')}</td><td>${money(e.amount)}</td><td>${(e.date||'').slice(0,10)}</td></tr>`).join('')
-                : '<tr><td colspan="3">No expenses in this period.</td></tr>';
+                ? periodExpenses.map(e => `<tr><td>${esc(e.category||'-')}</td><td>${money(e.amount)}</td><td>${esc(e.note||'-')}</td><td>${(e.date||'').slice(0,10)}</td></tr>`).join('')
+                : '<tr><td colspan="4">No expenses in this period.</td></tr>';
             document.getElementById("discounts").textContent = money(discountTotal);
             document.getElementById("clients").textContent = clientCount;
             document.getElementById("orderSales").textContent = money(0);
