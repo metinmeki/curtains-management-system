@@ -153,6 +153,7 @@
         let currentPeriod = "today";
         let customRange = { start: "", end: "" };
         let allDbSales = [];
+        let allDbExpenses = [];
 
         function parseDate(v) { if (!v) return null; const d = new Date(v + "T00:00:00"); return isNaN(d.getTime()) ? null : d; }
 
@@ -190,6 +191,13 @@
                     }));
                 }
             } catch(e) { console.error("API error:", e); }
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const res = await fetch(API_BASE_URL + '/retail/expenses/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                if (res.ok) { const r = await res.json(); if (r.data) allDbExpenses = r.data; }
+            } catch(e) {}
+
             renderDashboard();
         }
 
@@ -219,8 +227,13 @@
             document.getElementById("paidSales").textContent = money(paidTotal);
             document.getElementById("debtSales").textContent = money(debtTotal);
             document.getElementById("partialSales").textContent = money(partialTotal);
-            document.getElementById("expenses").textContent = money(0);
-            document.getElementById("netAmount").textContent = money(paidTotal);
+            const periodExpenses = allDbExpenses.filter(e => isSaleInPeriod({date: (e.date||'').slice(0,10)}));
+            const expenseTotal = periodExpenses.reduce((s,e) => s + parseFloat(e.amount||0), 0);
+            document.getElementById("expenses").textContent = money(expenseTotal);
+            document.getElementById("netAmount").textContent = money(paidTotal - expenseTotal);
+            document.getElementById("expenseRows").innerHTML = periodExpenses.length
+                ? periodExpenses.map(e => `<tr><td>${esc(e.category||'-')}</td><td>${money(e.amount)}</td><td>${(e.date||'').slice(0,10)}</td></tr>`).join('')
+                : '<tr><td colspan="3">No expenses in this period.</td></tr>';
             document.getElementById("discounts").textContent = money(discountTotal);
             document.getElementById("clients").textContent = clientCount;
             document.getElementById("orderSales").textContent = money(0);
