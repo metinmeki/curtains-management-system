@@ -10,7 +10,7 @@ class RetailOrderController extends Controller
     {
         $user    = $request->user();
         $data    = $request->json()->all();
-        $storeId = $user->store_id ?? ($data['storeId'] ?? 1);
+        $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data['storeId'] ?? $user->store_id ?? 1);
 
         // Avoid duplicate saves
         if (!empty($data['reference']) && DB::table('retail_orders')->where('reference', $data['reference'])->exists()) {

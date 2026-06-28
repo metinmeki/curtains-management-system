@@ -11,8 +11,8 @@ class RetailSaleController extends Controller
         $user    = $request->user();
         $data    = $request->json()->all();
 
-        // Store ID comes from the authenticated user — never from frontend input
-        $storeId = $user->store_id ?? ($data["storeId"] ?? 1);
+        // Cashiers: always use their assigned store. Admins: use the storeId from request.
+        $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data["storeId"] ?? $user->store_id ?? 1);
 
         $clientName  = $data["clientName"] ?? "One-time customer";
         $clientPhone = $data["clientPhone"] ?? "-";

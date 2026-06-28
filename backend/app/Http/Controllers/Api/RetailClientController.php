@@ -6,8 +6,12 @@ use Illuminate\Support\Facades\DB;
 
 class RetailClientController extends Controller
 {
-    public function index($storeId)
+    public function index(Request $request, $storeId)
     {
+        $user = $request->user();
+        if ($user->role === 'cashier' && $user->store_id && (int)$user->store_id !== (int)$storeId) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
         $clients = DB::table("retail_clients")
             ->where("store_id", $storeId)
             ->orderBy("name")

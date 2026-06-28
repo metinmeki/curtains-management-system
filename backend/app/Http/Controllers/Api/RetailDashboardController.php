@@ -11,6 +11,11 @@ class RetailDashboardController extends Controller
 {
     public function index(Request $request, $storeId)
     {
+        $user = $request->user();
+        if ($user->role === 'cashier' && $user->store_id && (int)$user->store_id !== (int)$storeId) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
         try {
             $period = $request->input('period', 'today');
             $startDate = $request->input('start_date');
@@ -27,7 +32,7 @@ class RetailDashboardController extends Controller
             $allSales = $salesQuery->get();
 
             // Calculate stats
-            $stats = $this->calculateStats($allSales);
+            $stats = $this->calculateStats($allSales, $storeId, $dateRange);
 
             // Get recent sales
             $recentSales = RetailSale::where('store_id', $storeId)
@@ -123,13 +128,17 @@ class RetailDashboardController extends Controller
         }
     }
 
-    private function calculateStats($sales)
+    private function calculateStats($sales, $storeId, $dateRange = null)
     {
         $totalAmount = $sales->sum('total_amount');
         $paidAmount = $sales->sum('paid_amount');
         $remainingAmount = $sales->sum('remaining_amount');
         $fullPaymentCount = $sales->where('payment_status', 'full')->count();
-        $totalExpenses = \App\Models\RetailExpense::where('store_id', request()->route('storeId'))->sum('amount');
+        $expensesQuery = \App\Models\RetailExpense::where('store_id', $storeId);
+        if ($dateRange) {
+            $expensesQuery->whereBetween('date', [$dateRange[0]->format('Y-m-d'), $dateRange[1]->format('Y-m-d')]);
+        }
+        $totalExpenses = $expensesQuery->sum('amount');
 
         return [
             'total_sales' => (float)$totalAmount ?: 0,

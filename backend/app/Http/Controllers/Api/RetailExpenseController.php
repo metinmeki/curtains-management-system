@@ -6,8 +6,12 @@ use Illuminate\Support\Facades\DB;
 
 class RetailExpenseController extends Controller
 {
-    public function index($storeId)
+    public function index(Request $request, $storeId)
     {
+        $user = $request->user();
+        if ($user->role === 'cashier' && $user->store_id && (int)$user->store_id !== (int)$storeId) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
         $expenses = DB::table("retail_expenses")
             ->where("store_id", $storeId)
             ->orderBy("date", "desc")
@@ -19,7 +23,7 @@ class RetailExpenseController extends Controller
     {
         $user    = $request->user();
         $data    = $request->json()->all();
-        $storeId = $user->store_id ?? ($data["storeId"] ?? 1);
+        $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data["storeId"] ?? $user->store_id ?? 1);
 
         $id = DB::table("retail_expenses")->insertGetId([
             "store_id"   => $storeId,
