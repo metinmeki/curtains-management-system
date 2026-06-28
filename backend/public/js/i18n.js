@@ -381,7 +381,118 @@ const translations = {
     'Initial stock': 'مخزون أولي',
     'Manual edit': 'تعديل يدوي',
     'This code is already in use.': 'هذا الكود مستخدم بالفعل.',
-    'No movements yet.': 'لا توجد حركات بعد.'
+    'No movements yet.': 'لا توجد حركات بعد.',
+
+    // ── Login / Auth ────────────────────────────────────────────────────
+    'Sign in to your account': 'تسجيل الدخول إلى حسابك',
+    'Login as Admin': 'دخول كمدير',
+    'Enter as Cashier': 'دخول كصندوق',
+    'Incorrect PIN. Try again.': 'الرمز غير صحيح. حاول مجددًا.',
+    'Server error. Make sure the server is running.': 'خطأ في الخادم. تأكد من تشغيل الخادم.',
+    'Cannot connect to server. Make sure the server is running.': 'لا يمكن الاتصال بالخادم. تأكد من تشغيل الخادم.',
+    'Login failed': 'فشل تسجيل الدخول',
+    'Toggle dark mode': 'تبديل الوضع الداكن',
+    'Admin': 'مدير',
+    'Cashier': 'الصندوق',
+
+    // ── Landing / Cashier Management ────────────────────────────────────
+    'Cashiers': 'الصندوقيون',
+    'Cashiers can only access POS and Debts pages. Click Enter to open a store in cashier mode.': 'الصندوقيون يمكنهم الوصول إلى نقطة البيع والديون فقط.',
+    '+ Add Cashier': '+ إضافة صندوق',
+    'New Cashier': 'صندوق جديد',
+    'PIN (4 digits)': 'الرمز (4 أرقام)',
+    'Assigned Store': 'المتجر المخصص',
+    'Any store': 'أي متجر',
+    'No cashiers yet. Click + Add Cashier to get started.': 'لا يوجد صندوقيون بعد. اضغط + إضافة صندوق للبدء.',
+    'Logout from the system?': 'هل تريد تسجيل الخروج من النظام؟',
+    'PIN': 'الرمز',
+    'No cashiers have been added yet.\nAsk your admin to add you from the main page.': 'لم يُضف أي صندوق بعد.\nاطلب من المدير إضافتك من الصفحة الرئيسية.',
+
+    // ── Dashboard ───────────────────────────────────────────────────────
+    'All time': 'كل الوقت',
+    'External supplier orders': 'طلبات موردين خارجيين',
+    'Profit from orders': 'ربح الطلبات',
+    'Paid to companies': 'المدفوع للشركات',
+    'We still owe': 'ما زلنا مدينون',
+    'Collected from buyers': 'المحصّل من الزبائن',
+    'Customers still owe': 'الزبائن ما زالوا مدينون',
+    'Loading...': 'جار التحميل...',
+    'No outstanding debts.': 'لا توجد ديون متبقية.',
+    'No sewing entries in this period.': 'لا توجد سجلات خياطة في هذه المدة.',
+    'No installation entries in this period.': 'لا توجد سجلات تركيب في هذه المدة.',
+    'Reference': 'المرجع',
+    'Buyer': 'الزبون',
+    'Supplier': 'المورد',
+    'Profit': 'الربح',
+    'Buyer Paid': 'مدفوع الزبون',
+    'Buyer Due': 'دين الزبون',
+    'No orders yet.': 'لا توجد طلبات بعد.',
+
+    // ── POS ─────────────────────────────────────────────────────────────
+    'Count windows': 'عدد النوافذ',
+    'Count pieces / قطع': 'عدد القطع',
+    'Count meters': 'عدد الأمتار',
+    'Enter sewing meter price; khayat gets 1,000 IQD per meter': 'أدخل سعر متر الخياطة',
+    'Add at least one item with quantity and price before saving.': 'أضف عنصراً واحداً على الأقل بالكمية والسعر قبل الحفظ.',
+    'Sale added.': 'تم إضافة البيع.',
+    'Worker accounts updated automatically.': 'تم تحديث حسابات العمال تلقائيًا.',
+    'Receipt total': 'مجموع الفاتورة',
+    'Our income': 'دخلنا',
+
+    // ── Orders ──────────────────────────────────────────────────────────
+    'Final totals': 'المجاميع النهائية',
+    'Order money split': 'توزيع مبلغ الطلب',
+    'Final total': 'الإجمالي النهائي',
+    'We owe companies': 'ما نديه للشركات',
+    'Customers owe us': 'ما يدينه الزبائن',
+    'Subtotal:': 'المجموع:',
+    'Delivery:': 'التوصيل:',
+    'Final total:': 'الإجمالي النهائي:',
+    'Paid amount:': 'المبلغ المدفوع:',
+    'Buyer remaining debt:': 'دين الزبون المتبقي:',
+    'Our profit:': 'ربحنا:',
+    'Supplier share:': 'حصة المورد:',
+    'Notes:': 'ملاحظات:',
+    'Add another line below': 'إضافة سطر أسفله',
+    'Delete this added line': 'حذف هذا السطر',
+
+    // ── Debts ───────────────────────────────────────────────────────────
+    'Enter an original sale amount before adding the debt.': 'أدخل مبلغ البيع الأصلي قبل إضافة الدين.',
+
+    // ── Clients ─────────────────────────────────────────────────────────
+    'Repeat customers and debt tracking for this store.': 'العملاء المتكررون ومتابعة الديون لهذا المتجر.',
+    'Search instantly filters clients by name or phone.': 'البحث يفلتر العملاء بالاسم أو الرقم مباشرة.',
+    'Total sales': 'إجمالي المبيعات',
+    'Balance': 'الرصيد',
+    'Last transaction': 'آخر معاملة',
+    'No clients found.': 'لا يوجد عملاء.',
+    'Balance:': 'الرصيد:',
+
+    // ── Expenses ────────────────────────────────────────────────────────
+    'Note': 'ملاحظة',
+    'Recent expenses': 'آخر المصاريف',
+
+    // ── Inventory ───────────────────────────────────────────────────────
+    'Track each store item by code and quantity. POS sales deduct stock by code.': 'تتبع كل مادة بالكود والكمية. مبيعات نقطة البيع تخصم من المخزون بالكود.',
+    'Total quantity': 'إجمالي الكمية',
+    'Code / SKU': 'الكود',
+    'Photo (optional)': 'صورة (اختياري)',
+    '📷 Upload photo': '📷 رفع صورة',
+    'Last Activities': 'آخر الحركات',
+    'Item': 'المادة',
+    'Types': 'الأنواع',
+    'Total metres': 'إجمالي الأمتار',
+    'Low / Out': 'منخفض / نافد',
+    'Type name': 'اسم النوع',
+    'Code': 'الكود',
+    'Quantity (متر)': 'الكمية (متر)',
+    'Starting quantity (pieces / قطع)': 'الكمية الابتدائية (قطعة)',
+
+    // ── Common ──────────────────────────────────────────────────────────
+    'View': 'عرض',
+    'Total paid': 'إجمالي المدفوع',
+    'Total debt': 'إجمالي الدين',
+    'Actions': 'الإجراءات'
   }
 };
 
