@@ -107,7 +107,7 @@
                     <div class="card">
                         <div class="card-header"><h2 class="card-title">Recent debts</h2></div>
                         <div class="card-body table-wrapper">
-                            <table><thead><tr><th>Client</th><th>Phone</th><th>Remaining</th><th>Status</th></tr></thead>
+                            <table><thead><tr><th>Client</th><th>Phone</th><th>Remaining</th><th>Status</th><th>Note</th></tr></thead>
                             <tbody id="debtRows"></tbody></table>
                         </div>
                     </div>
@@ -186,6 +186,7 @@
                         subtotal: parseFloat(sale.total_amount || 0) + parseFloat(sale.discount_amount || 0),
                         status: sale.payment_status === "full" ? "Paid" : sale.payment_status === "debt" ? "Debt" : "Partial",
                         date: sale.created_at ? sale.created_at.slice(0,10) : "",
+                        note: sale.notes || "",
                         workerAccounts: sale.worker_accounts ? (typeof sale.worker_accounts === 'string' ? JSON.parse(sale.worker_accounts) : sale.worker_accounts) : [],
                         items: sale.items || []
                     }));
@@ -258,8 +259,8 @@
 
             const debts = allDbSales.filter(s => s.remaining > 0);
             document.getElementById("debtRows").innerHTML = debts.length
-                ? debts.map(s => "<tr><td>"+esc(s.clientName)+"</td><td>"+esc(s.clientPhone||'-')+"</td><td>"+money(s.remaining)+"</td><td>"+esc(s.status)+"</td></tr>").join("")
-                : "<tr><td colspan=\"4\">No outstanding debts.</td></tr>";
+                ? debts.map(s => "<tr><td>"+esc(s.clientName)+"</td><td>"+esc(s.clientPhone||'-')+"</td><td>"+money(s.remaining)+"</td><td>"+esc(s.status)+"</td><td>"+esc(s.note||'-')+"</td></tr>").join("")
+                : "<tr><td colspan=\"5\">No outstanding debts.</td></tr>";
 
             function workerRows(rows, emptyText) {
                 if (!rows.length) return "<tr><td colspan=\"6\">"+emptyText+"</td></tr>";
