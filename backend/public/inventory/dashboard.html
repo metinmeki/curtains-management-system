@@ -561,7 +561,7 @@ function makeRow(item) {
                 <span class="item-name-label" data-item="${esc(item.name)}">${esc(item.name)}</span>
                 <span class="item-unit-badge">${esc(item.unit)}</span>
             </td>
-            <td class="row-code-cell" style="color:#b89a3a;font-weight:800;font-size:12px;letter-spacing:0.5px;">${code ? esc(code) : '<span style="color:#ccc;">—</span>'}</td>
+            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" style="width:100%;border:0;background:transparent;color:#b89a3a;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
             <td>
                 <div class="qty-stepper">
                     <button class="qty-btn" onclick="stepQty(this, -${item.step})">−</button>
@@ -675,9 +675,11 @@ function submitSupply(mode) {
         const unitEl= row.querySelector('.item-unit-badge');
         const unit  = unitEl ? unitEl.textContent : '';
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const codeEl= row.querySelector('.code-input');
+        const code  = codeEl ? codeEl.value.trim() : (codes[itemName] || '');
         const lt    = qty * price;
         if (qty > 0 && price > 0) {
-            items.push({ item: itemName, code: codes[itemName] || '', quantity: qty, unit, price, lineTotal: lt });
+            items.push({ item: itemName, code, quantity: qty, unit, price, lineTotal: lt });
             subtotal += lt;
         }
     });
