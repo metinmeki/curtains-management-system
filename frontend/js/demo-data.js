@@ -364,6 +364,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.ctrlKey || e.metaKey || e.shiftKey) return;
         e.preventDefault();
         document.body.classList.add('fade-out');
-        setTimeout(() => { window.location.href = href; }, 150);
+        setTimeout(() => { window.location.href = href; }, 80);
     });
 });
