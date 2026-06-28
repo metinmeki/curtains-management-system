@@ -355,7 +355,41 @@ function deductVariantStock(variantId, qty, storeId, reason, saleRef) {
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
+// Page transition overlay
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        #page-transition-overlay {
+            position: fixed; inset: 0; z-index: 99999;
+            background: linear-gradient(135deg, #1a3d2e 0%, #2f7d5b 50%, #214238 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.18s ease;
+        }
+        #page-transition-overlay.visible { opacity: 1; pointer-events: all; }
+        #page-transition-overlay .brand-name {
+            color: #f7f3e8; font-size: 2rem; font-weight: 800; letter-spacing: 2px;
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.2s ease 0.1s, transform 0.2s ease 0.1s;
+        }
+        #page-transition-overlay.visible .brand-name { opacity: 1; transform: translateY(0); }
+        #page-transition-overlay .brand-sub {
+            color: rgba(247,243,232,0.55); font-size: 0.85rem; margin-top: 8px; letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+    `;
+    document.head.appendChild(style);
+
+    const overlay = document.createElement('div');
+    overlay.id = 'page-transition-overlay';
+    overlay.innerHTML = '<div class="brand-name">دلوفان پەردە</div><div class="brand-sub">Dilovan Parda</div>';
+    document.body.appendChild(overlay);
+
+    // Fade out overlay on page load
+    requestAnimationFrame(() => {
+        overlay.classList.remove('visible');
+    });
+
     document.addEventListener('click', function(e) {
         const link = e.target.closest('a[href]');
         if (!link) return;
@@ -363,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
         if (e.ctrlKey || e.metaKey || e.shiftKey) return;
         e.preventDefault();
-        document.body.classList.add('fade-out');
-        setTimeout(() => { window.location.href = href; }, 100);
+        overlay.classList.add('visible');
+        setTimeout(() => { window.location.href = href; }, 320);
     });
-});
+})();
