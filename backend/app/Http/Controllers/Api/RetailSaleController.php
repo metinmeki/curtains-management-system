@@ -75,6 +75,45 @@ class RetailSaleController extends Controller
         return $map[$status] ?? 'partial';
     }
 
+    public function pay(Request $request, $saleId)
+    {
+        $user = $request->user();
+        $data = $request->json()->all();
+        $amount = floatval($data['amount'] ?? 0);
+        $note   = $data['note'] ?? '';
+
+        if ($amount <= 0) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid amount'], 422);
+        }
+
+        $sale = DB::table('retail_sales')->find($saleId);
+        if (!$sale) {
+            return response()->json(['status' => 'error', 'message' => 'Sale not found'], 404);
+        }
+
+        // Cashiers can only pay debts for their own store
+        if ($user->role === 'cashier' && $user->store_id && (int)$user->store_id !== (int)$sale->store_id) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $newPaid      = floatval($sale->paid_amount) + $amount;
+        $newRemaining = max(floatval($sale->total_amount) - $newPaid, 0);
+        $newStatus    = $newRemaining == 0 ? 'full' : 'partial';
+
+        $payments   = json_decode($sale->payments ?? '[]', true) ?: [];
+        $payments[] = ['date' => now()->toDateString(), 'amount' => $amount, 'note' => $note];
+
+        DB::table('retail_sales')->where('id', $saleId)->update([
+            'paid_amount'      => $newPaid,
+            'remaining_amount' => $newRemaining,
+            'payment_status'   => $newStatus,
+            'payments'         => json_encode($payments),
+            'updated_at'       => now(),
+        ]);
+
+        return response()->json(['status' => 'success', 'paid' => $newPaid, 'remaining' => $newRemaining, 'payment_status' => $newStatus]);
+    }
+
     public function index(Request $request, $storeId)
     {
         $user = $request->user();
@@ -93,6 +132,8 @@ class RetailSaleController extends Controller
             $sale->items       = DB::table("retail_sale_items")->where("sale_id", $sale->id)->get();
             $client            = DB::table("retail_clients")->find($sale->client_id);
             $sale->client_name = $client ? $client->name : "One-time customer";
+            $sale->client_phone = $client ? $client->phone : "-";
+            $sale->payments    = json_decode($sale->payments ?? '[]', true) ?: [];
         }
 
         return response()->json(["status" => "success", "data" => $sales]);

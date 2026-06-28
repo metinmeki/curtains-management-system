@@ -21,6 +21,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::post("/settings/categories/sub", [InventoryCategoryController::class, "storeSubCategory"]);
     Route::get("/retail/dashboard/{storeId}", [RetailDashboardController::class, "index"]);
     Route::post("/retail/sales", [RetailSaleController::class, "store"]);
+    Route::post("/retail/sales/{saleId}/pay", [RetailSaleController::class, "pay"]);
     Route::get("/retail/sales/{storeId}", [RetailSaleController::class, "index"]);
     Route::get("/retail/expenses/{storeId}", [RetailExpenseController::class, "index"]);
     Route::post("/retail/expenses", [RetailExpenseController::class, "store"]);
