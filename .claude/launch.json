@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "retail",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "const h=require('http'),f=require('fs'),p=require('path'),u=require('url');const BASE='C:/Users/Nipeal/Desktop/curtains-management-system-main/backend/public';const MIME={'css':'text/css','js':'application/javascript','html':'text/html','png':'image/png','jpg':'image/jpeg','svg':'image/svg+xml','woff2':'font/woff2','ico':'image/x-icon'};h.createServer((q,r)=>{const path=u.parse(q.url).pathname;const fp=p.join(BASE,path==='/'?'/index.html':path);const ext=(fp.split('.').pop()||'html').toLowerCase();const ct=MIME[ext]||'text/plain';f.stat(fp,(e,s)=>{if(e||!s.isFile()){r.writeHead(404);return r.end('Not found');}r.writeHead(200,{'Content-Type':ct});f.createReadStream(fp).pipe(r);});}).listen(3000,()=>console.log('ready'));"],
+      "port": 3000
+    }
+  ]
+}

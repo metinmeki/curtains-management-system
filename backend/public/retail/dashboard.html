@@ -154,6 +154,7 @@
         let customRange = { start: "", end: "" };
         let allDbSales = [];
         let allDbExpenses = [];
+        let allDbOrders = [];
 
         function parseDate(v) { if (!v) return null; const d = new Date(v + "T00:00:00"); return isNaN(d.getTime()) ? null : d; }
 
@@ -199,6 +200,12 @@
                 if (res.ok) { const r = await res.json(); if (r.data) allDbExpenses = r.data; }
             } catch(e) {}
 
+            try {
+                const token = localStorage.getItem('auth_token');
+                const res = await fetch(API_BASE_URL + '/retail/orders/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                if (res.ok) { const r = await res.json(); if (r.data) allDbOrders = r.data; }
+            } catch(e) {}
+
             renderDashboard();
         }
 
@@ -237,12 +244,19 @@
                 : '<tr><td colspan="4">No expenses in this period.</td></tr>';
             document.getElementById("discounts").textContent = money(discountTotal);
             document.getElementById("clients").textContent = clientCount;
-            document.getElementById("orderSales").textContent = money(0);
-            document.getElementById("orderProfit").textContent = money(0);
-            document.getElementById("orderSupplierPaid").textContent = money(0);
-            document.getElementById("orderSupplierUnpaid").textContent = money(0);
-            document.getElementById("orderBuyerPaid").textContent = money(0);
-            document.getElementById("orderBuyerDebt").textContent = money(0);
+            const periodOrders = allDbOrders.filter(o => isSaleInPeriod({date: (o.date||'').slice(0,10)}));
+            const orderSalesTotal    = periodOrders.reduce((s,o) => s + parseFloat(o.final_total||0), 0);
+            const orderProfitTotal   = periodOrders.reduce((s,o) => s + parseFloat(o.our_profit||0), 0);
+            const orderSupplierPaid  = periodOrders.reduce((s,o) => s + parseFloat(o.supplier_paid||0), 0);
+            const orderSupplierDue   = periodOrders.reduce((s,o) => s + parseFloat(o.supplier_due||0), 0);
+            const orderBuyerPaid     = periodOrders.reduce((s,o) => s + parseFloat(o.buyer_paid||0), 0);
+            const orderBuyerDebt     = periodOrders.reduce((s,o) => s + parseFloat(o.buyer_due||0), 0);
+            document.getElementById("orderSales").textContent        = money(orderSalesTotal);
+            document.getElementById("orderProfit").textContent       = money(orderProfitTotal);
+            document.getElementById("orderSupplierPaid").textContent = money(orderSupplierPaid);
+            document.getElementById("orderSupplierUnpaid").textContent = money(orderSupplierDue);
+            document.getElementById("orderBuyerPaid").textContent    = money(orderBuyerPaid);
+            document.getElementById("orderBuyerDebt").textContent    = money(orderBuyerDebt);
             document.getElementById("sewingAccountTotal").textContent = money(accounts.sewing.total);
             document.getElementById("installationAccountTotal").textContent = money(accounts.installation.total);
 
@@ -250,7 +264,9 @@
                 ? sales.map(s => "<tr><td>#"+s.id+"</td><td>"+esc(s.clientName)+"</td><td><span style=\"font-size:12px;color:var(--text-gray);\">"+esc(s.cashierName)+"</span></td><td>"+money(s.total)+"</td><td>"+money(s.paid)+"</td><td>"+money(s.remaining)+"</td><td>"+statusBadge(s.status)+"</td><td>"+esc(s.date)+"</td></tr>").join("")
                 : "<tr><td colspan=\"8\">No sales in this period.</td></tr>";
 
-            document.getElementById("orderRows").innerHTML = "<tr><td colspan=\"8\">No orders in this period.</td></tr>";
+            document.getElementById("orderRows").innerHTML = periodOrders.length
+                ? periodOrders.map(o => "<tr><td>"+esc(o.reference)+"</td><td>"+esc(o.buyer_name)+"</td><td>"+esc(o.supplier_name||'-')+"</td><td>"+money(o.final_total)+"</td><td>"+money(o.our_profit)+"</td><td>"+money(o.buyer_paid)+"</td><td>"+money(o.buyer_due)+"</td><td>"+esc(o.date)+"</td></tr>").join("")
+                : "<tr><td colspan=\"8\">No orders in this period.</td></tr>";
 
             const discountSales = sales.filter(s => s.discount > 0);
             document.getElementById("discountRows").innerHTML = discountSales.length

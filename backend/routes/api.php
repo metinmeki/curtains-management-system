@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\RetailDashboardController;
 use App\Http\Controllers\Api\RetailSaleController;
 use App\Http\Controllers\Api\RetailExpenseController;
 use App\Http\Controllers\Api\RetailClientController;
+use App\Http\Controllers\Api\RetailOrderController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
@@ -26,4 +27,6 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/retail/expenses/{storeId}", [RetailExpenseController::class, "index"]);
     Route::post("/retail/expenses", [RetailExpenseController::class, "store"]);
     Route::get("/retail/clients/{storeId}", [RetailClientController::class, "index"]);
+    Route::post("/retail/orders", [RetailOrderController::class, "store"]);
+    Route::get("/retail/orders/{storeId}", [RetailOrderController::class, "index"]);
 });

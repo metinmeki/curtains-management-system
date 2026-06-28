@@ -537,6 +537,8 @@
 
             saveStoreOrder(order);
             localStorage.setItem('last_saved_order_id', String(order.id));
+            // Save to database
+            (function(o){ const t=getToken(); if(!t||t==='demo-frontend-token') return; fetch(API_BASE_URL+'/retail/orders',{method:'POST',headers:{'Authorization':'Bearer '+t,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(o)}).then(r=>r.ok?r.json():null).then(res=>{ if(res) console.log('Order saved to DB:', res); }).catch(err=>console.error('Order DB save failed:',err)); })(order);
             message.textContent = `Order ${order.reference} saved.`;
             message.className = 'alert alert-success';
             message.style.display = 'block';
