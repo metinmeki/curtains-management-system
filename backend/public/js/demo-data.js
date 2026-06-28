@@ -352,3 +352,18 @@ function deductVariantStock(variantId, qty, storeId, reason, saleRef) {
     ref: saleRef || ''
   }, storeId);
 }
+
+
+// Smooth page transitions
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
+        if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+        e.preventDefault();
+        document.body.classList.add('fade-out');
+        setTimeout(() => { window.location.href = href; }, 150);
+    });
+});
