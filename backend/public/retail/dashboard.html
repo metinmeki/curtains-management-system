@@ -256,10 +256,10 @@
                 ? discountSales.map(s => "<tr><td>"+esc(s.date)+"</td><td>#"+s.id+"</td><td>"+esc(s.clientName)+"</td><td>"+esc(s.clientPhone)+"</td><td>"+money(s.subtotal)+"</td><td>"+money(s.discount)+"</td><td>"+money(s.total)+"</td><td>"+esc(s.discountNote||"-")+"</td></tr>").join("")
                 : "<tr><td colspan=\"8\">No discounts in this period.</td></tr>";
 
-            const debts = sales.filter(s => s.remaining > 0);
+            const debts = allDbSales.filter(s => s.remaining > 0);
             document.getElementById("debtRows").innerHTML = debts.length
-                ? debts.map(s => "<tr><td>"+esc(s.clientName)+"</td><td>"+esc(s.clientPhone)+"</td><td>"+money(s.remaining)+"</td><td>"+esc(s.status)+"</td></tr>").join("")
-                : "<tr><td colspan=\"4\">No debts in this period.</td></tr>";
+                ? debts.map(s => "<tr><td>"+esc(s.clientName)+"</td><td>"+esc(s.clientPhone||'-')+"</td><td>"+money(s.remaining)+"</td><td>"+esc(s.status)+"</td></tr>").join("")
+                : "<tr><td colspan=\"4\">No outstanding debts.</td></tr>";
 
             function workerRows(rows, emptyText) {
                 if (!rows.length) return "<tr><td colspan=\"6\">"+emptyText+"</td></tr>";
