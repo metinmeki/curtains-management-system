@@ -481,6 +481,7 @@ function getWhInv() {
 function saveWhInv(inv) { localStorage.setItem(WH_INV_KEY, JSON.stringify(inv)); }
 
 function deductWhStock(items, ref) {
+    // Deduct from simple inv store
     const inv = getWhInv();
     items.forEach(({ item, quantity }) => {
         if (!inv[item] || !quantity) return;
@@ -489,6 +490,37 @@ function deductWhStock(items, ref) {
         inv[item].log.unshift({ date: new Date().toISOString().slice(0,10), delta: -Number(quantity), ref, type: 'supply' });
     });
     saveWhInv(inv);
+
+    // Deduct from variants (inventory.html) by code match — then sync to DB
+    const VARIANTS_KEY = 'wh_variants_v1';
+    const MOV_KEY = 'wh_mov_v1';
+    const variants = JSON.parse(localStorage.getItem(VARIANTS_KEY) || '{}');
+    const movements = JSON.parse(localStorage.getItem(MOV_KEY) || '[]');
+    let variantsChanged = false;
+
+    items.forEach(({ item, code, quantity }) => {
+        if (!quantity) return;
+        const qty = Number(quantity);
+        const varList = variants[item] || [];
+        // Match by code first, fall back to first variant of the item
+        const v = code ? varList.find(x => x.code === code) : varList[0];
+        if (!v) return;
+        const prev = parseFloat(v.qty) || 0;
+        v.qty = parseFloat(Math.max(0, prev - qty).toFixed(4));
+        movements.unshift({ id: Date.now().toString(36), date: new Date().toISOString().slice(0,10), item, code: v.code, variantId: v.id, type: 'supply', delta: -qty, prevQty: prev, nextQty: v.qty, note: 'Supply ' + ref, ref });
+        variantsChanged = true;
+    });
+
+    if (variantsChanged) {
+        localStorage.setItem(VARIANTS_KEY, JSON.stringify(variants));
+        localStorage.setItem(MOV_KEY, JSON.stringify(movements.slice(0, 3000)));
+        // Sync to DB
+        const token = getToken();
+        if (token && token !== 'demo-frontend-token') {
+            fetch(API_BASE_URL + '/warehouse/kv/variants',  { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(variants) }).catch(()=>{});
+            fetch(API_BASE_URL + '/warehouse/kv/movements', { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(movements.slice(0,500)) }).catch(()=>{});
+        }
+    }
 }
 
 function storeStats(storeId) {
