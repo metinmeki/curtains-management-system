@@ -449,8 +449,8 @@ async function loadSuppliesFromDB() {
                     storeId: s.store_id, storeName: WH_STORES.find(x => x.id == s.store_id)?.name || 'Store ' + s.store_id,
                     date: (s.date||'').slice(0,10), finalTotal: parseFloat(s.total||0),
                     paid: parseFloat(s.paid||0), remaining: parseFloat(s.remaining||0),
-                    status: s.status === 'paid' ? 'Paid' : s.status === 'partial' ? 'Partial' : 'Debt',
-                    notes: s.notes || '', type: s.status === 'debt' ? 'debt' : 'cash',
+                    status: ({paid:'Paid',partial:'Partial',debt:'Debt'})[s.status?.toLowerCase()] || 'Debt',
+                    notes: s.notes || '', type: s.status?.toLowerCase() === 'paid' ? 'cash' : s.status?.toLowerCase() === 'partial' ? 'cash' : 'debt',
                     items: (s.items||[]).map(i => ({ item: i.item_name, code: '', quantity: parseFloat(i.quantity), unit: i.unit||'', price: parseFloat(i.price), lineTotal: parseFloat(i.line_total) })),
                     payments: s.payments || []
                 }));
@@ -576,10 +576,10 @@ function refreshRowCodes() {
     document.getElementById('supplyRows').querySelectorAll('tr').forEach(row => {
         const nameLabel = row.querySelector('.item-name-label');
         if (!nameLabel) return;
-        const codeCell = row.querySelector('.row-code-cell');
-        if (!codeCell) return;
+        const codeInput = row.querySelector('.code-input');
+        if (!codeInput) return;
         const code = getItemCode(nameLabel.dataset.item);
-        codeCell.innerHTML = code ? `<span style="color:#b89a3a;font-weight:800;">${esc(code)}</span>` : '<span style="color:#ccc;">—</span>';
+        if (code && !codeInput.value) codeInput.value = code; // only pre-fill if blank
     });
 }
 

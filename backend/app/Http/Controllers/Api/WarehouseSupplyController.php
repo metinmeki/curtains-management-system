@@ -16,54 +16,72 @@ class WarehouseSupplyController extends Controller
             return response()->json(['status' => 'success', 'id' => $s->id]);
         }
 
-        $total     = (float)($data['total'] ?? $data['subtotal'] ?? 0);
+        $storeId = (int)($data['storeId'] ?? 0);
+        if ($storeId <= 0) {
+            return response()->json(['status' => 'error', 'message' => 'Valid store ID required'], 422);
+        }
+
+        $items = $data['items'] ?? [];
+        if (!is_array($items) || empty($items)) {
+            return response()->json(['status' => 'error', 'message' => 'At least one item required'], 422);
+        }
+
+        $total     = (float)($data['total'] ?? $data['finalTotal'] ?? $data['subtotal'] ?? 0);
         $paid      = min((float)($data['paid'] ?? 0), $total);
         $remaining = max($total - $paid, 0);
         $status    = $paid >= $total ? 'paid' : ($paid > 0 ? 'partial' : 'debt');
 
-        $id = DB::table('warehouse_supplies')->insertGetId([
-            'store_id'   => $data['storeId'] ?? 0,
-            'reference'  => $data['reference'] ?? ('WH-' . time()),
-            'date'       => $data['date'] ?? now()->toDateString(),
-            'total'      => $total,
-            'paid'       => $paid,
-            'remaining'  => $remaining,
-            'status'     => $status,
-            'notes'      => $data['notes'] ?? null,
-            'payments'   => json_encode($data['payments'] ?? ($paid > 0 ? [['date' => now()->toDateString(), 'amount' => $paid, 'note' => 'Initial payment']] : [])),
-            'created_by' => $user->name,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        foreach ($data['items'] ?? [] as $item) {
-            DB::table('warehouse_supply_items')->insert([
-                'supply_id' => $id,
-                'item_name' => $item['item'] ?? $item['item_name'] ?? '',
-                'quantity'  => (float)($item['quantity'] ?? 0),
-                'unit'      => $item['unit'] ?? '',
-                'price'     => (float)($item['price'] ?? 0),
-                'line_total'=> (float)($item['lineTotal'] ?? $item['line_total'] ?? 0),
-                'created_at'=> now(),
-                'updated_at'=> now(),
+        DB::beginTransaction();
+        try {
+            $id = DB::table('warehouse_supplies')->insertGetId([
+                'store_id'   => $storeId,
+                'reference'  => $data['reference'] ?? ('WH-' . time()),
+                'date'       => $data['date'] ?? now()->toDateString(),
+                'total'      => $total,
+                'paid'       => $paid,
+                'remaining'  => $remaining,
+                'status'     => $status,
+                'notes'      => $data['notes'] ?? null,
+                'payments'   => json_encode($data['payments'] ?? ($paid > 0 ? [['date' => now()->toDateString(), 'amount' => $paid, 'note' => 'Initial payment']] : [])),
+                'created_by' => $user->name,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-        }
 
-        // Deduct stock
-        foreach ($data['items'] ?? [] as $item) {
-            $name = $item['item'] ?? $item['item_name'] ?? '';
-            $qty  = (float)($item['quantity'] ?? 0);
-            if (!$name || !$qty) continue;
-            $stock = DB::table('warehouse_stock')->where('item_name', $name)->first();
-            if ($stock) {
-                $log = json_decode($stock->movement_log ?? '[]', true) ?: [];
-                $log[] = ['date' => now()->toDateString(), 'delta' => -$qty, 'ref' => $data['reference'] ?? '', 'type' => 'supply'];
-                DB::table('warehouse_stock')->where('item_name', $name)->update([
-                    'quantity'     => max(0, $stock->quantity - $qty),
-                    'movement_log' => json_encode(array_slice($log, -500)),
-                    'updated_at'   => now(),
+            foreach ($items as $item) {
+                DB::table('warehouse_supply_items')->insert([
+                    'supply_id' => $id,
+                    'item_name' => $item['item'] ?? $item['item_name'] ?? '',
+                    'quantity'  => (float)($item['quantity'] ?? 0),
+                    'unit'      => $item['unit'] ?? '',
+                    'price'     => (float)($item['price'] ?? 0),
+                    'line_total'=> (float)($item['lineTotal'] ?? $item['line_total'] ?? 0),
+                    'created_at'=> now(),
+                    'updated_at'=> now(),
                 ]);
             }
+
+            // Deduct stock
+            foreach ($items as $item) {
+                $name = $item['item'] ?? $item['item_name'] ?? '';
+                $qty  = (float)($item['quantity'] ?? 0);
+                if (!$name || !$qty) continue;
+                $stock = DB::table('warehouse_stock')->where('item_name', $name)->first();
+                if ($stock) {
+                    $log = json_decode($stock->movement_log ?? '[]', true) ?: [];
+                    $log[] = ['date' => now()->toDateString(), 'delta' => -$qty, 'ref' => $data['reference'] ?? '', 'type' => 'supply'];
+                    DB::table('warehouse_stock')->where('item_name', $name)->update([
+                        'quantity'     => max(0, $stock->quantity - $qty),
+                        'movement_log' => json_encode(array_slice($log, -500)),
+                        'updated_at'   => now(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => 'Failed to save supply'], 500);
         }
 
         return response()->json(['status' => 'success', 'id' => $id]);
