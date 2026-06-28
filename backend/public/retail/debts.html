@@ -684,7 +684,22 @@
                 const response = await fetch(API_BASE_URL + '/retail/sales/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                 if (!response.ok) return;
                 const result = await response.json();
-                if (result && result.data) window._apiDebts = result.data;
+                if (result && result.data) {
+                    window._apiDebts = result.data
+                        .filter(s => s.payment_status !== 'full')
+                        .map(s => ({
+                            _id: s.id,
+                            client: s.client_name || 'One-time customer',
+                            phone: s.client_phone || '-',
+                            cashierName: s.created_by || '-',
+                            original: parseFloat(s.total_amount || 0),
+                            paid: parseFloat(s.paid_amount || 0),
+                            remaining: parseFloat(s.remaining_amount || 0),
+                            status: s.payment_status === 'debt' ? 'Debt' : 'Partial',
+                            date: s.created_at ? s.created_at.slice(0,10) : '',
+                            note: s.notes || ''
+                        }));
+                }
             } catch(e) { window._apiDebts = []; }
         }
 
@@ -694,7 +709,7 @@
                 ? debts.map(debt => `
                     <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td>
                     <td><span style="font-size:12px;color:var(--text-gray);">${esc(debt.cashierName || '-')}</span></td>
-                    <td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td><td>${esc(debt.date)}</td><td><button class="btn btn-small btn-primary">Add payment</button></td></tr>
+                    <td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td><td>${esc(debt.date)}</td><td>${debt._id ? `<button class="btn btn-small btn-primary" onclick="openDebtPayModal(${debt._id},${debt.remaining})">Add payment</button>` : '-'}</td></tr>
                 `).join('')
                 : '<tr><td colspan="9">No debts yet.</td></tr>';
         }
@@ -783,10 +798,67 @@
             window.print();
         }
 
+        // ── Debt payment modal ────────────────────────────────────────────
+        function openDebtPayModal(saleId, remaining) {
+            document.getElementById('debtPaySaleId').value = saleId;
+            document.getElementById('debtPayAmount').value = '';
+            document.getElementById('debtPayNote').value = '';
+            document.getElementById('debtPayMax').textContent = money(remaining);
+            document.getElementById('debtPayMsg').textContent = '';
+            document.getElementById('debtPayModal').style.display = 'flex';
+            document.getElementById('debtPayAmount').focus();
+        }
+        function closeDebtPayModal() {
+            document.getElementById('debtPayModal').style.display = 'none';
+        }
+        async function submitDebtPayment() {
+            const saleId = document.getElementById('debtPaySaleId').value;
+            const amount = parseFloat(document.getElementById('debtPayAmount').value);
+            const note   = document.getElementById('debtPayNote').value || '';
+            const msg    = document.getElementById('debtPayMsg');
+            if (!amount || amount <= 0) { msg.textContent = 'Enter a valid amount.'; msg.style.color='red'; return; }
+            const token = getToken();
+            try {
+                const res = await fetch(API_BASE_URL + '/retail/sales/' + saleId + '/pay', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ amount, note })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.textContent = 'Payment recorded.'; msg.style.color = 'green';
+                    setTimeout(() => { closeDebtPayModal(); loadDebtsFromAPI().then(() => renderDebtRows()); }, 800);
+                } else {
+                    msg.textContent = data.message || 'Error saving payment.'; msg.style.color = 'red';
+                }
+            } catch(e) { msg.textContent = 'Connection error.'; msg.style.color = 'red'; }
+        }
+
         ['قماش', 'تول', 'بطانة', 'زبرا', 'خياطة', 'سكة', 'تركيب', 'مزهرية', 'حبال'].forEach(material => addInvoiceRow(material));
         calculateDebtReceipt();
         loadDebtsFromAPI().then(() => renderDebtRows());
     </script>
+    <!-- Debt payment modal -->
+    <div id="debtPayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:var(--bg-card);border-radius:12px;padding:28px;width:360px;max-width:95vw;">
+            <h3 style="margin:0 0 16px;">Add payment</h3>
+            <input type="hidden" id="debtPaySaleId">
+            <p style="margin:0 0 12px;color:var(--text-gray);font-size:13px;">Remaining: <strong id="debtPayMax"></strong></p>
+            <div style="margin-bottom:12px;">
+                <label style="display:block;margin-bottom:4px;font-size:13px;">Payment amount</label>
+                <input id="debtPayAmount" type="number" min="0" step="any" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;margin-bottom:4px;font-size:13px;">Note (optional)</label>
+                <input id="debtPayNote" type="text" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);">
+            </div>
+            <p id="debtPayMsg" style="margin:0 0 12px;font-size:13px;min-height:18px;"></p>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary" style="flex:1;" onclick="submitDebtPayment()">Pay debt</button>
+                <button class="btn btn-secondary" style="flex:1;" onclick="closeDebtPayModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
     <script src="../js/i18n.js?v=orders-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 </body>

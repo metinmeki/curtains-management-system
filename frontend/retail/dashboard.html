@@ -177,7 +177,7 @@
                     allDbSales = result.data.map(sale => ({
                         id: sale.id,
                         clientName: sale.client_name || "One-time customer",
-                        clientPhone: "-",
+                        clientPhone: sale.client_phone || "-",
                         cashierName: sale.created_by || "-",
                         total: parseFloat(sale.total_amount || 0),
                         paid: parseFloat(sale.paid_amount || 0),
