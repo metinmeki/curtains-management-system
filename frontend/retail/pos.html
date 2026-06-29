@@ -468,43 +468,21 @@
                             <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
                         </div>
 
-                        <!-- ── ORDER SECTION (collapsible) ───────────────── -->
+                        <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
                         <div style="padding:10px 18px;border-top:1px solid rgba(27,61,46,0.12);background:rgba(27,61,46,0.03);">
                             <button class="btn btn-secondary btn-small" onclick="togglePosOrder()" id="posOrderToggleBtn" style="font-size:11px;">+ Add Order Items (طلبية)</button>
                         </div>
 
                         <div id="posOrderSection" style="display:none;">
-                            <div style="padding:10px 18px 4px;background:rgba(184,154,58,0.06);border-top:2px dashed rgba(184,154,58,0.35);">
-                                <span style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#b89a3a;">طلبية / Order Items</span>
-                            </div>
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 18px;">
-                                <div class="form-group" style="margin:0;"><label style="font-size:10px;">Supplier / Company</label><input id="posOrderSupplier" placeholder="اسم الشركة / Supplier name"></div>
-                                <div class="form-group" style="margin:0;"><label style="font-size:10px;">Delivery price</label><input id="posOrderDelivery" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
-                            </div>
-                            <div class="card-body table-wrapper" style="padding-top:0;padding-bottom:0;">
-                                <table class="receipt-table" style="direction:ltr;">
-                                    <thead><tr>
-                                        <th>Item type</th><th>Code</th><th>Qty</th><th>Unit</th><th>Price</th><th>Line total</th>
-                                        <th class="receipt-actions-head">Add</th>
-                                    </tr></thead>
-                                    <tbody id="posOrderItemRows"></tbody>
-                                </table>
-                            </div>
-                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 18px;">
-                                <div class="form-group" style="margin:0;"><label style="font-size:10px;">Our profit</label><input id="posOrderProfit" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
-                                <div class="form-group" style="margin:0;"><label style="font-size:10px;">Supplier share</label><input id="posOrderSupplierShare" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
-                                <div class="form-group" style="margin:0;"><label style="font-size:10px;">Paid to supplier</label><input id="posOrderSupplierPaid" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
-                            </div>
-                            <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(27,61,46,0.08);">
-                                <div style="padding:10px 14px;border-right:1px solid rgba(27,61,46,0.08);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.55;margin-bottom:3px;">Order subtotal</span><strong id="posOrderSubtotalDisplay" style="font-size:15px;color:#1b3d2e;">0 IQD</strong></div>
-                                <div style="padding:10px 14px;border-right:1px solid rgba(27,61,46,0.08);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.55;margin-bottom:3px;">Order total</span><strong id="posOrderTotalDisplay" style="font-size:15px;color:#1b3d2e;">0 IQD</strong></div>
-                                <div style="padding:10px 14px;"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#b4534a;opacity:0.8;margin-bottom:3px;">Buyer due (order)</span><strong id="posOrderBuyerDueDisplay" style="font-size:15px;color:#b4534a;">0 IQD</strong></div>
+                            <div id="posOrderCards"></div>
+                            <div style="padding:8px 18px;border-top:1px solid rgba(27,61,46,0.08);background:rgba(27,61,46,0.02);">
+                                <button class="btn btn-secondary btn-small" onclick="addPosOrderCard()" style="font-size:11px;">+ Add another order (طلبية إضافية)</button>
                             </div>
                         </div>
 
                         <!-- ── GRAND TOTAL (shown when order is active) ─── -->
-                        <div id="posGrandTotalBar" style="display:none;background:linear-gradient(135deg,#163329,#245f49);color:#fff;padding:14px 20px;display:none;justify-content:space-between;align-items:center;gap:12px;">
-                            <span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:0.75;">Grand Total — Sale + Order</span>
+                        <div id="posGrandTotalBar" style="display:none;background:linear-gradient(135deg,#163329,#245f49);color:#fff;padding:14px 20px;justify-content:space-between;align-items:center;gap:12px;">
+                            <span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:0.75;">Grand Total — Sale + All Orders</span>
                             <strong id="posGrandTotal" style="font-size:22px;">0 IQD</strong>
                         </div>
                     </section>
@@ -825,16 +803,14 @@
 
             // Grand total when order section is open
             if (document.getElementById('posOrderSection').style.display !== 'none') {
-                const orderItems   = getPosOrderItems();
-                const orderSub     = orderItems.reduce((s, i) => s + i.lineTotal, 0);
-                const orderDel     = Number(document.getElementById('posOrderDelivery').value || 0);
-                const orderTotal   = orderSub + orderDel;
-                const orderBPaid   = Math.min(Number(document.getElementById('posOrderBuyerPaid').value || 0), orderTotal);
-                const grandTotal   = finalTotal + orderTotal;
-                const grandPaid    = paid + orderBPaid;
-                const grandRemain  = Math.max(grandTotal - grandPaid, 0);
-                document.getElementById('posGrandTotal').textContent     = money(grandTotal);
-                document.getElementById('posGrandRemaining').value       = money(grandRemain);
+                const allOrders   = getPosOrdersData();
+                const orderTotal  = allOrders.reduce((s, o) => s + o.total, 0);
+                const orderBPaid  = Math.min(Number(document.getElementById('posOrderBuyerPaid').value || 0), orderTotal);
+                const grandTotal  = finalTotal + orderTotal;
+                const grandPaid   = paid + orderBPaid;
+                const grandRemain = Math.max(grandTotal - grandPaid, 0);
+                document.getElementById('posGrandTotal').textContent = money(grandTotal);
+                document.getElementById('posGrandRemaining').value   = money(grandRemain);
             }
         }
 
@@ -864,12 +840,8 @@
             document.getElementById('saleDetails').value = '';
 
             // Reset order section
-            document.getElementById('posOrderItemRows').innerHTML = '';
-            document.getElementById('posOrderSupplier').value = '';
-            document.getElementById('posOrderDelivery').value = 0;
-            document.getElementById('posOrderProfit').value = 0;
-            document.getElementById('posOrderSupplierShare').value = 0;
-            document.getElementById('posOrderSupplierPaid').value = 0;
+            document.getElementById('posOrderCards').innerHTML = '';
+            _orderCardCounter = 0;
             document.getElementById('posOrderBuyerPaid').value = 0;
             document.getElementById('posOrderSection').style.display = 'none';
             document.getElementById('posGrandTotalBar').style.display = 'none';
@@ -915,56 +887,55 @@
                 workerAccounts: data.workerAccounts
             };
 
-            // ── Save linked order if order section is open ───────────────────────
+            // ── Save linked orders (one per card) ────────────────────────────────
             const orderSectionOpen = document.getElementById('posOrderSection').style.display !== 'none';
-            let linkedOrder = null;
+            const savedOrders = [];
             if (orderSectionOpen) {
-                const poItems     = getPosOrderItems();
-                const poSub       = poItems.reduce((s, i) => s + i.lineTotal, 0);
-                const poDel       = Number(document.getElementById('posOrderDelivery').value || 0);
-                const poTotal     = poSub + poDel;
-                const poProfit    = Number(document.getElementById('posOrderProfit').value || 0);
-                const poSShare    = Number(document.getElementById('posOrderSupplierShare').value || 0);
-                const poSPaid     = Math.min(Number(document.getElementById('posOrderSupplierPaid').value || 0), poSShare);
-                const poBPaid     = Math.min(Number(document.getElementById('posOrderBuyerPaid').value || 0), poTotal);
-                const poBDue      = Math.max(poTotal - poBPaid, 0);
-                const poSDue      = Math.max(poSShare - poSPaid, 0);
-                const ordId       = Date.now() + 1;
-                linkedOrder = {
-                    id: ordId,
-                    reference: `ORD-${ordId}`,
-                    storeId: getStoreId(),
-                    storeName: getStoreName(),
-                    date: saleDate,
-                    time: '',
-                    buyerName:      sale.clientName,
-                    buyerPhone:     sale.clientPhone,
-                    supplierName:   document.getElementById('posOrderSupplier').value || '',
-                    notes:          `Linked to POS sale ${sale.id}`,
-                    items:          poItems,
-                    subtotal:       poSub,
-                    deliveryPrice:  poDel,
-                    finalTotal:     poTotal,
-                    buyerPaid:      poBPaid,
-                    buyerDue:       poBDue,
-                    buyerStatus:    poBDue <= 0 ? 'Paid' : poBPaid > 0 ? 'Partial' : 'Debt',
-                    ourProfit:      poProfit,
-                    supplierShare:  poSShare,
-                    supplierPaid:   poSPaid,
-                    supplierDue:    poSDue,
-                    supplierStatus: poSDue <= 0 ? 'Paid' : poSPaid > 0 ? 'Partial' : 'Debt',
-                    splitDifference: poTotal - poProfit - poSShare,
-                    supplierPayments: poSPaid > 0 ? [{ date: saleDate, amount: poSPaid, note: 'Initial payment' }] : [],
-                    buyerPayments:    poBPaid > 0 ? [{ date: saleDate, amount: poBPaid, note: 'Initial payment' }] : [],
-                };
-                if (poItems.length && poTotal > 0) {
-                    saveStoreOrder(linkedOrder);
-                    localStorage.setItem('last_saved_order_id', String(linkedOrder.id));
+                const allOrders  = getPosOrdersData();
+                const totalOrderPaid = Number(document.getElementById('posOrderBuyerPaid').value || 0);
+                const totalOrderAmt  = allOrders.reduce((s, o) => s + o.total, 0);
+                // distribute buyer paid proportionally across orders
+                allOrders.forEach((o, idx) => {
+                    if (!o.items.length && o.total <= 0) return;
+                    const share   = totalOrderAmt > 0 ? o.total / totalOrderAmt : (1 / allOrders.length);
+                    const poBPaid = Math.min(totalOrderPaid * share, o.total);
+                    const poBDue  = Math.max(o.total - poBPaid, 0);
+                    const poSDue  = Math.max(o.sshare - o.spaid, 0);
+                    const ordId   = Date.now() + idx + 1;
+                    const order   = {
+                        id: ordId,
+                        reference: `ORD-${ordId}`,
+                        storeId: getStoreId(),
+                        storeName: getStoreName(),
+                        date: saleDate,
+                        time: '',
+                        buyerName:       sale.clientName,
+                        buyerPhone:      sale.clientPhone,
+                        supplierName:    o.supplier || `Supplier ${idx + 1}`,
+                        notes:           `Linked to POS sale ${sale.id}`,
+                        items:           o.items,
+                        subtotal:        o.subtotal,
+                        deliveryPrice:   o.delivery,
+                        finalTotal:      o.total,
+                        buyerPaid:       poBPaid,
+                        buyerDue:        poBDue,
+                        buyerStatus:     poBDue <= 0 ? 'Paid' : poBPaid > 0 ? 'Partial' : 'Debt',
+                        ourProfit:       o.profit,
+                        supplierShare:   o.sshare,
+                        supplierPaid:    o.spaid,
+                        supplierDue:     poSDue,
+                        supplierStatus:  poSDue <= 0 ? 'Paid' : o.spaid > 0 ? 'Partial' : 'Debt',
+                        splitDifference: o.total - o.profit - o.sshare,
+                        supplierPayments: o.spaid > 0 ? [{ date: saleDate, amount: o.spaid, note: 'Initial payment' }] : [],
+                        buyerPayments:    poBPaid > 0 ? [{ date: saleDate, amount: poBPaid, note: 'Initial payment' }] : [],
+                    };
+                    saveStoreOrder(order);
+                    savedOrders.push(order);
                     const t = getToken();
                     if (t && t !== 'demo-frontend-token') {
-                        fetch(API_BASE_URL + '/retail/orders', { method: 'POST', headers: { 'Authorization': 'Bearer ' + t, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(linkedOrder) }).catch(() => {});
+                        fetch(API_BASE_URL + '/retail/orders', { method: 'POST', headers: { 'Authorization': 'Bearer ' + t, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(order) }).catch(() => {});
                     }
-                }
+                });
             }
 
             saveStoreSale(sale);
@@ -986,8 +957,8 @@
             }
 
             const message = document.getElementById('submitMessage');
-            const orderNote = linkedOrder && linkedOrder.items && linkedOrder.items.length
-                ? ` Order ${linkedOrder.reference} also saved.`
+            const orderNote = savedOrders.length
+                ? ` ${savedOrders.length} order(s) also saved: ${savedOrders.map(o => o.reference).join(', ')}.`
                 : '';
             message.textContent = (remaining > 0
                 ? `Sale added. Remaining ${money(remaining)} was added as debt for ${sale.clientName}. Worker accounts updated automatically.`
@@ -1002,19 +973,64 @@
             window.print();
         }
 
-        // ─── ORDER SECTION ────────────────────────────────────────────────────────
+        // ─── ORDER SECTION (multi-card) ──────────────────────────────────────────
 
         const ORDER_TYPES = [
-            { name: 'قماش',   unit: 'metres' },
-            { name: 'التوب',  unit: 'metres' },
-            { name: 'سلايد',  unit: 'cubic metres' },
+            { name: 'قماش',  unit: 'metres' },
+            { name: 'التوب', unit: 'metres' },
+            { name: 'سلايد', unit: 'cubic metres' },
         ];
+        let _orderCardCounter = 0;
 
         function orderTypeOptions() {
             return ORDER_TYPES.map(t => `<option value="${t.name}" data-unit="${t.unit}">${t.name}</option>`).join('');
         }
 
-        function addPosOrderRow(afterRow = null) {
+        function addPosOrderCard() {
+            const cardId = ++_orderCardCounter;
+            const card = document.createElement('div');
+            card.className = 'pos-order-card';
+            card.dataset.cardId = cardId;
+            card.style.cssText = 'border-top:2px dashed rgba(184,154,58,0.35);';
+            card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 18px 4px;background:rgba(184,154,58,0.06);">
+                    <span style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#b89a3a;">طلبية ${cardId} / Order ${cardId}</span>
+                    <button class="btn btn-danger btn-small" onclick="removePosOrderCard(${cardId})" style="font-size:10px;padding:2px 8px;">Remove</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 18px;">
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Supplier / Company</label><input class="po-supplier" placeholder="اسم الشركة / Supplier name"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Delivery price</label><input class="po-delivery" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                </div>
+                <div class="card-body table-wrapper" style="padding-top:0;padding-bottom:0;">
+                    <table class="receipt-table" style="direction:ltr;">
+                        <thead><tr>
+                            <th>Item type</th><th>Code</th><th>Qty</th><th>Unit</th><th>Price</th><th>Line total</th>
+                            <th class="receipt-actions-head">Add</th>
+                        </tr></thead>
+                        <tbody class="po-item-rows"></tbody>
+                    </table>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 18px;">
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Our profit</label><input class="po-profit" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Supplier share</label><input class="po-sshare" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Paid to supplier</label><input class="po-spaid" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(27,61,46,0.08);">
+                    <div style="padding:10px 14px;border-right:1px solid rgba(27,61,46,0.08);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.55;margin-bottom:3px;">Subtotal</span><strong class="po-subtotal-display" style="font-size:14px;color:#1b3d2e;">0 IQD</strong></div>
+                    <div style="padding:10px 14px;border-right:1px solid rgba(27,61,46,0.08);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.55;margin-bottom:3px;">Order total</span><strong class="po-total-display" style="font-size:14px;color:#1b3d2e;">0 IQD</strong></div>
+                    <div style="padding:10px 14px;"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#b4534a;opacity:0.8;margin-bottom:3px;">Buyer due</span><strong class="po-due-display" style="font-size:14px;color:#b4534a;">0 IQD</strong></div>
+                </div>`;
+            document.getElementById('posOrderCards').appendChild(card);
+            addPosOrderItemRow(card.querySelector('.po-item-rows'));
+            calcPosOrder();
+        }
+
+        function removePosOrderCard(cardId) {
+            const card = document.querySelector(`.pos-order-card[data-card-id="${cardId}"]`);
+            if (card) { card.remove(); calcPosOrder(); }
+        }
+
+        function addPosOrderItemRow(tbody, afterRow = null) {
             const row = document.createElement('tr');
             row.className = afterRow ? 'invoice-row is-added-row' : 'invoice-row';
             row.innerHTML = `
@@ -1026,12 +1042,12 @@
                 <td><input class="po-line" readonly></td>
                 <td class="receipt-action-cell">
                     <div class="receipt-row-actions">
-                        <button class="btn btn-primary btn-small receipt-action-btn" onclick="addPosOrderRow(this.closest('tr'))">+</button>
-                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" onclick="deletePosOrderRow(this)" style="${afterRow ? '' : 'display:none;'}">×</button>
+                        <button class="btn btn-primary btn-small receipt-action-btn" onclick="addPosOrderItemRow(this.closest('tbody'),this.closest('tr'))">+</button>
+                        <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" onclick="deletePosOrderItemRow(this)" style="${afterRow ? '' : 'display:none;'}">×</button>
                     </div>
                 </td>`;
             if (afterRow) afterRow.insertAdjacentElement('afterend', row);
-            else document.getElementById('posOrderItemRows').appendChild(row);
+            else tbody.appendChild(row);
             syncPosOrderUnit(row.querySelector('.po-type'));
             calcPosOrder();
         }
@@ -1041,20 +1057,20 @@
             select.closest('tr').querySelector('.po-unit').value = opt ? opt.dataset.unit : '';
         }
 
-        function deletePosOrderRow(btn) {
-            const rows = document.querySelectorAll('#posOrderItemRows tr');
-            if (rows.length <= 1) return;
+        function deletePosOrderItemRow(btn) {
+            const tbody = btn.closest('tbody');
+            if (tbody.querySelectorAll('tr').length <= 1) return;
             btn.closest('tr').remove();
             calcPosOrder();
         }
 
-        function getPosOrderItems() {
+        function getCardItems(card) {
             const items = [];
-            document.querySelectorAll('#posOrderItemRows tr').forEach(row => {
+            card.querySelectorAll('.po-item-rows tr').forEach(row => {
                 const typeEl = row.querySelector('.po-type');
-                const qty   = Number(row.querySelector('.po-qty').value || 0);
-                const price = Number(row.querySelector('.po-price').value || 0);
-                const lt    = qty * price;
+                const qty    = Number(row.querySelector('.po-qty').value || 0);
+                const price  = Number(row.querySelector('.po-price').value || 0);
+                const lt     = qty * price;
                 row.querySelector('.po-line').value = lt > 0 ? money(lt) : '';
                 if (qty > 0 || price > 0) items.push({
                     itemType: typeEl.value,
@@ -1068,19 +1084,26 @@
             return items;
         }
 
-        function calcPosOrder() {
-            const items       = getPosOrderItems();
-            const subtotal    = items.reduce((s, i) => s + i.lineTotal, 0);
-            const delivery    = Number(document.getElementById('posOrderDelivery').value || 0);
-            const orderTotal  = subtotal + delivery;
-            const buyerPaidO  = Math.min(Number(document.getElementById('posOrderBuyerPaid').value || 0), orderTotal);
-            const buyerDue    = Math.max(orderTotal - buyerPaidO, 0);
+        function getPosOrdersData() {
+            return [...document.querySelectorAll('.pos-order-card')].map(card => {
+                const items    = getCardItems(card);
+                const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
+                const delivery = Number(card.querySelector('.po-delivery').value || 0);
+                const total    = subtotal + delivery;
+                const profit   = Number(card.querySelector('.po-profit').value || 0);
+                const sshare   = Number(card.querySelector('.po-sshare').value || 0);
+                const spaid    = Math.min(Number(card.querySelector('.po-spaid').value || 0), sshare);
+                card.querySelector('.po-subtotal-display').textContent = money(subtotal);
+                card.querySelector('.po-total-display').textContent    = money(total);
+                card.querySelector('.po-due-display').textContent      = money(total);
+                return { card, items, subtotal, delivery, total, profit, sshare, spaid,
+                    supplier: card.querySelector('.po-supplier').value.trim() };
+            });
+        }
 
-            document.getElementById('posOrderSubtotalDisplay').textContent = money(subtotal);
-            document.getElementById('posOrderTotalDisplay').textContent    = money(orderTotal);
-            document.getElementById('posOrderBuyerDueDisplay').textContent = money(buyerDue);
+        function calcPosOrder() {
+            getPosOrdersData(); // updates each card's display
             calculateInvoice();
-            return { items, subtotal, delivery, orderTotal, buyerDue };
         }
 
         function togglePosOrder() {
@@ -1092,8 +1115,8 @@
             section.style.display = showing ? 'none' : 'block';
             bar.style.display     = showing ? 'none' : 'flex';
             payRow.style.display  = showing ? 'none' : 'block';
-            btn.textContent       = showing ? '+ Add Order Items (طلبية)' : '− Remove Order Items';
-            if (!showing && document.getElementById('posOrderItemRows').children.length === 0) addPosOrderRow();
+            btn.textContent       = showing ? '+ Add Order Items (طلبية)' : '− Remove Orders';
+            if (!showing && document.getElementById('posOrderCards').children.length === 0) addPosOrderCard();
             calcPosOrder();
         }
 
