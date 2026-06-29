@@ -85,8 +85,8 @@
                 <div class="card">
                     <div class="card-header"><h2 class="card-title">Recent sales</h2></div>
                     <div class="card-body table-wrapper">
-                        <table><thead><tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th></tr></thead>
-                        <tbody id="salesRows"><tr><td colspan="8">Loading...</td></tr></tbody></table>
+                        <table><thead><tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th><th>Measurements</th></tr></thead>
+                        <tbody id="salesRows"><tr><td colspan="9">Loading...</td></tr></tbody></table>
                     </div>
                 </div>
                 <div class="card" style="margin-top:20px;">
@@ -188,6 +188,7 @@
                         status: sale.payment_status === "full" ? "Paid" : sale.payment_status === "debt" ? "Debt" : "Partial",
                         date: sale.created_at ? sale.created_at.slice(0,10) : "",
                         note: sale.notes || "",
+                        saleDetails: sale.sale_details || "",
                         workerAccounts: sale.worker_accounts ? (typeof sale.worker_accounts === 'string' ? JSON.parse(sale.worker_accounts) : sale.worker_accounts) : [],
                         items: sale.items || []
                     }));
@@ -261,8 +262,8 @@
             document.getElementById("installationAccountTotal").textContent = money(accounts.installation.total);
 
             document.getElementById("salesRows").innerHTML = sales.length
-                ? sales.map(s => "<tr><td>#"+s.id+"</td><td>"+esc(s.clientName)+"</td><td><span style=\"font-size:12px;color:var(--text-gray);\">"+esc(s.cashierName)+"</span></td><td>"+money(s.total)+"</td><td>"+money(s.paid)+"</td><td>"+money(s.remaining)+"</td><td>"+statusBadge(s.status)+"</td><td>"+esc(s.date)+"</td></tr>").join("")
-                : "<tr><td colspan=\"8\">No sales in this period.</td></tr>";
+                ? sales.map(s => "<tr><td>#"+s.id+"</td><td>"+esc(s.clientName)+"</td><td><span style=\"font-size:12px;color:var(--text-gray);\">"+esc(s.cashierName)+"</span></td><td>"+money(s.total)+"</td><td>"+money(s.paid)+"</td><td>"+money(s.remaining)+"</td><td>"+statusBadge(s.status)+"</td><td>"+esc(s.date)+"</td><td style=\"max-width:180px;white-space:pre-wrap;font-size:12px;color:var(--text-gray);\">"+esc(s.saleDetails||s.sale_details||'')+"</td></tr>").join("")
+                : "<tr><td colspan=\"9\">No sales in this period.</td></tr>";
 
             document.getElementById("orderRows").innerHTML = periodOrders.length
                 ? periodOrders.map(o => "<tr><td>"+esc(o.reference)+"</td><td>"+esc(o.buyer_name)+"</td><td>"+esc(o.supplier_name||'-')+"</td><td>"+money(o.final_total)+"</td><td>"+money(o.our_profit)+"</td><td>"+money(o.buyer_paid)+"</td><td>"+money(o.buyer_due)+"</td><td>"+esc(o.date)+"</td></tr>").join("")

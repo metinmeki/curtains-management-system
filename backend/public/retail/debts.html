@@ -438,6 +438,10 @@
                                 <strong id="debtRemainingPreview">0 IQD</strong>
                             </div>
                         </div>
+                        <div style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
+                            <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
+                            <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
+                        </div>
                     </section>
 
                     <aside class="card debt-actions">
@@ -467,7 +471,7 @@
                     <div class="card-header"><h2 class="card-title">Outstanding debts</h2></div>
                     <div class="card-body table-wrapper">
                         <table>
-                            <thead><tr><th>Client</th><th>Phone</th><th>Cashier</th><th>Original sale</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Sale date</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Client</th><th>Phone</th><th>Cashier</th><th>Original sale</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Sale date</th><th>Measurements</th><th>Action</th></tr></thead>
                             <tbody id="debtRows"></tbody>
                         </table>
                     </div>
@@ -697,7 +701,8 @@
                             remaining: parseFloat(s.remaining_amount || 0),
                             status: s.payment_status === 'debt' ? 'Debt' : 'Partial',
                             date: s.created_at ? s.created_at.slice(0,10) : '',
-                            note: s.notes || ''
+                            note: s.notes || '',
+                            saleDetails: s.sale_details || ''
                         }));
                 }
             } catch(e) { window._apiDebts = []; }
@@ -709,9 +714,11 @@
                 ? debts.map(debt => `
                     <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td>
                     <td><span style="font-size:12px;color:var(--text-gray);">${esc(debt.cashierName || '-')}</span></td>
-                    <td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td><td>${esc(debt.date)}</td><td>${debt._id ? `<button class="btn btn-small btn-primary" onclick="openDebtPayModal(${debt._id},${debt.remaining})">Add payment</button>` : '-'}</td></tr>
+                    <td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td><td>${esc(debt.date)}</td>
+                    <td style="max-width:180px;white-space:pre-wrap;font-size:12px;color:var(--text-gray);">${esc(debt.saleDetails || debt.note || '-')}</td>
+                    <td>${debt._id ? `<button class="btn btn-small btn-primary" onclick="openDebtPayModal(${debt._id},${debt.remaining})">Add payment</button>` : '-'}</td></tr>
                 `).join('')
-                : '<tr><td colspan="9">No debts yet.</td></tr>';
+                : '<tr><td colspan="10">No debts yet.</td></tr>';
         }
 
         function resetDebtForm() {
@@ -720,6 +727,7 @@
             document.getElementById('debtClientPhone').value = '';
             document.getElementById('debtPaidAmount').value = 0;
             document.getElementById('debtNote').value = '';
+            document.getElementById('saleDetails').value = '';
             document.querySelectorAll('.invoice-row.is-added-row').forEach(row => row.remove());
             document.querySelectorAll('.invoice-row').forEach(row => {
                 row.querySelector('.row-qty').value = '';
@@ -768,6 +776,7 @@
                 remaining,
                 status: remaining === 0 ? 'Paid' : paid === 0 ? 'Debt' : 'Partial',
                 note: document.getElementById('debtNote').value,
+                saleDetails: document.getElementById('saleDetails').value,
                 items: data.items,
                 workerAccounts: data.workerAccounts
             };

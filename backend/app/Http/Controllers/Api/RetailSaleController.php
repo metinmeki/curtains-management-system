@@ -44,6 +44,7 @@ class RetailSaleController extends Controller
             "discount_amount" => $data["discount"] ?? 0,
             "discount_note"   => $data["discountNote"] ?? null,
             "notes"           => $data["note"] ?? null,
+            "sale_details"    => $data["saleDetails"] ?? null,
             "worker_accounts" => !empty($data["workerAccounts"]) ? json_encode($data["workerAccounts"]) : null,
             "created_by"      => $user->name,
             "created_at"      => now(),
