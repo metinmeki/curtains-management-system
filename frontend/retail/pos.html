@@ -715,9 +715,24 @@
         function lookupCode(input) {
             const code = input.value.trim();
             const tip = input.closest('td').querySelector('.row-stock-tip');
+            const row = input.closest('tr');
             if (!code) { tip.textContent = ''; return; }
             const variant = findVariantByCode(code);
             if (!variant) { tip.style.color = '#b4534a'; tip.textContent = '? not found'; return; }
+
+            // Use variant's own cost price if set — overrides item_types catalog
+            if (variant.costPrice > 0) {
+                row.dataset.costPrice = variant.costPrice;
+            }
+            // Auto-fill selling price from variant if set and row price is empty/zero
+            if (variant.sellingPrice > 0) {
+                const priceInput = row.querySelector('.row-price');
+                if (!priceInput.readOnly && (!priceInput.value || Number(priceInput.value) === 0)) {
+                    priceInput.value = variant.sellingPrice;
+                    calculateInvoice();
+                }
+            }
+
             const qty = getVariantQty(variant.id, getStoreId());
             if (qty <= 0) { tip.style.color = '#b4534a'; tip.textContent = '✗ out'; }
             else if (qty <= (variant.minQty || 5)) { tip.style.color = '#c79543'; tip.textContent = '⚠ ' + qty + ' left'; }
