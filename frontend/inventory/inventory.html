@@ -345,8 +345,13 @@ function saveNewVariant(itemName) {
         return;
     }
 
+    const costPriceEl   = document.getElementById('addCostPrice_'   + CSS.escape(itemName));
+    const sellingPriceEl= document.getElementById('addSellingPrice_' + CSS.escape(itemName));
+    const costPrice     = parseFloat(costPriceEl   ? costPriceEl.value   : 0) || 0;
+    const sellingPrice  = parseFloat(sellingPriceEl? sellingPriceEl.value: 0) || 0;
+
     const id = uid();
-    variants[itemName].push({ id, code, photo: addPhotoB64[itemName] || null, qty, minQty, color, size });
+    variants[itemName].push({ id, code, photo: addPhotoB64[itemName] || null, qty, minQty, color, size, costPrice, sellingPrice });
     saveVariants(variants);
 
     if (qty > 0) {
@@ -595,6 +600,14 @@ function renderItemGroup(item) {
                 <div class="form-group">
                     <label>Note</label>
                     <input id="addNote_${esc(item.name)}" type="text" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Cost price (ما اشتريناه) IQD</label>
+                    <input id="addCostPrice_${esc(item.name)}" type="number" min="0" step="500" placeholder="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Selling price (ما بعناه) IQD</label>
+                    <input id="addSellingPrice_${esc(item.name)}" type="number" min="0" step="500" placeholder="0" value="0">
                 </div>
             </div>
             <div class="form-group" style="margin-top:10px;">
