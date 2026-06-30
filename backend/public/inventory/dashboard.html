@@ -255,6 +255,8 @@
         <div class="kpi-card"><span>Total paid</span><strong id="kpiPaid">0 IQD</strong><small>Received from stores</small></div>
         <div class="kpi-card debt"><span>Total outstanding</span><strong id="kpiDebt">0 IQD</strong><small>Still owed to warehouse</small></div>
         <div class="kpi-card"><span>Transactions</span><strong id="kpiCount">0</strong><small>All supply records</small></div>
+        <div class="kpi-card" style="border-left:4px solid #2f7d5b;"><span>الربح الإجمالي</span><strong id="kpiGrossProfit">0 IQD</strong><small>(Selling − Cost) × Qty</small></div>
+        <div class="kpi-card" style="border-left:4px solid #1a5c3f;background:#eaf5ee;"><span>الربح الصافي</span><strong id="kpiNetProfit">0 IQD</strong><small>Gross − outstanding debts</small></div>
     </div>
 
     <!-- Store History -->
@@ -547,13 +549,20 @@ function toggleItemsMgmt() {
     toggle.textContent = isOpen ? '▼ Open' : '▲ Close';
 }
 
+const WH_COSTS_KEY = 'wh_item_costs_v1';
+function getItemCosts() { return JSON.parse(localStorage.getItem(WH_COSTS_KEY) || '{}'); }
+function getItemCost(itemName) { return Number(getItemCosts()[itemName] || 0); }
+
 function renderItemCodesGrid() {
     const codes = getItemCodes();
+    const costs = getItemCosts();
     document.getElementById('itemCodesGrid').innerHTML = WH_ITEMS.map(item => `
         <div class="item-code-box">
             <label>${esc(item.name)}</label>
             <div class="unit-tag">${esc(item.unit)}</div>
             <input id="codeInput_${esc(item.name)}" type="text" placeholder="e.g. SK-001" value="${esc(codes[item.name] || '')}">
+            <div style="margin-top:6px;font-size:10px;font-weight:800;color:#163329;opacity:0.6;letter-spacing:0.5px;">COST PRICE (IQD)</div>
+            <input id="costInput_${esc(item.name)}" type="number" min="0" step="500" placeholder="0" value="${esc(costs[item.name] || 0)}" style="margin-top:3px;">
         </div>
     `).join('');
 }
@@ -561,11 +570,18 @@ function renderItemCodesGrid() {
 function saveItemCodes() {
     const codes = getCodesFromInputs();
     localStorage.setItem(WH_CODES_KEY, JSON.stringify(codes));
+    // save cost prices too
+    const costs = {};
+    WH_ITEMS.forEach(item => {
+        const el = document.getElementById('costInput_' + item.name);
+        if (el) costs[item.name] = Number(el.value || 0);
+    });
+    localStorage.setItem(WH_COSTS_KEY, JSON.stringify(costs));
     const msg = document.getElementById('codesSavedMsg');
     msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; }, 2000);
-    // refresh supply rows to show updated codes
     refreshRowCodes();
+    refreshKPI();
 }
 
 function getItemCode(itemName) {
@@ -745,9 +761,11 @@ function submitSupply(mode) {
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const codeEl= row.querySelector('.code-input');
         const code  = codeEl ? codeEl.value.trim() : (codes[itemName] || '');
+        const costPrice = getItemCost(itemName);
         const lt    = qty * price;
+        const profitAmount = (price - costPrice) * qty;
         if (qty > 0 && price > 0) {
-            items.push({ item: itemName, code, quantity: qty, unit, price, lineTotal: lt });
+            items.push({ item: itemName, code, quantity: qty, unit, costPrice, price, lineTotal: lt, profitAmount });
             subtotal += lt;
         }
     });
@@ -814,6 +832,18 @@ function refreshKPI() {
     document.getElementById('kpiPaid').textContent     = money(paid);
     document.getElementById('kpiDebt').textContent     = money(remaining);
     document.getElementById('kpiCount').textContent    = all.length;
+
+    // Gross profit: sum profitAmount from all supply items
+    const grossProfit = all.reduce((s, x) => {
+        return s + (x.items || []).reduce((si, item) => si + Number(item.profitAmount || 0), 0);
+    }, 0);
+    const netProfit = grossProfit - remaining; // gross minus what stores still owe
+    const gpEl = document.getElementById('kpiGrossProfit');
+    const npEl = document.getElementById('kpiNetProfit');
+    gpEl.textContent = money(grossProfit);
+    gpEl.style.color = grossProfit >= 0 ? '#2f7d5b' : '#8b2222';
+    npEl.textContent = money(netProfit);
+    npEl.style.color = netProfit >= 0 ? '#2f7d5b' : '#8b2222';
 }
 
 // ─── Store History Panel ──────────────────────────────────────────────────────

@@ -144,6 +144,7 @@
                                     <th>الصنف / Item</th>
                                     <th>الكمية / Qty</th>
                                     <th>الوحدة</th>
+                                    <th>سعر التكلفة</th>
                                     <th>سعر الوحدة</th>
                                     <th>المجموع</th>
                                     <th class="receipt-actions-head">+</th>
@@ -235,6 +236,10 @@ const WH_ITEMS = [
     { name: 'اويه',   unit: 'متر',  step: 0.1 },
 ];
 
+const WH_COSTS_KEY = 'wh_item_costs_v1';
+function getItemCosts() { return JSON.parse(localStorage.getItem(WH_COSTS_KEY) || '{}'); }
+function getItemCost(itemName) { return Number(getItemCosts()[itemName] || 0); }
+
 function getWhSales() { return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]'); }
 function saveWhSales(arr) { localStorage.setItem(WH_SALES_KEY, JSON.stringify(arr)); }
 function addWhSale(sale) { const s = getWhSales(); s.unshift(sale); saveWhSales(s); }
@@ -301,6 +306,7 @@ function addRow() {
             <td><select class="row-item" onchange="syncRow(this)">${itemOptions('')}</select></td>
             <td><input class="row-qty" type="number" min="0" step="1" value="1" oninput="calcTotals()"></td>
             <td><input class="row-unit" type="text" readonly tabindex="-1" style="color:rgba(27,61,46,0.55);font-size:11px;"></td>
+            <td><input class="row-cost" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
             <td><input class="row-price" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
             <td class="row-total" style="font-weight:800;">—</td>
             <td class="receipt-action-cell"><div class="receipt-row-actions"><button class="receipt-action-btn delete-row-btn" onclick="removeRow(this)" title="Remove row">×</button></div></td>
@@ -318,6 +324,9 @@ function syncRow(select) {
     const step = opt ? opt.dataset.step : 1;
     row.querySelector('.row-unit').value = unit;
     row.querySelector('.row-qty').step = step;
+    // Auto-fill cost price from Items Management settings
+    const costInput = row.querySelector('.row-cost');
+    if (costInput && opt) costInput.value = getItemCost(opt.value) || 0;
     calcTotals();
 }
 
@@ -378,10 +387,12 @@ function submitSupply() {
         const itemName = row.querySelector('.row-item').value;
         const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
         const unit = row.querySelector('.row-unit').value;
+        const costPrice = parseFloat(row.querySelector('.row-cost').value) || 0;
         const price = parseFloat(row.querySelector('.row-price').value) || 0;
         const lineTotal = qty * price;
+        const profitAmount = (price - costPrice) * qty;
         if (qty > 0 && price > 0) {
-            items.push({ item: itemName, quantity: qty, unit, price, lineTotal });
+            items.push({ item: itemName, quantity: qty, unit, costPrice, price, lineTotal, profitAmount });
             subtotal += lineTotal;
         }
     });
