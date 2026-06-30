@@ -884,8 +884,8 @@
         document.getElementById('orderDate').value = todayInputValue();
         document.getElementById('orderTime').value = currentTimeValue();
         addOrderItemRow();
-        renderAll();
         calculateOrder();
+        loadRetailDataFromDB(getStoreId()).then(() => renderAll());
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>

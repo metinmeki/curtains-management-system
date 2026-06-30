@@ -14,12 +14,18 @@ use App\Http\Controllers\Api\WarehouseClientController;
 use App\Http\Controllers\Api\WarehouseKvController;
 use App\Http\Controllers\Api\ItemTypeController;
 use App\Http\Controllers\Api\RetailKvController;
+use App\Http\Controllers\Api\StoreController;
+use App\Http\Controllers\Api\CashierController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
 Route::post("/auth/register", [AuthController::class, "register"]);
 Route::post("/auth/logout", [AuthController::class, "logout"])->middleware("auth:sanctum");
 Route::get("/auth/user", [AuthController::class, "user"])->middleware("auth:sanctum");
+
+// Public — needed on login page before any token exists
+Route::get("/stores",   [StoreController::class,   "index"]);
+Route::get("/cashiers", [CashierController::class, "index"]);
 
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/user", function (Request $request) { return $request->user(); });
@@ -59,4 +65,13 @@ Route::middleware("auth:sanctum")->group(function () {
     // Retail KV store — variants, items, stock per store
     Route::get("/retail/kv/{storeId}/{key}", [RetailKvController::class, "get"]);
     Route::post("/retail/kv/{storeId}/{key}", [RetailKvController::class, "set"]);
+
+    // Stores
+    Route::get("/stores", [StoreController::class, "index"]);
+    Route::put("/stores/{id}", [StoreController::class, "update"]);
+
+    // Cashiers
+    Route::get("/cashiers", [CashierController::class, "index"]);
+    Route::post("/cashiers", [CashierController::class, "store"]);
+    Route::delete("/cashiers/{id}", [CashierController::class, "destroy"]);
 });

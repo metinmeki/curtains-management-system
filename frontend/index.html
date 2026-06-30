@@ -89,47 +89,53 @@
             });
         }
 
-        const CASHIERS_KEY = 'cms_cashiers';
+        let _cashiers   = [];
+        let _storeNames = {};
         let selectedCashier = null;
 
-        function getCashiers() {
-            return JSON.parse(localStorage.getItem(CASHIERS_KEY) || '[]');
+        async function loadCashiersFromDB() {
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/cashiers', { headers: { 'Accept': 'application/json' } });
+                if (res.ok) { const r = await res.json(); if (Array.isArray(r.data)) _cashiers = r.data; }
+            } catch(e) {}
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/stores', { headers: { 'Accept': 'application/json' } });
+                if (res.ok) { const r = await res.json(); if (Array.isArray(r.data)) r.data.forEach(s => { _storeNames[String(s.id)] = s.name; }); }
+            } catch(e) {}
         }
 
         function switchTab(tab) {
             document.querySelectorAll('.login-tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'admin')));
             document.getElementById('panel-admin').classList.toggle('active', tab === 'admin');
             document.getElementById('panel-cashier').classList.toggle('active', tab === 'cashier');
-            if (tab === 'cashier') renderCashierList();
+            if (tab === 'cashier') { loadCashiersFromDB().then(() => renderCashierList()); }
         }
 
         function getStoreLabel(storeId) {
-            const names = JSON.parse(localStorage.getItem('cms_store_custom_names') || '{}');
             const defaults = { '1':'Store 1','2':'Store 2','3':'Store 3','4':'Store 4' };
             if (!storeId) return 'Any store';
-            return names[String(storeId)] || defaults[String(storeId)] || 'Store ' + storeId;
+            return _storeNames[String(storeId)] || defaults[String(storeId)] || 'Store ' + storeId;
         }
 
         function renderCashierList() {
-            const cashiers = getCashiers();
             const list = document.getElementById('cashierList');
             const empty = document.getElementById('noCashiersMsg');
-            if (!cashiers.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+            if (!_cashiers.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
             empty.style.display = 'none';
-            list.innerHTML = cashiers.map(c => `
-                <div class="cashier-select-row ${selectedCashier && selectedCashier.id === c.id ? 'selected' : ''}"
-                     onclick="selectCashier('${esc(c.id)}')">
+            list.innerHTML = _cashiers.map(c => `
+                <div class="cashier-select-row ${selectedCashier && String(selectedCashier.id) === String(c.id) ? 'selected' : ''}"
+                     onclick="selectCashier('${esc(String(c.id))}')">
                     <div class="cashier-avatar">${esc(c.name.charAt(0).toUpperCase())}</div>
                     <div>
                         <div class="cashier-row-name">${esc(c.name)}</div>
-                        <div class="cashier-row-store">${esc(getStoreLabel(c.storeId))}</div>
+                        <div class="cashier-row-store">${esc(getStoreLabel(c.store_id))}</div>
                     </div>
                 </div>
             `).join('');
         }
 
         function selectCashier(id) {
-            selectedCashier = getCashiers().find(c => c.id === id);
+            selectedCashier = _cashiers.find(c => String(c.id) === String(id));
             renderCashierList();
             document.getElementById('selectedCashierName').textContent = selectedCashier.name;
             document.getElementById('pinGroup').style.display = 'block';
@@ -143,25 +149,9 @@
             if (!selectedCashier) return;
             const pin = document.getElementById('cashierPin').value.trim();
             const errEl = document.getElementById('cashierError');
-            if (selectedCashier.pin && pin !== selectedCashier.pin) {
-                errEl.textContent = 'Incorrect PIN. Try again.';
-                errEl.style.display = 'block';
-                document.getElementById('cashierPin').value = '';
-                document.getElementById('cashierPin').focus();
-                return;
-            }
             errEl.style.display = 'none';
-            // Set cashier session
-            const storeId = selectedCashier.storeId || 1;
+            const storeId = selectedCashier.store_id || 1;
             const storeName = getStoreLabel(storeId);
-            localStorage.setItem('cms_active_cashier', JSON.stringify({
-                id: selectedCashier.id,
-                name: selectedCashier.name,
-                storeId: storeId
-            }));
-            localStorage.setItem('store_id', String(storeId));
-            localStorage.setItem('store_name', storeName);
-            // Get real API token — cashier-login upserts the account automatically
             try {
                 const res = await fetch('http://127.0.0.1:8000/api/auth/cashier-login', {
                     method: 'POST',
@@ -171,17 +161,20 @@
                 const data = await res.json();
                 if (res.ok && data.data?.token) {
                     localStorage.setItem('auth_token', data.data.token);
+                    localStorage.setItem('cms_active_cashier', JSON.stringify({ id: selectedCashier.id, name: selectedCashier.name, storeId: Number(storeId) }));
+                    localStorage.setItem('store_id', String(storeId));
+                    localStorage.setItem('store_name', storeName);
+                    window.location.href = 'retail/pos.html';
                 } else {
-                    errEl.textContent = 'Server error. Make sure the server is running.';
+                    errEl.textContent = 'Incorrect PIN or server error.';
                     errEl.style.display = 'block';
-                    return;
+                    document.getElementById('cashierPin').value = '';
+                    document.getElementById('cashierPin').focus();
                 }
             } catch(e) {
                 errEl.textContent = 'Cannot connect to server. Make sure the server is running.';
                 errEl.style.display = 'block';
-                return;
             }
-            window.location.href = 'retail/pos.html';
         }
 
         // Allow Enter key in PIN field

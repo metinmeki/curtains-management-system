@@ -227,9 +227,13 @@ const WH_STORES = [
 function esc(v){ return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function todayVal(){ const n=new Date(); return new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,10); }
 
-function getVariants(){ return JSON.parse(localStorage.getItem('wh_variants_v1')||'{}'); }
-function getMov()     { return JSON.parse(localStorage.getItem('wh_mov_v1')||'[]'); }
-function getSales()   { return JSON.parse(localStorage.getItem('wh_sales_v1')||'[]'); }
+let _whVariants = {};
+let _whMov      = [];
+let _whSales    = [];
+
+function getVariants(){ return _whVariants; }
+function getMov()     { return _whMov; }
+function getSales()   { return _whSales; }
 
 function itemStatus(qty, minQty){
     if(qty<=0)            return 'empty';
@@ -427,13 +431,32 @@ function renderRecentTx(){
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
-window.addEventListener('load', ()=>{
+window.addEventListener('load', async ()=>{
+    if(window.applyLanguage) applyLanguage();
+    const token = getToken();
+    if(token && token !== 'demo-frontend-token'){
+        try{
+            const h = { 'Authorization':'Bearer '+token, 'Accept':'application/json' };
+            const [vRes, mRes, sRes] = await Promise.all([
+                fetch(API_BASE_URL+'/warehouse/kv/variants',  { headers:h }),
+                fetch(API_BASE_URL+'/warehouse/kv/movements', { headers:h }),
+                fetch(API_BASE_URL+'/warehouse/supplies',     { headers:h }),
+            ]);
+            if(vRes.ok){ const r=await vRes.json(); if(r.data && typeof r.data==='object') _whVariants=r.data; }
+            if(mRes.ok){ const r=await mRes.json(); if(Array.isArray(r.data)) _whMov=r.data; }
+            if(sRes.ok){ const r=await sRes.json(); if(Array.isArray(r.data)) _whSales=r.data.map(s=>({
+                id:s.id, reference:s.reference, storeId:s.store_id,
+                date:(s.date||'').slice(0,10), finalTotal:parseFloat(s.total||0),
+                paid:parseFloat(s.paid||0), remaining:parseFloat(s.remaining||0),
+                status:s.status, items:s.items||[]
+            })); }
+        }catch(e){}
+    }
     renderKPI();
     renderStockTable();
     renderStoreBalances();
     renderRecentMovements();
     renderRecentTx();
-    if(window.applyLanguage) applyLanguage();
 });
 </script>
 <script src="../js/i18n.js?v=arabic-en-2"></script>

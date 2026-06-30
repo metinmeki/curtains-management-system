@@ -113,8 +113,6 @@
             });
         }
 
-        const STORE_NAMES_KEY = 'cms_store_custom_names';
-
         const storeDefaults = [
             { id: 1, name: 'Store 1', description: 'Independent retail workspace for POS, debts, clients, expenses, and store reports.', icon: 'S1', type: 'retail' },
             { id: 2, name: 'Store 2', description: 'Separate sales and client records for the second retail branch.', icon: 'S2', type: 'retail' },
@@ -123,22 +121,45 @@
             { id: 'wh', name: 'Inventory / Warehouse', description: 'Central warehouse: supply items to all 5 stores, track store accounts, balances, and debt records.', icon: 'WH', type: 'inventory' }
         ];
 
-        function getCustomNames() {
-            return JSON.parse(localStorage.getItem(STORE_NAMES_KEY) || '{}');
-        }
+        // DB-backed store names
+        let _dbStoreNames = {}; // { storeId: name }
 
-        function saveCustomName(storeKey, name) {
-            const names = getCustomNames();
-            names[storeKey] = name.trim();
-            localStorage.setItem(STORE_NAMES_KEY, JSON.stringify(names));
+        async function saveCustomName(storeKey, name) {
+            const trimmed = name.trim();
+            _dbStoreNames[String(storeKey)] = trimmed;
+            const token = localStorage.getItem('auth_token');
+            if (token && !isNaN(storeKey)) {
+                try {
+                    await fetch(API_BASE_URL + '/stores/' + storeKey, {
+                        method: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({ name: trimmed })
+                    });
+                } catch(e) {}
+            }
         }
 
         function getStoresList() {
-            const custom = getCustomNames();
             return storeDefaults.map(s => ({
                 ...s,
-                name: custom[String(s.id)] || s.name
+                name: _dbStoreNames[String(s.id)] || s.name
             }));
+        }
+
+        async function loadStoreNames() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+            try {
+                const res = await fetch(API_BASE_URL + '/stores', {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                });
+                if (res.ok) {
+                    const r = await res.json();
+                    if (Array.isArray(r.data)) {
+                        r.data.forEach(s => { _dbStoreNames[String(s.id)] = s.name; });
+                    }
+                }
+            } catch(e) {}
         }
 
         function loadUserInfo() {
@@ -183,11 +204,11 @@
             input.addEventListener('blur', function() { confirmRename(storeKey); });
         }
 
-        function confirmRename(storeKey) {
+        async function confirmRename(storeKey) {
             const input = document.getElementById('rename-input-' + storeKey);
             if (!input) return;
             const newName = input.value.trim();
-            if (newName) saveCustomName(storeKey, newName);
+            if (newName) await saveCustomName(storeKey, newName);
             renderStoreCards();
         }
 
@@ -213,12 +234,8 @@
             }
         }
 
-        // ── Cashier management ─────────────────────────────────────────────────
-        const CASHIERS_KEY = 'cms_cashiers';
-
-        function getCashiers() { return JSON.parse(localStorage.getItem(CASHIERS_KEY) || '[]'); }
-        function saveCashiers(arr) { localStorage.setItem(CASHIERS_KEY, JSON.stringify(arr)); }
-        function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+        // ── Cashier management (DB-backed) ────────────────────────────────────
+        let _cashiers = [];
 
         function getStoreOptions() {
             return getStoresList()
@@ -243,49 +260,65 @@
         }
 
         async function saveCashier() {
-            const name = document.getElementById('cashierNameInput').value.trim();
-            const pin  = document.getElementById('cashierPinInput').value.trim();
+            const name    = document.getElementById('cashierNameInput').value.trim();
+            const pin     = document.getElementById('cashierPinInput').value.trim();
             const storeId = document.getElementById('cashierStoreInput').value;
             if (!name) { document.getElementById('cashierNameInput').focus(); return; }
             if (pin && !/^\d{4}$/.test(pin)) { alert('PIN must be exactly 4 digits'); return; }
-            const cashiers = getCashiers();
-            cashiers.push({ id: uid(), name, pin: pin || '', storeId: storeId ? Number(storeId) : null });
-            saveCashiers(cashiers);
-            // Auto-create cashier user in Laravel database with store_id and role
+            const token = localStorage.getItem('auth_token');
             try {
-                const token = localStorage.getItem('auth_token');
-                const email = name.toLowerCase().replace(/\s+/g, '') + '@curtains.com';
-                await fetch('http://127.0.0.1:8000/api/auth/register', {
+                const res = await fetch(API_BASE_URL + '/cashiers', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ name, email, password: pin || '0000', store_id: storeId ? Number(storeId) : null, role: 'cashier' })
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name, pin: pin || '0000', store_id: storeId ? Number(storeId) : null })
                 });
+                if (res.ok) {
+                    const r = await res.json();
+                    _cashiers.push({ id: r.data.id, name: r.data.name, store_id: r.data.store_id });
+                }
             } catch(e) {}
             closeAddCashier();
             renderCashierTable();
         }
 
-        function deleteCashier(id) {
+        async function deleteCashier(id) {
             if (!confirm('Remove this cashier?')) return;
-            saveCashiers(getCashiers().filter(c => c.id !== id));
+            const token = localStorage.getItem('auth_token');
+            try {
+                await fetch(API_BASE_URL + '/cashiers/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                });
+            } catch(e) {}
+            _cashiers = _cashiers.filter(c => String(c.id) !== String(id));
             renderCashierTable();
         }
 
+        async function loadCashiers() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+            try {
+                const res = await fetch(API_BASE_URL + '/cashiers', {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                });
+                if (res.ok) { const r = await res.json(); if (Array.isArray(r.data)) _cashiers = r.data; }
+            } catch(e) {}
+        }
+
         function renderCashierTable() {
-            const cashiers = getCashiers();
             const tbody = document.getElementById('cashierTableBody');
             const empty = document.getElementById('cashierEmpty');
             const table = document.querySelector('#cashierTableWrap table');
-            if (!cashiers.length) {
+            if (!_cashiers.length) {
                 if (table) table.style.display = 'none';
                 empty.style.display = 'block';
                 return;
             }
             if (table) table.style.display = '';
             empty.style.display = 'none';
-            tbody.innerHTML = cashiers.map(c => {
-                const storeLabel = c.storeId
-                    ? (getStoresList().find(s => String(s.id) === String(c.storeId))?.name || 'Store ' + c.storeId)
+            tbody.innerHTML = _cashiers.map(c => {
+                const storeLabel = c.store_id
+                    ? (getStoresList().find(s => String(s.id) === String(c.store_id))?.name || 'Store ' + c.store_id)
                     : 'Any store';
                 return `
                 <tr style="border-bottom:1px solid var(--border-color);">
@@ -295,23 +328,17 @@
                             <span style="font-weight:700;color:var(--text-dark);">${esc(c.name)}</span>
                         </div>
                     </td>
-                    <td style="padding:12px 16px;color:var(--text-gray);font-family:monospace;">${c.pin ? '••••' : '<span style="color:var(--text-gray);font-size:12px;">No PIN</span>'}</td>
+                    <td style="padding:12px 16px;color:var(--text-gray);font-family:monospace;">••••</td>
                     <td style="padding:12px 16px;color:var(--text-gray);">${esc(storeLabel)}</td>
                     <td style="padding:12px 16px;">
-                        <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteCashier('${esc(c.id)}')">Remove</button>
+                        <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteCashier('${esc(String(c.id))}')">Remove</button>
                     </td>
                 </tr>`;
             }).join('');
         }
 
-        function enterAsCashier(cashierId) {
-            const c = getCashiers().find(x => x.id === cashierId);
-            if (!c || !c.storeId) return;
-            enterAsCashierStore(cashierId, c.storeId);
-        }
-
         function enterAsCashierStore(cashierId, storeId) {
-            const c = getCashiers().find(x => x.id === cashierId);
+            const c = _cashiers.find(x => String(x.id) === String(cashierId));
             if (!c) return;
             const storeName = getStoresList().find(s => String(s.id) === String(storeId))?.name || 'Store ' + storeId;
             localStorage.setItem('cms_active_cashier', JSON.stringify({ id: c.id, name: c.name, storeId: Number(storeId) }));
@@ -321,9 +348,11 @@
             window.location.href = 'retail/pos.html';
         }
 
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             loadUserInfo();
+            await loadStoreNames();
             renderStoreCards();
+            await loadCashiers();
             renderCashierTable();
             if (window.applyLanguage) applyLanguage();
         });

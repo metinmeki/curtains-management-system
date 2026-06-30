@@ -424,18 +424,11 @@ const WH_ITEMS = [
 
 let _dbSupplies = []; // populated from DB on load
 
-function getWhSales() {
-    if (_dbSupplies.length) return _dbSupplies;
-    return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]');
-}
-function saveWhSales(arr) { localStorage.setItem(WH_SALES_KEY, JSON.stringify(arr)); }
-function addWhSale(sale) { _dbSupplies.unshift(sale); const s = JSON.parse(localStorage.getItem(WH_SALES_KEY)||'[]'); s.unshift(sale); saveWhSales(s); }
+function getWhSales() { return _dbSupplies; }
+function addWhSale(sale) { _dbSupplies.unshift(sale); }
 function updateWhSale(updated) {
     const i = _dbSupplies.findIndex(x => String(x.id) === String(updated.id) || x.reference === updated.reference);
     if (i >= 0) _dbSupplies[i] = updated;
-    const s = JSON.parse(localStorage.getItem(WH_SALES_KEY)||'[]');
-    const j = s.findIndex(x => x.id === updated.id);
-    if (j >= 0) { s[j] = updated; saveWhSales(s); }
 }
 
 async function loadSuppliesFromDB() {
@@ -462,7 +455,18 @@ async function loadSuppliesFromDB() {
 }
 
 function getItemCodes() { return JSON.parse(localStorage.getItem(WH_CODES_KEY) || '{}'); }
-function saveItemCodes_() { localStorage.setItem(WH_CODES_KEY, JSON.stringify(getCodesFromInputs())); }
+// ─── In-memory warehouse state (no localStorage) ─────────────────────────────
+let _whVariants   = {};
+let _whMov        = [];
+let _whInvState   = {};
+let _whItemCodes  = {};
+
+function _whTok() { const t = getToken(); return t && t !== 'demo-frontend-token' ? t : null; }
+function _whPost(key, data) {
+    const tok = _whTok();
+    if (!tok) return;
+    fetch(API_BASE_URL + '/warehouse/kv/' + key, { method:'POST', headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(data) }).catch(()=>{});
+}
 
 function getCodesFromInputs() {
     const codes = {};
@@ -476,14 +480,15 @@ function getCodesFromInputs() {
 function getWhInv() {
     const def = {};
     WH_ITEMS.forEach(i => { def[i.name] = { qty: 0, minQty: 10, unit: i.unit, log: [] }; });
-    const saved = JSON.parse(localStorage.getItem(WH_INV_KEY) || '{}');
-    WH_ITEMS.forEach(i => { if (saved[i.name]) def[i.name] = { ...def[i.name], ...saved[i.name] }; });
+    WH_ITEMS.forEach(i => { if (_whInvState[i.name]) def[i.name] = { ...def[i.name], ..._whInvState[i.name] }; });
     return def;
 }
-function saveWhInv(inv) { localStorage.setItem(WH_INV_KEY, JSON.stringify(inv)); }
+function saveWhInv(inv) {
+    _whInvState = inv;
+    _whPost('inv', inv);
+}
 
 function deductWhStock(items, ref) {
-    // Deduct from simple inv store
     const inv = getWhInv();
     items.forEach(({ item, quantity }) => {
         if (!inv[item] || !quantity) return;
@@ -493,35 +498,23 @@ function deductWhStock(items, ref) {
     });
     saveWhInv(inv);
 
-    // Deduct from variants (inventory.html) by code match — then sync to DB
-    const VARIANTS_KEY = 'wh_variants_v1';
-    const MOV_KEY = 'wh_mov_v1';
-    const variants = JSON.parse(localStorage.getItem(VARIANTS_KEY) || '{}');
-    const movements = JSON.parse(localStorage.getItem(MOV_KEY) || '[]');
-    let variantsChanged = false;
-
+    let changed = false;
     items.forEach(({ item, code, quantity }) => {
         if (!quantity) return;
         const qty = Number(quantity);
-        const varList = variants[item] || [];
-        // Match by code first, fall back to first variant of the item
+        const varList = _whVariants[item] || [];
         const v = code ? varList.find(x => x.code === code) : varList[0];
         if (!v) return;
         const prev = parseFloat(v.qty) || 0;
         v.qty = parseFloat(Math.max(0, prev - qty).toFixed(4));
-        movements.unshift({ id: Date.now().toString(36), date: new Date().toISOString().slice(0,10), item, code: v.code, variantId: v.id, type: 'supply', delta: -qty, prevQty: prev, nextQty: v.qty, note: 'Supply ' + ref, ref });
-        variantsChanged = true;
+        _whMov.unshift({ id: Date.now().toString(36), date: new Date().toISOString().slice(0,10), item, code: v.code, variantId: v.id, type: 'supply', delta: -qty, prevQty: prev, nextQty: v.qty, note: 'Supply ' + ref, ref });
+        changed = true;
     });
 
-    if (variantsChanged) {
-        localStorage.setItem(VARIANTS_KEY, JSON.stringify(variants));
-        localStorage.setItem(MOV_KEY, JSON.stringify(movements.slice(0, 3000)));
-        // Sync to DB
-        const token = getToken();
-        if (token && token !== 'demo-frontend-token') {
-            fetch(API_BASE_URL + '/warehouse/kv/variants',  { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(variants) }).catch(()=>{});
-            fetch(API_BASE_URL + '/warehouse/kv/movements', { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(movements.slice(0,500)) }).catch(()=>{});
-        }
+    if (changed) {
+        _whMov = _whMov.slice(0, 3000);
+        _whPost('variants', _whVariants);
+        _whPost('movements', _whMov.slice(0, 500));
     }
 }
 
@@ -549,55 +542,33 @@ function toggleItemsMgmt() {
     toggle.textContent = isOpen ? '▼ Open' : '▲ Close';
 }
 
-const WH_COSTS_KEY = 'wh_item_costs_v1';
-function getItemCosts() { return JSON.parse(localStorage.getItem(WH_COSTS_KEY) || '{}'); }
-function getItemCost(itemName) { return Number(getItemCosts()[itemName] || 0); }
-
-async function loadItemCostsFromDB() {
-    const token = getToken();
-    if (!token || token === 'demo-frontend-token') return;
-    try {
-        const res = await fetch(API_BASE_URL + '/warehouse/kv/item_costs', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
-        if (res.ok) {
-            const r = await res.json();
-            if (r.data && typeof r.data === 'object') {
-                localStorage.setItem(WH_COSTS_KEY, JSON.stringify(r.data));
-                renderItemCodesGrid();
-            }
-        }
-    } catch(e) {}
-}
+let _whItemCosts = {};
+function getItemCosts() { return _whItemCosts; }
+function getItemCost(itemName) { return Number(_whItemCosts[itemName] || 0); }
 
 function renderItemCodesGrid() {
-    const codes = getItemCodes();
-    const costs = getItemCosts();
     document.getElementById('itemCodesGrid').innerHTML = WH_ITEMS.map(item => `
         <div class="item-code-box">
             <label>${esc(item.name)}</label>
             <div class="unit-tag">${esc(item.unit)}</div>
-            <input id="codeInput_${esc(item.name)}" type="text" placeholder="e.g. SK-001" value="${esc(codes[item.name] || '')}">
+            <input id="codeInput_${esc(item.name)}" type="text" placeholder="e.g. SK-001" value="${esc(_whItemCodes[item.name] || '')}">
             <div style="margin-top:6px;font-size:10px;font-weight:800;color:#163329;opacity:0.6;letter-spacing:0.5px;">COST PRICE (IQD)</div>
-            <input id="costInput_${esc(item.name)}" type="number" min="0" step="500" placeholder="0" value="${esc(costs[item.name] || 0)}" style="margin-top:3px;">
+            <input id="costInput_${esc(item.name)}" type="number" min="0" step="500" placeholder="0" value="${esc(_whItemCosts[item.name] || 0)}" style="margin-top:3px;">
         </div>
     `).join('');
 }
 
 function saveItemCodes() {
     const codes = getCodesFromInputs();
-    localStorage.setItem(WH_CODES_KEY, JSON.stringify(codes));
-    // save cost prices
+    _whItemCodes = codes;
     const costs = {};
     WH_ITEMS.forEach(item => {
         const el = document.getElementById('costInput_' + item.name);
         if (el) costs[item.name] = Number(el.value || 0);
     });
-    localStorage.setItem(WH_COSTS_KEY, JSON.stringify(costs));
-    // sync both to DB
-    const token = getToken();
-    if (token && token !== 'demo-frontend-token') {
-        fetch(API_BASE_URL + '/warehouse/kv/item_codes', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(codes) }).catch(() => {});
-        fetch(API_BASE_URL + '/warehouse/kv/item_costs', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(costs) }).catch(() => {});
-    }
+    _whItemCosts = costs;
+    _whPost('item_codes', codes);
+    _whPost('item_costs', costs);
     const msg = document.getElementById('codesSavedMsg');
     msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; }, 2000);
@@ -606,7 +577,7 @@ function saveItemCodes() {
 }
 
 function getItemCode(itemName) {
-    return getItemCodes()[itemName] || '';
+    return _whItemCodes[itemName] || '';
 }
 
 function refreshRowCodes() {
@@ -1093,9 +1064,34 @@ function initPage() {
     renderStoreAccounts();
 }
 
-initPage();
-loadSuppliesFromDB().then(() => { refreshKPI(); initStoreTabs(); renderHistoryPanel(); renderStoreAccounts(); });
-loadItemCostsFromDB();
+async function loadAllWarehouseData() {
+    const tok = _whTok();
+    initPage();
+    if (tok) {
+        const h = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
+        try {
+            const [vRes, mRes, invRes, codesRes, costsRes] = await Promise.all([
+                fetch(API_BASE_URL + '/warehouse/kv/variants',   { headers: h }),
+                fetch(API_BASE_URL + '/warehouse/kv/movements',  { headers: h }),
+                fetch(API_BASE_URL + '/warehouse/kv/inv',        { headers: h }),
+                fetch(API_BASE_URL + '/warehouse/kv/item_codes', { headers: h }),
+                fetch(API_BASE_URL + '/warehouse/kv/item_costs', { headers: h }),
+            ]);
+            if (vRes.ok)     { const r = await vRes.json();     if (r.data && typeof r.data === 'object') _whVariants = r.data; }
+            if (mRes.ok)     { const r = await mRes.json();     if (Array.isArray(r.data)) _whMov = r.data; }
+            if (invRes.ok)   { const r = await invRes.json();   if (r.data && typeof r.data === 'object') _whInvState = r.data; }
+            if (codesRes.ok) { const r = await codesRes.json(); if (r.data && typeof r.data === 'object') _whItemCodes = r.data; }
+            if (costsRes.ok) { const r = await costsRes.json(); if (r.data && typeof r.data === 'object') _whItemCosts = r.data; }
+        } catch(e) {}
+    }
+    await loadSuppliesFromDB();
+    renderItemCodesGrid();
+    refreshKPI();
+    initStoreTabs();
+    renderHistoryPanel();
+    renderStoreAccounts();
+}
+loadAllWarehouseData();
 </script>
 <script src="../js/i18n.js?v=wh-2"></script>
 </body>

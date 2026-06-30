@@ -31,56 +31,47 @@ const retailDemo = {
   expenseCategories: ['Rent', 'Salaries', 'Delivery', 'Installation', 'Utilities', 'Repairs', 'Marketing', 'Other']
 };
 
-function getStoreSalesKey() {
-  return `retail_sales_${RETAIL_SALES_STORAGE_VERSION}_store_${getStoreId() || 'demo'}`;
-}
+// ─── Retail Data — in-memory, loaded from DB on page start ───────────────────
+let _storeSales    = [];
+let _storeExpenses = [];
+let _storeOrders   = [];
 
-function getStoreSales() {
-  return JSON.parse(localStorage.getItem(getStoreSalesKey()) || '[]');
-}
+function getStoreSales()    { return _storeSales; }
+function getStoreExpenses() { return _storeExpenses; }
+function getStoreOrders()   { return _storeOrders; }
 
 function saveStoreSale(sale) {
-  const key = getStoreSalesKey();
-  const sales = JSON.parse(localStorage.getItem(key) || '[]');
-  sales.unshift(sale);
-  localStorage.setItem(key, JSON.stringify(sales));
-}
-
-function getStoreExpensesKey() {
-  return `retail_expenses_${RETAIL_EXPENSES_STORAGE_VERSION}_store_${getStoreId() || 'demo'}`;
-}
-
-function getStoreExpenses() {
-  return JSON.parse(localStorage.getItem(getStoreExpensesKey()) || '[]');
+  _storeSales.unshift(sale);
+  // API save handled by each page separately
 }
 
 function saveStoreExpense(expense) {
-  const key = getStoreExpensesKey();
-  const expenses = JSON.parse(localStorage.getItem(key) || '[]');
-  expenses.unshift(expense);
-  localStorage.setItem(key, JSON.stringify(expenses));
-}
-
-function getStoreOrdersKey() {
-  return `retail_orders_${RETAIL_ORDERS_STORAGE_VERSION}_store_${getStoreId() || 'demo'}`;
-}
-
-function getStoreOrders() {
-  return JSON.parse(localStorage.getItem(getStoreOrdersKey()) || '[]');
+  _storeExpenses.unshift(expense);
 }
 
 function saveStoreOrder(order) {
-  const key = getStoreOrdersKey();
-  const orders = JSON.parse(localStorage.getItem(key) || '[]');
-  orders.unshift(order);
-  localStorage.setItem(key, JSON.stringify(orders));
+  _storeOrders.unshift(order);
 }
 
 function updateStoreOrder(updatedOrder) {
-  const key = getStoreOrdersKey();
-  const orders = JSON.parse(localStorage.getItem(key) || '[]');
-  const nextOrders = orders.map(order => String(order.id) === String(updatedOrder.id) ? updatedOrder : order);
-  localStorage.setItem(key, JSON.stringify(nextOrders));
+  const idx = _storeOrders.findIndex(o => String(o.id) === String(updatedOrder.id));
+  if (idx >= 0) _storeOrders[idx] = updatedOrder;
+}
+
+async function loadRetailDataFromDB(storeId) {
+  const token = typeof getToken === 'function' ? getToken() : localStorage.getItem('auth_token');
+  if (!token || token === 'demo-frontend-token' || !storeId) return;
+  const h = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+  try {
+    const [sRes, eRes, oRes] = await Promise.all([
+      fetch(API_BASE_URL + '/retail/sales/'    + storeId, { headers: h }),
+      fetch(API_BASE_URL + '/retail/expenses/' + storeId, { headers: h }),
+      fetch(API_BASE_URL + '/retail/orders/'   + storeId, { headers: h }),
+    ]);
+    if (sRes.ok) { const r = await sRes.json(); if (Array.isArray(r.data)) _storeSales    = r.data; }
+    if (eRes.ok) { const r = await eRes.json(); if (Array.isArray(r.data)) _storeExpenses = r.data; }
+    if (oRes.ok) { const r = await oRes.json(); if (Array.isArray(r.data)) _storeOrders   = r.data; }
+  } catch(e) {}
 }
 
 function getWorkerAccountTotals() {
