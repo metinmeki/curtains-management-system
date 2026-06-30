@@ -286,54 +286,57 @@ function loadShell(sectionLabel) {
   }
 })();
 
-// ─── Variant Inventory Data Model ────────────────────────────────────────────
+// ─── Variant Inventory Data Model (DB-backed, no localStorage) ───────────────
 
-function getInvCategories() {
-  return JSON.parse(localStorage.getItem('inv_categories_v1') || '[]');
-}
-function saveInvCategories(arr) { localStorage.setItem('inv_categories_v1', JSON.stringify(arr)); }
+// In-memory state — populated by loadInvFromDB() on page start
+let _invCategories = [];
+let _invItems      = [];
+let _invVariants   = [];
+let _invStock      = {}; // { [storeId]: { [variantId]: qty } }
+let _invMovements  = {}; // { [storeId]: [...] }
 
-function getInvItems() {
-  return JSON.parse(localStorage.getItem('inv_items_v1') || '[]');
+function _invApiHeaders() {
+  const token = typeof getToken === 'function' ? getToken() : null;
+  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' };
 }
+function _invStoreId() { return typeof getStoreId === 'function' ? getStoreId() : null; }
+function _invToken()   { const t = typeof getToken === 'function' ? getToken() : null; return t && t !== 'demo-frontend-token' ? t : null; }
+
+function getInvCategories() { return _invCategories; }
+function saveInvCategories(arr) {
+  _invCategories = arr;
+  const sid = _invStoreId(), tok = _invToken();
+  if (tok && sid) fetch(API_BASE_URL + '/retail/kv/' + sid + '/categories', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(arr) }).catch(() => {});
+}
+
+function getInvItems() { return _invItems; }
 function saveInvItems(arr) {
-  localStorage.setItem('inv_items_v1', JSON.stringify(arr));
-  const token = typeof getToken === 'function' ? getToken() : localStorage.getItem('auth_token');
-  const storeId = typeof getStoreId === 'function' ? getStoreId() : null;
-  if (token && token !== 'demo-frontend-token' && storeId) {
-    fetch(API_BASE_URL + '/retail/kv/' + storeId + '/items', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(arr) }).catch(() => {});
-  }
+  _invItems = arr;
+  const sid = _invStoreId(), tok = _invToken();
+  if (tok && sid) fetch(API_BASE_URL + '/retail/kv/' + sid + '/items', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(arr) }).catch(() => {});
 }
 
-function getInvVariants() {
-  return JSON.parse(localStorage.getItem('inv_variants_v1') || '[]');
-}
+function getInvVariants() { return _invVariants; }
 function saveInvVariants(arr) {
-  localStorage.setItem('inv_variants_v1', JSON.stringify(arr));
-  const token = typeof getToken === 'function' ? getToken() : localStorage.getItem('auth_token');
-  const storeId = typeof getStoreId === 'function' ? getStoreId() : null;
-  if (token && token !== 'demo-frontend-token' && storeId) {
-    fetch(API_BASE_URL + '/retail/kv/' + storeId + '/variants', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(arr) }).catch(() => {});
-  }
+  _invVariants = arr;
+  const sid = _invStoreId(), tok = _invToken();
+  if (tok && sid) fetch(API_BASE_URL + '/retail/kv/' + sid + '/variants', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(arr) }).catch(() => {});
 }
 
 function findVariantByCode(code) {
   if (!code) return null;
-  return getInvVariants().find(v => v.code && v.code.toLowerCase() === String(code).toLowerCase()) || null;
+  return _invVariants.find(v => v.code && v.code.toLowerCase() === String(code).toLowerCase()) || null;
 }
 
-function invStockKey(storeId) { return `inv_stock_v1_store_${storeId || 'demo'}`; }
-function getStoreStock(storeId) { return JSON.parse(localStorage.getItem(invStockKey(storeId)) || '{}'); }
+function getStoreStock(storeId) { return _invStock[String(storeId)] || {}; }
 function saveStoreStock(storeId, stock) {
-  localStorage.setItem(invStockKey(storeId), JSON.stringify(stock));
-  const token = typeof getToken === 'function' ? getToken() : localStorage.getItem('auth_token');
-  if (token && token !== 'demo-frontend-token' && storeId) {
-    fetch(API_BASE_URL + '/retail/kv/' + storeId + '/stock', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(stock) }).catch(() => {});
-  }
+  _invStock[String(storeId)] = stock;
+  const tok = _invToken();
+  if (tok && storeId) fetch(API_BASE_URL + '/retail/kv/' + storeId + '/stock', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(stock) }).catch(() => {});
 }
 
 function getVariantQty(variantId, storeId) {
-  return getStoreStock(storeId)[String(variantId)] || 0;
+  return (getStoreStock(storeId))[String(variantId)] || 0;
 }
 
 function setVariantQty(variantId, qty, storeId) {
@@ -342,31 +345,33 @@ function setVariantQty(variantId, qty, storeId) {
   saveStoreStock(storeId, stock);
 }
 
-// Load retail inventory data from DB into localStorage on page start
+// Load retail inventory data from DB into memory on page start
 async function loadInvFromDB(storeId, callback) {
-  const token = typeof getToken === 'function' ? getToken() : localStorage.getItem('auth_token');
-  if (!token || token === 'demo-frontend-token' || !storeId) { if (callback) callback(); return; }
+  const tok = _invToken();
+  if (!tok || !storeId) { if (callback) callback(); return; }
   try {
-    const [vRes, iRes, sRes] = await Promise.all([
-      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/variants', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } }),
-      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/items',    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } }),
-      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/stock',    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } }),
+    const h = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
+    const [vRes, iRes, sRes, cRes] = await Promise.all([
+      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/variants',   { headers: h }),
+      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/items',      { headers: h }),
+      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/stock',      { headers: h }),
+      fetch(API_BASE_URL + '/retail/kv/' + storeId + '/categories', { headers: h }),
     ]);
-    if (vRes.ok) { const r = await vRes.json(); if (Array.isArray(r.data)) localStorage.setItem('inv_variants_v1', JSON.stringify(r.data)); }
-    if (iRes.ok) { const r = await iRes.json(); if (Array.isArray(r.data)) localStorage.setItem('inv_items_v1', JSON.stringify(r.data)); }
-    if (sRes.ok) { const r = await sRes.json(); if (r.data && typeof r.data === 'object') localStorage.setItem(invStockKey(storeId), JSON.stringify(r.data)); }
+    if (vRes.ok) { const r = await vRes.json(); if (Array.isArray(r.data)) _invVariants = r.data; }
+    if (iRes.ok) { const r = await iRes.json(); if (Array.isArray(r.data)) _invItems = r.data; }
+    if (sRes.ok) { const r = await sRes.json(); if (r.data && typeof r.data === 'object') _invStock[String(storeId)] = r.data; }
+    if (cRes.ok) { const r = await cRes.json(); if (Array.isArray(r.data)) _invCategories = r.data; }
   } catch(e) {}
   if (callback) callback();
 }
 
-function invMovementsKey(storeId) { return `inv_movements_v1_store_${storeId || 'demo'}`; }
-function getInvMovements(storeId) { return JSON.parse(localStorage.getItem(invMovementsKey(storeId)) || '[]'); }
+function getInvMovements(storeId) { return _invMovements[String(storeId)] || []; }
 
 function addInvMovement(mov, storeId) {
-  const key = invMovementsKey(storeId);
-  const list = JSON.parse(localStorage.getItem(key) || '[]');
-  list.unshift({ id: Date.now() + Math.random(), date: new Date().toISOString(), ...mov });
-  localStorage.setItem(key, JSON.stringify(list.slice(0, 1000)));
+  const sid = String(storeId);
+  if (!_invMovements[sid]) _invMovements[sid] = [];
+  _invMovements[sid].unshift({ id: Date.now() + Math.random(), date: new Date().toISOString(), ...mov });
+  _invMovements[sid] = _invMovements[sid].slice(0, 1000);
 }
 
 function deductVariantStock(variantId, qty, storeId, reason, saleRef) {
