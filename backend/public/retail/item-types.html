@@ -77,6 +77,11 @@
                                 <input id="itSellingPrice" type="number" min="0" value="0" placeholder="6000">
                             </div>
                             <div class="form-group">
+                                <label>Stock quantity</label>
+                                <input id="itQuantity" type="number" min="0" step="0.1" value="0" placeholder="0">
+                                <small style="color:var(--text-gray);font-size:11px;">Current stock in store / warehouse</small>
+                            </div>
+                            <div class="form-group">
                                 <label>Unit</label>
                                 <select id="itUnit">
                                     <option value="meter">Meter (متر)</option>
@@ -116,7 +121,7 @@
                     <div class="card-header"><h2 class="card-title">All Item Types</h2></div>
                     <div class="card-body table-wrapper">
                         <table>
-                            <thead><tr><th>Code</th><th>Name</th><th>Cost (IQD)</th><th>Selling (IQD)</th><th>Profit/unit</th><th>Unit</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>Code</th><th>Name</th><th>Cost (IQD)</th><th>Selling (IQD)</th><th>Profit/unit</th><th>Unit</th><th>Qty</th><th>Actions</th></tr></thead>
                             <tbody id="itemTypeRows"><tr><td colspan="7" style="text-align:center;color:#888;">Loading...</td></tr></tbody>
                         </table>
                     </div>
@@ -187,10 +192,11 @@ function renderItems(items) {
                 <td>${money(item.selling_price)}</td>
                 <td style="color:${profit>=0?'#2f7d5b':'#b4534a'};font-weight:700;">${money(profit)}</td>
                 <td>${esc(item.unit)}</td>
+                <td style="text-align:center;font-weight:700;">${parseFloat(item.quantity||0)}</td>
                 <td><button class="btn btn-small btn-primary" onclick="editItem(${item.id})">Edit</button></td>
             </tr>`;
           }).join('')
-        : '<tr><td colspan="7" style="text-align:center;color:#888;">No item types yet.</td></tr>';
+        : '<tr><td colspan="8" style="text-align:center;color:#888;">No item types yet.</td></tr>';
 }
 
 function editItem(id) {
@@ -202,6 +208,7 @@ function editItem(id) {
     document.getElementById('itName').value           = item.name || '';
     document.getElementById('itCostPrice').value      = item.cost_price || 0;
     document.getElementById('itSellingPrice').value   = item.selling_price || 0;
+    document.getElementById('itQuantity').value       = item.quantity || 0;
     document.getElementById('itUnit').value           = item.unit || 'meter';
     document.getElementById('itWorkerAccount').value  = item.worker_account || '';
     document.getElementById('itAffectsSaleTotal').checked = !!item.affects_sale_total;
@@ -216,6 +223,7 @@ async function saveItemType() {
         name:              document.getElementById('itName').value.trim(),
         cost_price:        Number(document.getElementById('itCostPrice').value || 0),
         selling_price:     Number(document.getElementById('itSellingPrice').value || 0),
+        quantity:          Number(document.getElementById('itQuantity').value || 0),
         unit:              document.getElementById('itUnit').value,
         worker_account:    document.getElementById('itWorkerAccount').value || null,
         affects_sale_total:document.getElementById('itAffectsSaleTotal').checked,
@@ -267,6 +275,7 @@ function resetForm() {
     ['itCode','itName'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('itCostPrice').value    = 0;
     document.getElementById('itSellingPrice').value = 0;
+    document.getElementById('itQuantity').value     = 0;
     document.getElementById('itUnit').value         = 'meter';
     document.getElementById('itWorkerAccount').value = '';
     document.getElementById('itAffectsSaleTotal').checked = true;
