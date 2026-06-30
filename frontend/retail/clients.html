@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -34,7 +34,7 @@
                 <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
                 <li class="menu-item"><a href="clients.html" class="active"><span class="menu-icon">C</span><span>Clients</span></a></li>
                 <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-                <li class="menu-item"><a href="item-types.html"><span class="menu-icon">$</span><span>Item Prices</span></a></li>
+                
             </ul>
             <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
         </aside>
@@ -105,12 +105,12 @@
         function paymentHistoryHtml(sale) {
             const payments = sale.payments || [];
             if (!payments.length) return '';
-            return `<div class="payment-history">${payments.map(p=>`<div>Payment ${p.date||'-'}: ${money(p.amount)}${p.note?' — '+p.note:''}</div>`).join('')}</div>`;
+            return `<div class="payment-history">${payments.map(p=>`<div>Payment ${p.date||'-'}: ${money(p.amount)}${p.note?' â€” '+p.note:''}</div>`).join('')}</div>`;
         }
 
         function clientPaymentPanel(client, index) {
             if (Number(client.totalDebt) <= 0) {
-                return '<div class="client-balance-panel" style="background:#eef8ee;"><div class="client-balance-total" style="color:#27ae60;">✓ Balance fully paid</div></div>';
+                return '<div class="client-balance-panel" style="background:#eef8ee;"><div class="client-balance-total" style="color:#27ae60;">âœ“ Balance fully paid</div></div>';
             }
             return `
                 <div class="client-balance-panel">
@@ -139,7 +139,7 @@
                 return `
                     <div class="client-history-entry ${rowClass}">
                         <div class="client-history-head">
-                            <span>#${sale.id} — ${saleDate}</span>
+                            <span>#${sale.id} â€” ${saleDate}</span>
                             <span>Total ${money(total)} | Paid ${money(paid)} | Debt ${money(remaining)}</span>
                         </div>
                         <div class="client-history-items">${saleItemsText(sale)}</div>

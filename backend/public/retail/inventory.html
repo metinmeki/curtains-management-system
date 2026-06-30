@@ -120,7 +120,7 @@
             <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
             <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
             <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-            <li class="menu-item"><a href="item-types.html"><span class="menu-icon">$</span><span>Item Prices</span></a></li>
+            
             <li class="menu-item"><a href="inventory.html" class="active"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
         </ul>
         <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
@@ -294,6 +294,16 @@
                 <div class="form-group">
                     <label>Min stock alert</label>
                     <input id="variantMinQty" type="number" min="0" value="5">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Cost price (ما اشتريناه) IQD</label>
+                    <input id="variantCostPrice" type="number" min="0" step="1" value="0" placeholder="5000">
+                </div>
+                <div class="form-group">
+                    <label>Selling price (ما بعناه) IQD</label>
+                    <input id="variantSellingPrice" type="number" min="0" step="1" value="0" placeholder="6000">
                 </div>
             </div>
             <div class="form-group">
@@ -853,6 +863,8 @@
         document.getElementById('variantSize').value = '';
         document.getElementById('variantQty').value = 0;
         document.getElementById('variantMinQty').value = 5;
+        document.getElementById('variantCostPrice').value = 0;
+        document.getElementById('variantSellingPrice').value = 0;
         document.getElementById('variantImage').value = '';
         document.getElementById('variantImageFile').value = '';
         document.getElementById('variantImagePreview').style.display = 'none';
@@ -884,6 +896,8 @@
         document.getElementById('variantSize').value = v.size || '';
         document.getElementById('variantQty').value = getVariantQty(v.id, STORE_ID);
         document.getElementById('variantMinQty').value = v.minQty || 5;
+        document.getElementById('variantCostPrice').value = v.costPrice || 0;
+        document.getElementById('variantSellingPrice').value = v.sellingPrice || 0;
         document.getElementById('variantImage').value = v.image || '';
         document.getElementById('variantImageFile').value = '';
         const prev = document.getElementById('variantImagePreview');
@@ -921,14 +935,14 @@
             const idx = variants.findIndex(v => String(v.id) === editId);
             if (idx >= 0) {
                 const prevQty = getVariantQty(variants[idx].id, STORE_ID);
-                variants[idx] = { ...variants[idx], itemId, name, code, color: document.getElementById('variantColor').value.trim(), size: document.getElementById('variantSize').value.trim(), minQty, image: document.getElementById('variantImage').value.trim() };
+                variants[idx] = { ...variants[idx], itemId, name, code, color: document.getElementById('variantColor').value.trim(), size: document.getElementById('variantSize').value.trim(), minQty, costPrice: Number(document.getElementById('variantCostPrice').value||0), sellingPrice: Number(document.getElementById('variantSellingPrice').value||0), image: document.getElementById('variantImage').value.trim() };
                 setVariantQty(variants[idx].id, qty, STORE_ID);
                 if (qty !== prevQty) {
                     addInvMovement({ variantId: String(variants[idx].id), variantCode: code, variantName: name, type: 'adjust', delta: qty - prevQty, prevQty, nextQty: qty, reason: 'Manual edit', ref: '' }, STORE_ID);
                 }
             }
         } else {
-            const v = { id: uid(), itemId, name, code, color: document.getElementById('variantColor').value.trim(), size: document.getElementById('variantSize').value.trim(), minQty, image: document.getElementById('variantImage').value.trim() };
+            const v = { id: uid(), itemId, name, code, color: document.getElementById('variantColor').value.trim(), size: document.getElementById('variantSize').value.trim(), minQty, costPrice: Number(document.getElementById('variantCostPrice').value||0), sellingPrice: Number(document.getElementById('variantSellingPrice').value||0), image: document.getElementById('variantImage').value.trim() };
             variants.push(v);
             setVariantQty(v.id, qty, STORE_ID);
             if (qty > 0) {
