@@ -400,6 +400,9 @@
     loadShell(getStoreName());
 
     const STORE_ID = getStoreId();
+
+    // Load inventory data from DB into localStorage, then render
+    loadInvFromDB(STORE_ID, () => renderAll());
     let currentView = 'hierarchy';
 
     // ─── Helpers ─────────────────────────────────────────────────

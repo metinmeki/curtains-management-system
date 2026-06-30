@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\WarehouseStockController;
 use App\Http\Controllers\Api\WarehouseClientController;
 use App\Http\Controllers\Api\WarehouseKvController;
 use App\Http\Controllers\Api\ItemTypeController;
+use App\Http\Controllers\Api\RetailKvController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
@@ -54,4 +55,8 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/warehouse/clients/{clientId}/sales", [WarehouseClientController::class, "sales"]);
     Route::get("/warehouse/kv/{key}", [WarehouseKvController::class, "get"]);
     Route::post("/warehouse/kv/{key}", [WarehouseKvController::class, "set"]);
+
+    // Retail KV store — variants, items, stock per store
+    Route::get("/retail/kv/{storeId}/{key}", [RetailKvController::class, "get"]);
+    Route::post("/retail/kv/{storeId}/{key}", [RetailKvController::class, "set"]);
 });

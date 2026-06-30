@@ -49,15 +49,21 @@ class WarehouseSupplyController extends Controller
             ]);
 
             foreach ($items as $item) {
+                $unitPrice    = (float)($item['price'] ?? 0);
+                $costPrice    = (float)($item['costPrice'] ?? $item['cost_price'] ?? 0);
+                $qty          = (float)($item['quantity'] ?? 0);
+                $profitAmount = ($unitPrice - $costPrice) * $qty;
                 DB::table('warehouse_supply_items')->insert([
-                    'supply_id' => $id,
-                    'item_name' => $item['item'] ?? $item['item_name'] ?? '',
-                    'quantity'  => (float)($item['quantity'] ?? 0),
-                    'unit'      => $item['unit'] ?? '',
-                    'price'     => (float)($item['price'] ?? 0),
-                    'line_total'=> (float)($item['lineTotal'] ?? $item['line_total'] ?? 0),
-                    'created_at'=> now(),
-                    'updated_at'=> now(),
+                    'supply_id'     => $id,
+                    'item_name'     => $item['item'] ?? $item['item_name'] ?? '',
+                    'quantity'      => $qty,
+                    'unit'          => $item['unit'] ?? '',
+                    'price'         => $unitPrice,
+                    'cost_price'    => $costPrice,
+                    'profit_amount' => $profitAmount,
+                    'line_total'    => (float)($item['lineTotal'] ?? $item['line_total'] ?? 0),
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
                 ]);
             }
 

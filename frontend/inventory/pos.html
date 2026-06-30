@@ -240,6 +240,18 @@ const WH_COSTS_KEY = 'wh_item_costs_v1';
 function getItemCosts() { return JSON.parse(localStorage.getItem(WH_COSTS_KEY) || '{}'); }
 function getItemCost(itemName) { return Number(getItemCosts()[itemName] || 0); }
 
+async function loadItemCostsFromDB() {
+    const token = getToken();
+    if (!token || token === 'demo-frontend-token') return;
+    try {
+        const res = await fetch(API_BASE_URL + '/warehouse/kv/item_costs', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+        if (res.ok) {
+            const r = await res.json();
+            if (r.data && typeof r.data === 'object') localStorage.setItem(WH_COSTS_KEY, JSON.stringify(r.data));
+        }
+    } catch(e) {}
+}
+
 function getWhSales() { return JSON.parse(localStorage.getItem(WH_SALES_KEY) || '[]'); }
 function saveWhSales(arr) { localStorage.setItem(WH_SALES_KEY, JSON.stringify(arr)); }
 function addWhSale(sale) { const s = getWhSales(); s.unshift(sale); saveWhSales(s); }
@@ -484,6 +496,7 @@ function renderHistory() {
 
 initPage();
 loadSuppliesFromDB().then(() => renderHistory());
+loadItemCostsFromDB();
 </script>
 <script src="../js/i18n.js?v=wh-1"></script>
 </body>

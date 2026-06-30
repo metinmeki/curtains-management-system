@@ -553,6 +553,21 @@ const WH_COSTS_KEY = 'wh_item_costs_v1';
 function getItemCosts() { return JSON.parse(localStorage.getItem(WH_COSTS_KEY) || '{}'); }
 function getItemCost(itemName) { return Number(getItemCosts()[itemName] || 0); }
 
+async function loadItemCostsFromDB() {
+    const token = getToken();
+    if (!token || token === 'demo-frontend-token') return;
+    try {
+        const res = await fetch(API_BASE_URL + '/warehouse/kv/item_costs', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+        if (res.ok) {
+            const r = await res.json();
+            if (r.data && typeof r.data === 'object') {
+                localStorage.setItem(WH_COSTS_KEY, JSON.stringify(r.data));
+                renderItemCodesGrid();
+            }
+        }
+    } catch(e) {}
+}
+
 function renderItemCodesGrid() {
     const codes = getItemCodes();
     const costs = getItemCosts();
@@ -570,13 +585,19 @@ function renderItemCodesGrid() {
 function saveItemCodes() {
     const codes = getCodesFromInputs();
     localStorage.setItem(WH_CODES_KEY, JSON.stringify(codes));
-    // save cost prices too
+    // save cost prices
     const costs = {};
     WH_ITEMS.forEach(item => {
         const el = document.getElementById('costInput_' + item.name);
         if (el) costs[item.name] = Number(el.value || 0);
     });
     localStorage.setItem(WH_COSTS_KEY, JSON.stringify(costs));
+    // sync both to DB
+    const token = getToken();
+    if (token && token !== 'demo-frontend-token') {
+        fetch(API_BASE_URL + '/warehouse/kv/item_codes', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(codes) }).catch(() => {});
+        fetch(API_BASE_URL + '/warehouse/kv/item_costs', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(costs) }).catch(() => {});
+    }
     const msg = document.getElementById('codesSavedMsg');
     msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; }, 2000);
@@ -1074,6 +1095,7 @@ function initPage() {
 
 initPage();
 loadSuppliesFromDB().then(() => { refreshKPI(); initStoreTabs(); renderHistoryPanel(); renderStoreAccounts(); });
+loadItemCostsFromDB();
 </script>
 <script src="../js/i18n.js?v=wh-2"></script>
 </body>
