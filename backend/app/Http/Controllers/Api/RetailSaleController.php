@@ -51,17 +51,32 @@ class RetailSaleController extends Controller
             "updated_at"      => now()
         ]);
 
+        // Build cost price lookup from item_types (keyed by name)
+        $itemTypeCosts = DB::table('item_types')
+            ->pluck('cost_price', 'name')
+            ->map(fn($v) => (float)$v)
+            ->all();
+
         if (!empty($data["items"])) {
             foreach ($data["items"] as $item) {
                 if (($item["quantity"] ?? 0) > 0 && ($item["price"] ?? 0) > 0) {
+                    $materialName = $item["material"] ?? "Unknown";
+                    $unitPrice    = (float)($item["price"] ?? 0);
+                    $quantity     = (float)($item["quantity"] ?? 0);
+                    // Snapshot cost price: use item's own costPrice if sent, else look up from catalog
+                    $costPrice    = (float)($item["costPrice"] ?? $item["cost_price"] ?? $itemTypeCosts[$materialName] ?? 0);
+                    $profitAmount = ($unitPrice - $costPrice) * $quantity;
+
                     DB::table("retail_sale_items")->insert([
-                        "sale_id"    => $saleId,
-                        "material"   => $item["material"] ?? "Unknown",
-                        "quantity"   => $item["quantity"] ?? 0,
-                        "unit_price" => $item["price"] ?? 0,
-                        "total_price"=> $item["saleTotal"] ?? 0,
-                        "created_at" => now(),
-                        "updated_at" => now()
+                        "sale_id"      => $saleId,
+                        "material"     => $materialName,
+                        "quantity"     => $quantity,
+                        "unit_price"   => $unitPrice,
+                        "cost_price"   => $costPrice,
+                        "profit_amount"=> $profitAmount,
+                        "total_price"  => (float)($item["saleTotal"] ?? $unitPrice * $quantity),
+                        "created_at"   => now(),
+                        "updated_at"   => now()
                     ]);
                 }
             }

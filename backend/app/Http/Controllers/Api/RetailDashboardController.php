@@ -130,35 +130,56 @@ class RetailDashboardController extends Controller
 
     private function calculateStats($sales, $storeId, $dateRange = null)
     {
-        $totalAmount = $sales->sum('total_amount');
-        $paidAmount = $sales->sum('paid_amount');
-        $remainingAmount = $sales->sum('remaining_amount');
+        $totalAmount      = $sales->sum('total_amount');
+        $paidAmount       = $sales->sum('paid_amount');
+        $remainingAmount  = $sales->sum('remaining_amount');
+        $totalDiscounts   = $sales->sum('discount_amount');
         $fullPaymentCount = $sales->where('payment_status', 'full')->count();
+
         $expensesQuery = \App\Models\RetailExpense::where('store_id', $storeId);
         if ($dateRange) {
             $expensesQuery->whereBetween('date', [$dateRange[0]->format('Y-m-d'), $dateRange[1]->format('Y-m-d')]);
         }
-        $totalExpenses = $expensesQuery->sum('amount');
+        $totalExpenses = (float)$expensesQuery->sum('amount');
+
+        // Gross profit: SUM of profit_amount from sale items for this store's sales in period
+        $saleIds = $sales->pluck('id');
+        $grossProfit = 0.0;
+        if ($saleIds->isNotEmpty()) {
+            $grossProfit = (float)\Illuminate\Support\Facades\DB::table('retail_sale_items')
+                ->whereIn('sale_id', $saleIds)
+                ->sum('profit_amount');
+        }
+
+        // Net profit = gross profit - expenses - discounts
+        $netProfit = $grossProfit - $totalExpenses - (float)$totalDiscounts;
 
         return [
-            'total_sales' => (float)$totalAmount ?: 0,
-            'total_paid' => (float)$paidAmount ?: 0,
-            'total_debt' => (float)$remainingAmount ?: 0,
+            'total_sales'        => (float)$totalAmount ?: 0,
+            'total_paid'         => (float)$paidAmount ?: 0,
+            'total_debt'         => (float)$remainingAmount ?: 0,
+            'total_discounts'    => (float)$totalDiscounts ?: 0,
             'full_payment_sales' => $fullPaymentCount,
-            'total_expenses' => (float)$totalExpenses ?: 0,
-            'net_amount' => (float)(($totalAmount ?: 0) - ($totalExpenses ?: 0)),
+            'total_expenses'     => $totalExpenses,
+            'gross_profit'       => $grossProfit,
+            'net_profit'         => $netProfit,
+            // legacy key kept so existing frontend code doesn't break
+            'net_amount'         => (float)(($totalAmount ?: 0) - $totalExpenses),
         ];
     }
 
     private function getEmptyStats()
     {
         return [
-            'total_sales' => 0,
-            'total_paid' => 0,
-            'total_debt' => 0,
+            'total_sales'        => 0,
+            'total_paid'         => 0,
+            'total_debt'         => 0,
+            'total_discounts'    => 0,
             'full_payment_sales' => 0,
-            'total_expenses' => 0,
-            'net_amount' => 0,
+            'total_expenses'     => 0,
+            'gross_profit'       => 0,
+            'net_profit'         => 0,
+            'net_amount'         => 0,
         ];
     }
 }

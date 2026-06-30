@@ -641,9 +641,39 @@
             phoneInput.value = match.phone || '';
         }
 
+        // Item type catalog loaded from API — keyed by name
+        let _itemTypeMap = {};
+        async function loadItemTypesForPOS() {
+            const token = getToken();
+            if (!token || token === 'demo-frontend-token') return;
+            try {
+                const res = await fetch(API_BASE_URL + '/item-types', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                if (res.ok) {
+                    const r = await res.json();
+                    (r.data || []).forEach(it => { _itemTypeMap[it.name] = it; });
+                    // Re-render rows with updated options
+                    document.querySelectorAll('.material-select').forEach(sel => {
+                        const cur = sel.value;
+                        sel.innerHTML = materialOptions();
+                        if (cur) sel.value = cur;
+                        syncRow(sel);
+                    });
+                }
+            } catch(e) {}
+        }
+
         function materialOptions() {
-            return retailDemo.materials.map(item => `
-                <option value="${item.name}" data-price="${item.price}" data-unit="${item.unit}" data-affects-total="${item.affectsSaleTotal}" data-worker="${item.workerAccount || ''}">
+            // Use API catalog if loaded, otherwise fall back to demo-data
+            const catalog = Object.keys(_itemTypeMap).length > 0
+                ? Object.values(_itemTypeMap)
+                : retailDemo.materials.map(m => ({ name: m.name, selling_price: m.price, unit: m.unit, affects_sale_total: m.affectsSaleTotal, worker_account: m.workerAccount || null, cost_price: 0 }));
+            return catalog.map(item => `
+                <option value="${item.name}"
+                    data-price="${item.selling_price ?? item.price ?? 0}"
+                    data-cost="${item.cost_price ?? 0}"
+                    data-unit="${item.unit}"
+                    data-affects-total="${item.affects_sale_total ?? item.affectsSaleTotal ?? true}"
+                    data-worker="${item.worker_account ?? item.workerAccount ?? ''}">
                     ${item.name}
                 </option>
             `).join('');
@@ -704,6 +734,9 @@
 
             // qty step: pieces use whole numbers, metres allow decimals
             qtyInput.step = (unit === 'piece') ? '1' : '0.1';
+
+            // Store cost price on the row for profit tracking
+            row.dataset.costPrice = option.dataset.cost || '0';
 
             if (isWorker) {
                 priceInput.value = option.dataset.price;
@@ -780,7 +813,8 @@
                     workerAccounts.push({ account: workerAccount, material, quantity, unit, price, lineTotal, total: workerTotal, storeShare: lineTotal - workerTotal, note: rowNote });
                 }
 
-                items.push({ material, code: code || '', variantId: variant ? variant.id : null, variantCode: variant ? variant.code : '', variantName: variant ? variant.name : '', quantity, unit, price, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
+                const costPrice = Number(row.dataset.costPrice || 0);
+                items.push({ material, code: code || '', variantId: variant ? variant.id : null, variantCode: variant ? variant.code : '', variantName: variant ? variant.name : '', quantity, unit, price, costPrice, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
             });
 
             return { saleTotal, sewingTotal, installationTotal, items, workerAccounts };
@@ -1124,6 +1158,7 @@
 
         ['قماش', 'تول', 'بطانة', 'زبرا', 'خياطة', 'سكة', 'تركيب', 'مزهرية', 'حبال'].forEach(material => addInvoiceRow(material));
         renderClientSuggestions();
+        loadItemTypesForPOS();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>

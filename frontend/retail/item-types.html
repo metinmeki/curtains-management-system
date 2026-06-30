@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Types - Curtains Management System</title>
+    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+</head>
+<body class="ltr">
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
+            <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
+            <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
+            <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
+            <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
+            <li class="menu-item"><a href="item-types.html" class="active"><span class="menu-icon">$</span><span>Item Prices</span></a></li>
+        </ul>
+        <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+    </aside>
+    <div class="main-content">
+        <nav class="navbar">
+            <div class="navbar-title">Item Prices — Cost &amp; Selling</div>
+            <div class="navbar-actions"><span class="scope-pill">profit tracking</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
+        </nav>
+        <main class="content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Item Types &amp; Prices</h1>
+                    <p class="page-subtitle">Set the cost price (ما اشتريناه) and selling price (ما بعناه) for each item. Profit = Selling − Cost. These prices are used automatically when you make a POS sale.</p>
+                </div>
+            </div>
+
+            <!-- Profit formula card -->
+            <div class="workspace-grid" style="margin-bottom:20px;">
+                <div class="metric-card" style="border-left:5px solid #2f7d5b;background:#eaf5ee;">
+                    <span>Gross Profit Formula</span>
+                    <strong style="font-size:14px;color:#24583c;">(Selling − Cost) × Qty Sold</strong>
+                    <small>Per item type, summed across all sales</small>
+                </div>
+                <div class="metric-card" style="border-left:5px solid #b4534a;background:#faebe8;">
+                    <span>Net Profit Formula</span>
+                    <strong style="font-size:14px;color:#7f332d;">Gross Profit − Expenses − Discounts</strong>
+                    <small>Shown on dashboard after deductions</small>
+                </div>
+                <div class="metric-card" style="border-left:5px solid #c79543;background:#fbf0d6;">
+                    <span>Important</span>
+                    <strong style="font-size:14px;color:#7a581d;">Unsold stock = 0 profit</strong>
+                    <small>Profit only counts when a sale is made</small>
+                </div>
+            </div>
+
+            <div class="two-column">
+                <!-- Add / Edit form -->
+                <section class="card">
+                    <div class="card-header"><h2 class="card-title" id="formTitle">Add New Item Type</h2></div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Item code *</label>
+                                <input id="itCode" placeholder="e.g. QMSH" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                                <small style="color:var(--text-gray);font-size:11px;">Short unique code (letters only)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Item name *</label>
+                                <input id="itName" placeholder="e.g. قماش">
+                            </div>
+                            <div class="form-group">
+                                <label>Cost price (ما اشتريناه) IQD</label>
+                                <input id="itCostPrice" type="number" min="0" value="0" placeholder="5000">
+                            </div>
+                            <div class="form-group">
+                                <label>Selling price (ما بعناه) IQD</label>
+                                <input id="itSellingPrice" type="number" min="0" value="0" placeholder="6000">
+                            </div>
+                            <div class="form-group">
+                                <label>Unit</label>
+                                <select id="itUnit">
+                                    <option value="meter">Meter (متر)</option>
+                                    <option value="piece">Piece (قطعة)</option>
+                                    <option value="window">Window (نافذة)</option>
+                                    <option value="roll">Roll (رول)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Worker account</label>
+                                <select id="itWorkerAccount">
+                                    <option value="">None (regular sale)</option>
+                                    <option value="sewing">خياطة (Sewing)</option>
+                                    <option value="installation">تركيب (Installation)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="checkbox" id="itAffectsSaleTotal" checked style="width:auto;">
+                                Counts towards customer sale total (uncheck for worker-only items like تركيب)
+                            </label>
+                        </div>
+                        <div id="profitPreview" style="background:#f0f9f4;border:1px solid #b8ddc8;border-radius:8px;padding:12px;margin-bottom:14px;display:none;">
+                            <span style="font-size:12px;color:#2f7d5b;font-weight:600;">Profit per unit: <strong id="profitPerUnit">0 IQD</strong> &nbsp;|&nbsp; Margin: <strong id="profitMargin">0%</strong></span>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="btn btn-success" onclick="saveItemType()">Save</button>
+                            <button class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                        </div>
+                        <div id="formMessage" class="alert" style="display:none;margin-top:12px;"></div>
+                    </div>
+                </section>
+
+                <!-- Item list -->
+                <section class="card">
+                    <div class="card-header"><h2 class="card-title">All Item Types</h2></div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead><tr><th>Code</th><th>Name</th><th>Cost (IQD)</th><th>Selling (IQD)</th><th>Profit/unit</th><th>Unit</th><th>Actions</th></tr></thead>
+                            <tbody id="itemTypeRows"><tr><td colspan="7" style="text-align:center;color:#888;">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=orders-1"></script>
+<script>
+if (!checkAuth()) throw new Error('Not authenticated');
+loadShell(getStoreName());
+
+function esc(v) { return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let _editingId = null;
+let _allItems  = [];
+
+// Live profit preview
+['itCostPrice','itSellingPrice'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateProfitPreview);
+});
+
+function updateProfitPreview() {
+    const cost    = Number(document.getElementById('itCostPrice').value || 0);
+    const selling = Number(document.getElementById('itSellingPrice').value || 0);
+    const preview = document.getElementById('profitPreview');
+    if (cost > 0 || selling > 0) {
+        const profit = selling - cost;
+        const margin = selling > 0 ? ((profit / selling) * 100).toFixed(1) : 0;
+        document.getElementById('profitPerUnit').textContent = money(profit);
+        document.getElementById('profitMargin').textContent  = margin + '%';
+        document.getElementById('profitPerUnit').style.color = profit >= 0 ? '#2f7d5b' : '#b4534a';
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+async function loadItemTypes() {
+    const token = getToken();
+    if (!token || token === 'demo-frontend-token') { renderDemoItems(); return; }
+    try {
+        const res = await fetch(API_BASE_URL + '/item-types', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+        if (res.ok) {
+            const r = await res.json();
+            _allItems = r.data || [];
+            renderItems(_allItems);
+        } else { renderDemoItems(); }
+    } catch(e) { renderDemoItems(); }
+}
+
+function renderDemoItems() {
+    _allItems = retailDemo.materials.map((m, i) => ({ id: i+1, code: m.name.substring(0,4).toUpperCase(), name: m.name, cost_price: 0, selling_price: m.price || 0, unit: m.unit, affects_sale_total: m.affectsSaleTotal ? 1 : 0, worker_account: m.workerAccount || null, is_active: 1 }));
+    renderItems(_allItems);
+}
+
+function renderItems(items) {
+    document.getElementById('itemTypeRows').innerHTML = items.length
+        ? items.map(item => {
+            const profit = parseFloat(item.selling_price||0) - parseFloat(item.cost_price||0);
+            return `<tr>
+                <td><code style="background:#f0f4f0;padding:2px 6px;border-radius:4px;">${esc(item.code)}</code></td>
+                <td style="font-weight:700;">${esc(item.name)}</td>
+                <td>${money(item.cost_price)}</td>
+                <td>${money(item.selling_price)}</td>
+                <td style="color:${profit>=0?'#2f7d5b':'#b4534a'};font-weight:700;">${money(profit)}</td>
+                <td>${esc(item.unit)}</td>
+                <td><button class="btn btn-small btn-primary" onclick="editItem(${item.id})">Edit</button></td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="7" style="text-align:center;color:#888;">No item types yet.</td></tr>';
+}
+
+function editItem(id) {
+    const item = _allItems.find(i => i.id == id);
+    if (!item) return;
+    _editingId = id;
+    document.getElementById('formTitle').textContent = 'Edit Item Type';
+    document.getElementById('itCode').value           = item.code || '';
+    document.getElementById('itName').value           = item.name || '';
+    document.getElementById('itCostPrice').value      = item.cost_price || 0;
+    document.getElementById('itSellingPrice').value   = item.selling_price || 0;
+    document.getElementById('itUnit').value           = item.unit || 'meter';
+    document.getElementById('itWorkerAccount').value  = item.worker_account || '';
+    document.getElementById('itAffectsSaleTotal').checked = !!item.affects_sale_total;
+    updateProfitPreview();
+    document.getElementById('itCode').focus();
+}
+
+async function saveItemType() {
+    const token = getToken();
+    const payload = {
+        code:              document.getElementById('itCode').value.trim().toUpperCase(),
+        name:              document.getElementById('itName').value.trim(),
+        cost_price:        Number(document.getElementById('itCostPrice').value || 0),
+        selling_price:     Number(document.getElementById('itSellingPrice').value || 0),
+        unit:              document.getElementById('itUnit').value,
+        worker_account:    document.getElementById('itWorkerAccount').value || null,
+        affects_sale_total:document.getElementById('itAffectsSaleTotal').checked,
+    };
+
+    const msg = document.getElementById('formMessage');
+    if (!payload.code || !payload.name) {
+        msg.textContent = 'Code and name are required.';
+        msg.className = 'alert alert-danger';
+        msg.style.display = 'block';
+        return;
+    }
+
+    if (!token || token === 'demo-frontend-token') {
+        msg.textContent = 'Connect to server to save. Changes are preview-only in demo mode.';
+        msg.className = 'alert alert-info';
+        msg.style.display = 'block';
+        return;
+    }
+
+    try {
+        const url = _editingId
+            ? API_BASE_URL + '/item-types/' + _editingId
+            : API_BASE_URL + '/item-types';
+        const method = _editingId ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const r = await res.json();
+        if (r.status === 'success') {
+            msg.textContent = _editingId ? 'Item type updated.' : 'Item type added.';
+            msg.className = 'alert alert-success';
+            msg.style.display = 'block';
+            resetForm();
+            loadItemTypes();
+        } else {
+            msg.textContent = r.message || 'Error saving.';
+            msg.className = 'alert alert-danger';
+            msg.style.display = 'block';
+        }
+    } catch(e) {
+        msg.textContent = 'Network error.';
+        msg.className = 'alert alert-danger';
+        msg.style.display = 'block';
+    }
+}
+
+function resetForm() {
+    _editingId = null;
+    document.getElementById('formTitle').textContent = 'Add New Item Type';
+    ['itCode','itName'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('itCostPrice').value    = 0;
+    document.getElementById('itSellingPrice').value = 0;
+    document.getElementById('itUnit').value         = 'meter';
+    document.getElementById('itWorkerAccount').value = '';
+    document.getElementById('itAffectsSaleTotal').checked = true;
+    document.getElementById('profitPreview').style.display = 'none';
+    document.getElementById('formMessage').style.display   = 'none';
+}
+
+loadItemTypes();
+</script>
+<script src="../js/i18n.js?v=orders-1"></script>
+<script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+</body>
+</html>

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\WarehouseSupplyController;
 use App\Http\Controllers\Api\WarehouseStockController;
 use App\Http\Controllers\Api\WarehouseClientController;
 use App\Http\Controllers\Api\WarehouseKvController;
+use App\Http\Controllers\Api\ItemTypeController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
@@ -21,6 +22,13 @@ Route::get("/auth/user", [AuthController::class, "user"])->middleware("auth:sanc
 
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/user", function (Request $request) { return $request->user(); });
+
+    // Item types — global catalog with cost & selling prices
+    Route::get("/item-types", [ItemTypeController::class, "index"]);
+    Route::post("/item-types", [ItemTypeController::class, "store"]);
+    Route::put("/item-types/{id}", [ItemTypeController::class, "update"]);
+    Route::delete("/item-types/{id}", [ItemTypeController::class, "destroy"]);
+
     Route::get("/settings/categories", [InventoryCategoryController::class, "index"]);
     Route::post("/settings/categories/main", [InventoryCategoryController::class, "storeMainCategory"]);
     Route::post("/settings/categories/sub", [InventoryCategoryController::class, "storeSubCategory"]);
