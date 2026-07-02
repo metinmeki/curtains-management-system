@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Workspace - Curtains Management System</title>
     <link rel="stylesheet" href="css/style.css?v=mobile-1">
+    <style>
+        body {
+            background-color: #0f2d1e !important;
+            background-image:
+                /* green tint overlay */
+                linear-gradient(135deg, rgba(15,45,30,0.72) 0%, rgba(26,61,43,0.65) 50%, rgba(15,45,30,0.72) 100%),
+                /* curtain fold pattern */
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='800' viewBox='0 0 320 800'%3E%3Cdefs%3E%3ClinearGradient id='f1' x1='0' x2='1' y1='0' y2='0'%3E%3Cstop offset='0' stop-color='%230a1f12'/%3E%3Cstop offset='0.3' stop-color='%231a3d2b'/%3E%3Cstop offset='0.55' stop-color='%232d6a47'/%3E%3Cstop offset='0.75' stop-color='%231a3d2b'/%3E%3Cstop offset='1' stop-color='%230a1f12'/%3E%3C/linearGradient%3E%3ClinearGradient id='f2' x1='0' x2='1' y1='0' y2='0'%3E%3Cstop offset='0' stop-color='%23112918'/%3E%3Cstop offset='0.3' stop-color='%23245238'/%3E%3Cstop offset='0.55' stop-color='%2338855a'/%3E%3Cstop offset='0.75' stop-color='%23245238'/%3E%3Cstop offset='1' stop-color='%23112918'/%3E%3C/linearGradient%3E%3ClinearGradient id='sh' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0.28'/%3E%3Cstop offset='0.12' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='0.88' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='0.32'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- pleat shadow strips --%3E%3Crect x='0' y='0' width='320' height='800' fill='%230d2418'/%3E%3C!-- fold 1 --%3E%3Cellipse cx='26' cy='400' rx='26' ry='400' fill='url(%23f1)'/%3E%3C!-- fold 2 --%3E%3Cellipse cx='80' cy='400' rx='26' ry='400' fill='url(%23f2)'/%3E%3C!-- fold 3 --%3E%3Cellipse cx='134' cy='400' rx='26' ry='400' fill='url(%23f1)'/%3E%3C!-- fold 4 --%3E%3Cellipse cx='188' cy='400' rx='26' ry='400' fill='url(%23f2)'/%3E%3C!-- fold 5 --%3E%3Cellipse cx='242' cy='400' rx='26' ry='400' fill='url(%23f1)'/%3E%3C!-- fold 6 --%3E%3Cellipse cx='296' cy='400' rx='26' ry='400' fill='url(%23f2)'/%3E%3C!-- top shadow --%3E%3Crect x='0' y='0' width='320' height='800' fill='url(%23sh)'/%3E%3C!-- fabric texture lines --%3E%3Cline x1='0' y1='120' x2='320' y2='120' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3Cline x1='0' y1='240' x2='320' y2='240' stroke='rgba(255,255,255,0.025)' stroke-width='1'/%3E%3Cline x1='0' y1='360' x2='320' y2='360' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3Cline x1='0' y1='480' x2='320' y2='480' stroke='rgba(255,255,255,0.025)' stroke-width='1'/%3E%3Cline x1='0' y1='600' x2='320' y2='600' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3Cline x1='0' y1='720' x2='320' y2='720' stroke='rgba(255,255,255,0.025)' stroke-width='1'/%3E%3C/svg%3E") !important;
+            background-size: auto, 320px 800px !important;
+            background-repeat: no-repeat, repeat !important;
+            min-height: 100vh;
+        }
+        /* keep cards readable on top of the dark green background */
+        .navbar { background: rgba(10,25,18,0.82) !important; backdrop-filter: blur(8px); border-bottom: 1px solid rgba(196,162,77,0.25) !important; }
+        .navbar-brand-text, .user-name { color: #e8e4da !important; }
+        .navbar-brand-logo { background: #c4a24d !important; color: #1a3d2b !important; }
+        .page-title { color: #e8e4da !important; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+        main > .page-header { padding-bottom: 8px; }
+    </style>
 </head>
 <body class="ltr">
     <nav class="navbar">
@@ -19,7 +38,6 @@
                 <span class="user-name" id="userName">Admin</span>
             </div>
             <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
-            <button id="darkModeBtn" class="dark-mode-btn" title="Toggle dark mode">🌙</button>
         </div>
     </nav>
 
@@ -87,21 +105,6 @@
     </main>
 
     <script src="js/api.js"></script>
-    <script>
-        (function() {
-            const btn = document.getElementById('darkModeBtn');
-            function applyDark(on) {
-                document.body.classList.toggle('dark', on);
-                if (btn) btn.textContent = on ? '☀️' : '🌙';
-            }
-            applyDark(localStorage.getItem('dark_mode') === '1');
-            if (btn) btn.addEventListener('click', function() {
-                const on = !document.body.classList.contains('dark');
-                applyDark(on);
-                localStorage.setItem('dark_mode', on ? '1' : '0');
-            });
-        })();
-    </script>
     <script>
         if (!checkAuth()) {
             window.location.href = 'index.html';
@@ -218,7 +221,7 @@
             if (type === 'inventory') {
                 removeStoreSelection();
                 localStorage.setItem('store_name', name);
-                localStorage.setItem('inventory_unit_id', '1');
+
             } else {
                 setStoreSelection(Number(storeKey), name);
             }

@@ -12,6 +12,12 @@ class RetailSaleController extends Controller
         $data    = $request->json()->all();
 
         // Cashiers: always use their assigned store. Admins: use the storeId from request.
+        $request->validate([
+            'total'   => 'sometimes|numeric|min:0',
+            'paid'    => 'sometimes|numeric|min:0',
+            'discount'=> 'sometimes|numeric|min:0',
+        ]);
+
         $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data["storeId"] ?? $user->store_id ?? 1);
 
         $clientName  = $data["clientName"] ?? "One-time customer";
@@ -37,6 +43,7 @@ class RetailSaleController extends Controller
         $saleId = DB::table("retail_sales")->insertGetId([
             "store_id"        => $storeId,
             "client_id"       => $clientId,
+            "sale_date"       => $data["date"] ?? now()->toDateString(),
             "total_amount"    => $data["total"] ?? 0,
             "paid_amount"     => $data["paid"] ?? 0,
             "remaining_amount"=> $data["remaining"] ?? 0,
@@ -82,7 +89,12 @@ class RetailSaleController extends Controller
             }
         }
 
-        return response()->json(["status" => "success", "sale_id" => $saleId, "store_id" => $storeId]);
+        $sale = DB::table("retail_sales")->find($saleId);
+        $sale->items        = DB::table("retail_sale_items")->where("sale_id", $saleId)->get();
+        $sale->client_name  = $clientName;
+        $sale->client_phone = $clientPhone;
+        $sale->payments     = [];
+        return response()->json(["status" => "success", "sale_id" => $saleId, "store_id" => $storeId, "data" => $sale]);
     }
 
     private function mapStatus($status)
@@ -127,7 +139,29 @@ class RetailSaleController extends Controller
             'updated_at'       => now(),
         ]);
 
+        DB::table('retail_payments')->insert([
+            'sale_id'    => $saleId,
+            'amount'     => $amount,
+            'notes'      => $note ?: null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         return response()->json(['status' => 'success', 'paid' => $newPaid, 'remaining' => $newRemaining, 'payment_status' => $newStatus]);
+    }
+
+    public function destroy(Request $request, $saleId)
+    {
+        $user = $request->user();
+        if ($user->role === 'cashier') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+        $sale = DB::table('retail_sales')->find($saleId);
+        if (!$sale) return response()->json(['status' => 'error', 'message' => 'Not found'], 404);
+        DB::table('retail_sale_items')->where('sale_id', $saleId)->delete();
+        DB::table('retail_payments')->where('sale_id', $saleId)->delete();
+        DB::table('retail_sales')->where('id', $saleId)->delete();
+        return response()->json(['status' => 'success']);
     }
 
     public function index(Request $request, $storeId)
@@ -141,6 +175,7 @@ class RetailSaleController extends Controller
 
         $sales = DB::table("retail_sales")
             ->where("store_id", $storeId)
+            ->orderBy("sale_date", "desc")
             ->orderBy("created_at", "desc")
             ->get();
 

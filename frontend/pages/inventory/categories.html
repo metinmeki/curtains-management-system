@@ -93,7 +93,7 @@
                 })
             }).then(() => { document.getElementById('subCatName').value = ''; loadCategories(); });
         });
-        function logout() { localStorage.clear(); window.location.href = "../../index.html"; }
+        function logout() { ['auth_token','user','store_id','store_name','cms_active_cashier'].forEach(k => localStorage.removeItem(k)); window.location.href = "../../index.html"; }
     </script>
 </body>
 </html>

@@ -59,7 +59,7 @@ function updateStoreOrder(updatedOrder) {
 }
 
 async function loadRetailDataFromDB(storeId) {
-  const token = typeof getToken === 'function' ? getToken() : localStorage.getItem('auth_token');
+  const token = typeof getToken === 'function' ? getToken() : null;
   if (!token || token === 'demo-frontend-token' || !storeId) return;
   const h = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
   try {
@@ -148,7 +148,7 @@ function loadShell(sectionLabel) {
     if (!layout || !navbar || !document.querySelector('.sidebar')) return;
 
     // restore saved state
-    if (localStorage.getItem('sidebar_collapsed') === '1') {
+    if (getCookie('sidebar_collapsed') === '1') {
       layout.classList.add('sidebar-collapsed');
     }
 
@@ -185,7 +185,7 @@ function loadShell(sectionLabel) {
         layout.classList.contains('sidebar-open') ? closeDrawer() : openDrawer();
       } else {
         const now = layout.classList.toggle('sidebar-collapsed');
-        localStorage.setItem('sidebar_collapsed', now ? '1' : '0');
+        setCookie('sidebar_collapsed', now ? '1' : '0', 365);
       }
     });
 
@@ -204,50 +204,12 @@ function loadShell(sectionLabel) {
   }
 })();
 
-// ── Dark mode toggle ──────────────────────────────────────────────────────────
-(function initDarkMode() {
-  function applyDark(on) {
-    document.body.classList.toggle('dark', on);
-    const btn = document.getElementById('darkModeBtn');
-    if (btn) btn.textContent = on ? '☀️' : '🌙';
-  }
-
-  function setup() {
-    const navbar = document.querySelector('.navbar');
-    if (!navbar) return;
-
-    const saved = localStorage.getItem('dark_mode') === '1';
-    applyDark(saved);
-
-    const btn = document.createElement('button');
-    btn.id = 'darkModeBtn';
-    btn.className = 'dark-mode-btn';
-    btn.title = 'Toggle dark mode';
-    btn.setAttribute('aria-label', 'Toggle dark mode');
-    btn.textContent = saved ? '☀️' : '🌙';
-    btn.addEventListener('click', function () {
-      const on = !document.body.classList.contains('dark');
-      applyDark(on);
-      localStorage.setItem('dark_mode', on ? '1' : '0');
-    });
-
-    navbar.appendChild(btn);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup);
-  } else {
-    setup();
-  }
-})();
 
 // ── Cashier mode restriction ──────────────────────────────────────────────────
 (function initCashierMode() {
   function setup() {
-    const raw = localStorage.getItem('cms_active_cashier');
-    if (!raw) return;
-    let cashier;
-    try { cashier = JSON.parse(raw); } catch(e) { return; }
+    const cashier = typeof getActiveCashier === 'function' ? getActiveCashier() : null;
+    if (!cashier) return;
 
     // Hide all sidebar links except POS and Debts
     document.querySelectorAll('.sidebar .menu-item a, .sidebar li a').forEach(function(link) {
@@ -265,7 +227,7 @@ function loadShell(sectionLabel) {
       const badge = document.createElement('div');
       badge.className = 'cashier-mode-badge';
       const loginPath = (window.location.pathname.includes('/retail/') || window.location.pathname.includes('/inventory/')) ? '../index.html' : 'index.html';
-      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="localStorage.removeItem('cms_active_cashier');localStorage.removeItem('auth_token');localStorage.removeItem('user');window.location.href='${loginPath}'">✕ Exit</button>`;
+      badge.innerHTML = `<span>👤 ${cashier.name}</span><button onclick="removeActiveCashier();removeToken();removeUser();window.location.href='${loginPath}'">✕ Exit</button>`;
       navbar.appendChild(badge);
     }
   }
@@ -293,25 +255,33 @@ function _invApiHeaders() {
 function _invStoreId() { return typeof getStoreId === 'function' ? getStoreId() : null; }
 function _invToken()   { const t = typeof getToken === 'function' ? getToken() : null; return t && t !== 'demo-frontend-token' ? t : null; }
 
+// Persist an inventory KV blob. Fire-and-forget for UI speed, but a rejected
+// save is surfaced (toast + console) instead of being silently swallowed.
+function _invKvSave(key, sid, body, label) {
+  fetch(API_BASE_URL + '/retail/kv/' + sid + '/' + key, { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(body) })
+    .then(res => { if (!res.ok && typeof showSaveError === 'function') showSaveError(label || 'Inventory'); })
+    .catch((e) => { if (typeof showSaveError === 'function') showSaveError(label || 'Inventory', e); });
+}
+
 function getInvCategories() { return _invCategories; }
 function saveInvCategories(arr) {
   _invCategories = arr;
   const sid = _invStoreId(), tok = _invToken();
-  if (tok && sid) fetch(API_BASE_URL + '/retail/kv/' + sid + '/categories', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(arr) }).catch(() => {});
+  if (tok && sid) _invKvSave('categories', sid, arr, 'Category');
 }
 
 function getInvItems() { return _invItems; }
 function saveInvItems(arr) {
   _invItems = arr;
   const sid = _invStoreId(), tok = _invToken();
-  if (tok && sid) fetch(API_BASE_URL + '/retail/kv/' + sid + '/items', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(arr) }).catch(() => {});
+  if (tok && sid) _invKvSave('items', sid, arr, 'Item');
 }
 
 function getInvVariants() { return _invVariants; }
 function saveInvVariants(arr) {
   _invVariants = arr;
   const sid = _invStoreId(), tok = _invToken();
-  if (tok && sid) fetch(API_BASE_URL + '/retail/kv/' + sid + '/variants', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(arr) }).catch(() => {});
+  if (tok && sid) _invKvSave('variants', sid, arr, 'Variant');
 }
 
 function findVariantByCode(code) {
@@ -323,7 +293,7 @@ function getStoreStock(storeId) { return _invStock[String(storeId)] || {}; }
 function saveStoreStock(storeId, stock) {
   _invStock[String(storeId)] = stock;
   const tok = _invToken();
-  if (tok && storeId) fetch(API_BASE_URL + '/retail/kv/' + storeId + '/stock', { method: 'POST', headers: _invApiHeaders(), body: JSON.stringify(stock) }).catch(() => {});
+  if (tok && storeId) _invKvSave('stock', storeId, stock, 'Stock');
 }
 
 function getVariantQty(variantId, storeId) {

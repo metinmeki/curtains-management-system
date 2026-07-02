@@ -19,15 +19,26 @@ class InventoryCategoryController extends Controller
 
     public function storeMainCategory(Request $request)
     {
-        DB::table('categories')->insert(['name' => $request->input('name')]);
+        $request->validate(['name' => 'required|string|max:255']);
+        DB::table('categories')->insert([
+            'name'       => $request->input('name'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         return response()->json(['status' => 'success']);
     }
 
     public function storeSubCategory(Request $request)
     {
+        $request->validate([
+            'name'        => 'required|string|max:255',
+            'category_id' => 'required|integer|exists:categories,id',
+        ]);
         DB::table('sub_categories')->insert([
             'category_id' => $request->input('category_id'),
-            'name' => $request->input('name')
+            'name'        => $request->input('name'),
+            'created_at'  => now(),
+            'updated_at'  => now(),
         ]);
         return response()->json(['status' => 'success']);
     }

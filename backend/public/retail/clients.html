@@ -4,65 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Clients - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
-    <style>
-        .client-detail-row td { background:#f7f3e8; padding:0; }
-        .client-history { display:grid; gap:10px; padding:14px; }
-        .client-history-entry { border:1px solid var(--border-color); border-radius:8px; background:#fffdf6; padding:12px; }
-        .client-history-head { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--text-dark); font-weight:700; margin-bottom:8px; }
-        .client-history-items { color:var(--text-gray); font-size:13px; line-height:1.7; }
-        .client-balance-panel { display:grid; grid-template-columns:1fr 1fr 1.4fr auto; gap:10px; align-items:end; padding:14px; border:1px solid var(--border-color); border-radius:8px; background:#eef8ee; }
-        .client-balance-panel .form-group { margin-bottom:0; }
-        .client-balance-total { color:var(--text-dark); font-weight:800; }
-        .payment-history { margin-top:8px; color:var(--text-gray); font-size:12px; line-height:1.6; }
-        .client-search-row { display:grid; grid-template-columns:minmax(220px,420px) 1fr; gap:12px; align-items:end; padding:16px; border-bottom:1px solid var(--border-color); background:#fbf8ef; }
-        .client-search-row .form-group { margin-bottom:0; }
-        .client-search-hint { color:var(--text-gray); font-size:13px; line-height:1.5; }
-        .debt-sale-row { border-left:3px solid #e74c3c; }
-        .paid-sale-row { border-left:3px solid #27ae60; }
-        @media (max-width:900px) { .client-balance-panel { grid-template-columns:1fr; } .client-search-row { grid-template-columns:1fr; } }
-    </style>
+    <link rel="stylesheet" href="rt-style.css?v=1">
 </head>
 <body class="ltr">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
-                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="clients.html" class="active"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-                
-            </ul>
-            <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-        </aside>
-        <div class="main-content">
-            <nav class="navbar"><div class="navbar-title">Retail Clients</div><div class="navbar-actions"><span class="scope-pill">store clients only</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
-            <main class="content">
-                <div class="page-header">
-                    <div><h1 class="page-title">Clients</h1><p class="page-subtitle">Repeat customers and debt tracking for this store.</p></div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><h2 class="card-title">Client accounts</h2></div>
-                    <div class="client-search-row">
-                        <div class="form-group">
-                            <label>Search clients</label>
-                            <input id="clientSearch" type="search" placeholder="Search by client name or phone" oninput="renderClients()">
-                        </div>
-                        <div class="client-search-hint">Search instantly filters clients by name or phone.</div>
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link active"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Retail Clients</span>
+            <div class="rt-topbar-right">
+                <span class="scope-pill">store clients only</span>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
+            <div class="page-header">
+                <div><h1 class="page-title">Clients</h1><p class="page-subtitle">Repeat customers and debt tracking for this store.</p></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">Client accounts</h2></div>
+                <div class="client-search-row">
+                    <div class="form-group">
+                        <label>Search clients</label>
+                        <input id="clientSearch" type="search" placeholder="Search by client name or phone" oninput="renderClients()">
                     </div>
-                    <div class="card-body table-wrapper">
-                        <table>
-                            <thead><tr><th>Name</th><th>Phone</th><th>Total sales</th><th>Total paid</th><th>Balance</th><th>Last transaction</th><th>Details</th></tr></thead>
-                            <tbody id="clientRows"></tbody>
-                        </table>
-                    </div>
+                    <div class="client-search-hint">Search instantly filters clients by name or phone.</div>
                 </div>
-            </main>
+                <div class="card-body table-wrapper">
+                    <table>
+                        <thead><tr><th>Name</th><th>Phone</th><th>Total sales</th><th>Total paid</th><th>Balance</th><th>Last transaction</th><th>Details</th></tr></thead>
+                        <tbody id="clientRows"></tbody>
+                    </table>
+                </div>
+        </div>
         </div>
     </div>
+</div>
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
     <script>
@@ -105,12 +115,12 @@
         function paymentHistoryHtml(sale) {
             const payments = sale.payments || [];
             if (!payments.length) return '';
-            return `<div class="payment-history">${payments.map(p=>`<div>Payment ${p.date||'-'}: ${money(p.amount)}${p.note?' â€” '+p.note:''}</div>`).join('')}</div>`;
+            return `<div class="payment-history">${payments.map(p=>`<div>Payment ${p.date||'-'}: ${money(p.amount)}${p.note?' — '+p.note:''}</div>`).join('')}</div>`;
         }
 
         function clientPaymentPanel(client, index) {
             if (Number(client.totalDebt) <= 0) {
-                return '<div class="client-balance-panel" style="background:#eef8ee;"><div class="client-balance-total" style="color:#27ae60;">âœ“ Balance fully paid</div></div>';
+                return '<div class="client-balance-panel" style="background:#eef8ee;"><div class="client-balance-total" style="color:#27ae60;">✓ Balance fully paid</div></div>';
             }
             return `
                 <div class="client-balance-panel">
@@ -139,7 +149,7 @@
                 return `
                     <div class="client-history-entry ${rowClass}">
                         <div class="client-history-head">
-                            <span>#${sale.id} â€” ${saleDate}</span>
+                            <span>#${sale.id} — ${saleDate}</span>
                             <span>Total ${money(total)} | Paid ${money(paid)} | Debt ${money(remaining)}</span>
                         </div>
                         <div class="client-history-items">${saleItemsText(sale)}</div>
@@ -191,11 +201,11 @@
             const token = getToken();
             let remaining = amount;
 
-            // Pay oldest debts first
             const debtSales = client.sales
                 .filter(s => Number(s.remaining_amount || s.remaining || 0) > 0)
                 .sort((a,b) => (a.created_at||'').localeCompare(b.created_at||''));
 
+            let anyFailed = false;
             for (const sale of debtSales) {
                 if (remaining <= 0) break;
                 const saleDebt = Number(sale.remaining_amount || sale.remaining || 0);
@@ -215,16 +225,18 @@
                         sale.payments = sale.payments || [];
                         sale.payments.push({ date: new Date().toISOString().slice(0,10), amount: payAmt, note });
                         remaining -= payAmt;
+                    } else {
+                        anyFailed = true;
                     }
-                } catch(e) { console.error('Payment failed:', e); }
+                } catch(e) { anyFailed = true; console.error('Payment failed:', e); }
             }
+            if (anyFailed && typeof showSaveError === 'function') showSaveError('Payment');
 
             renderClients();
             const refreshed = window.clientAccounts.findIndex(c => c.key === client.key);
             if (refreshed >= 0) toggleClientDetails(refreshed);
         }
 
-        // Load sales from API
         (async function() {
             try {
                 const token = getToken();
@@ -242,6 +254,8 @@
         })();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
-    <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+    <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
 </body>
 </html>

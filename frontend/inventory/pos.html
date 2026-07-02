@@ -1,211 +1,171 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warehouse POS - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <title>POS Supply — Warehouse</title>
+    <link rel="stylesheet" href="wh-style.css?v=1">
     <style>
-        /* ══ Premium Ledger Receipt Style ══ */
-        .receipt-card {
-            --receipt-ink:   #1b3d2e;
-            --receipt-gold:  #b89a3a;
-            --receipt-cream: #fdf9f0;
-            --receipt-sage:  #d8e8dc;
-            --receipt-line:  rgba(27,61,46,0.12);
-            background: var(--receipt-cream);
-            border: 1px solid rgba(27,61,46,0.14);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 10px 32px rgba(27,61,46,0.10), 0 28px 60px rgba(27,61,46,0.07);
-        }
-        .receipt-head {
-            position: relative; text-align: center;
-            background: linear-gradient(148deg,#163329 0%,#1f4a38 45%,#265c47 100%);
-            padding: 32px 24px 26px; overflow: hidden;
-        }
-        .receipt-head::before {
-            content:""; position:absolute; top:-44px; right:-44px; width:150px; height:150px;
-            border-radius:50%; border:2px solid rgba(184,154,58,0.15); pointer-events:none;
-        }
-        .receipt-head::after {
-            content:""; position:absolute; bottom:0; left:0; right:0; height:3px;
-            background:linear-gradient(90deg,transparent 5%,#b89a3a 30%,#d4b84e 50%,#b89a3a 70%,transparent 95%);
-        }
-        .receipt-brand { font-size:clamp(26px,4.5vw,44px); letter-spacing:8px; font-weight:900; color:#fff; line-height:1.1; text-shadow:0 2px 12px rgba(0,0,0,0.25); }
-        .receipt-subbrand { font-size:clamp(14px,2vw,22px); font-weight:700; color:rgba(255,255,255,0.84); margin-top:6px; letter-spacing:2px; }
-        .receipt-meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0; background:#f0ece0; border-bottom:1px solid var(--receipt-line); }
-        .receipt-meta .form-group { margin-bottom:0; padding:13px 16px 11px; border-right:1px solid var(--receipt-line); }
-        .receipt-meta .form-group:last-child { border-right:0; }
-        .receipt-meta label { display:block; color:var(--receipt-ink); font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; opacity:0.6; margin-bottom:5px; }
-        .receipt-meta input, .receipt-meta select { background:transparent; border:0; border-bottom:1.5px solid rgba(27,61,46,0.2); border-radius:0; padding:4px 0 4px; box-shadow:none; color:var(--receipt-ink); font-size:14px; font-weight:700; width:100%; }
-        .receipt-meta input:focus, .receipt-meta select:focus { border-bottom-color:var(--receipt-gold); outline:none; }
-        .receipt-table { direction:rtl; table-layout:fixed; width:100%; border-collapse:collapse; color:var(--receipt-ink); }
-        .receipt-table th { background:var(--receipt-sage); font-weight:800; font-size:10px; letter-spacing:0.6px; text-transform:uppercase; padding:12px 6px; color:var(--receipt-ink); border-bottom:2px solid rgba(27,61,46,0.2); border-right:1px solid rgba(27,61,46,0.09); white-space:normal; word-break:keep-all; vertical-align:middle; }
-        .receipt-table th:last-child { border-right:0; }
-        .receipt-table td { height:54px; padding:0; border-bottom:1px solid rgba(27,61,46,0.07); border-right:1px solid rgba(27,61,46,0.05); vertical-align:middle; text-align:center; }
-        .receipt-table td:last-child { border-right:0; }
-        .receipt-table tbody tr:nth-child(even) td { background:rgba(216,232,220,0.28); }
-        .receipt-table tbody tr:hover td { background:rgba(27,61,46,0.04); }
-        .receipt-table input, .receipt-table select { border:0; box-shadow:none; border-radius:0; min-width:0; width:100%; height:100%; padding:8px 5px; background:transparent; color:var(--receipt-ink); text-align:center; font-weight:600; font-size:13px; }
-        .receipt-table input:focus, .receipt-table select:focus { outline:none; background:rgba(184,154,58,0.06); }
-        .receipt-table input::placeholder { color:rgba(27,61,46,0.28); font-weight:400; }
-        .receipt-table .row-unit { color:rgba(27,61,46,0.55); font-size:11px; }
-        .receipt-table .row-total { font-weight:800; font-size:13px; }
-        .receipt-actions-head, .receipt-action-cell { width:44px; background:rgba(216,232,220,0.45); padding:0; text-align:center; vertical-align:middle; border-right:0 !important; }
-        .receipt-row-actions { direction:ltr; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; height:54px; width:100%; padding:4px; }
-        .receipt-action-btn { display:inline-flex; align-items:center; justify-content:center; min-width:24px; width:24px; height:24px; padding:0; border-radius:50%; font-size:16px; font-weight:800; line-height:0; transition:background 0.15s,color 0.15s; }
-        .receipt-action-btn.delete-row-btn { background:rgba(180,83,74,0.08); color:#b4534a; border:1px solid rgba(180,83,74,0.2); }
-        .receipt-action-btn.delete-row-btn:hover { background:#b4534a; color:#fff; }
-        .receipt-bottom { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:2px solid rgba(27,61,46,0.14); }
-        .receipt-bottom-item { padding:16px 18px; border-right:1px solid rgba(27,61,46,0.1); background:var(--receipt-cream); }
-        .receipt-bottom-item:last-child { border-right:0; background:linear-gradient(135deg,#163329,#245f49); color:#fff; }
-        .receipt-bottom-item span { display:block; font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; opacity:0.62; margin-bottom:5px; }
-        .receipt-bottom-item strong { display:block; font-size:19px; font-weight:800; }
-        .pay-panel { display:grid; gap:12px; }
-        .pay-summary { background:#f0f7f3; border:1px solid #c8dfd1; border-radius:10px; padding:16px; }
-        .pay-summary-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(27,61,46,0.08); }
-        .pay-summary-row:last-child { border-bottom:0; }
-        .pay-summary-row.total { font-size:18px; font-weight:800; color:#163329; }
-        .pay-summary-row.debt { color:#c0392b; font-weight:700; }
-        @media (max-width:900px) { .receipt-bottom { grid-template-columns:1fr; } }
         @media print {
-            body { background:#fff; }
-            .sidebar,.navbar,.page-header,.two-column > aside,.receipt-action-cell,.receipt-actions-head { display:none !important; }
-            .layout,.main-content,.content,.two-column { display:block !important; height:auto !important; overflow:visible !important; padding:0 !important; margin:0 !important; }
-            .receipt-card { width:100% !important; max-width:none !important; border:1px solid #1b3d2e !important; border-radius:0 !important; box-shadow:none !important; }
-            .receipt-head { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .receipt-table th { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .receipt-bottom-item:last-child { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .wh-sidebar,.wh-topbar,.page-header,.two-column > aside,.receipt-action-cell,.receipt-actions-head,.no-print { display:none !important; }
+            .wh-main,.wh-layout { display:block !important; }
+            .receipt-card { width:100% !important; border:1px solid #0f172a !important; border-radius:0 !important; box-shadow:none !important; }
+            .receipt-head,.receipt-table th,.receipt-bottom-item:last-child { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         }
     </style>
 </head>
-<body class="ltr">
-<div class="layout">
-    <aside class="sidebar">
-        <div class="sidebar-header"><div class="sidebar-title">المستودع</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div>
-        <ul class="sidebar-menu">
-            <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-            <li class="menu-item"><a href="pos.html" class="active"><span class="menu-icon">P</span><span>POS Supply</span></a></li>
-            <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debt Supply</span></a></li>
-            <li class="menu-item"><a href="clients.html"><span class="menu-icon">S</span><span>Store Accounts</span></a></li>
-            <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Inventory</span></a></li>
-        </ul>
-        <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-    </aside>
-    <div class="main-content">
-        <nav class="navbar">
-            <div class="navbar-title">Warehouse POS</div>
-            <div class="navbar-actions"><span class="scope-pill">warehouse supply</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
-        </nav>
-        <main class="content">
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Supply to Store — نقدي</h1>
-                    <p class="page-subtitle">Select a store, add warehouse items, set quantities and prices, then save the supply transaction.</p>
-                </div>
-                <button class="btn btn-outline" onclick="window.print()">Print receipt</button>
+<body>
+<div class="wh-layout">
+
+<aside class="wh-sidebar">
+    <div class="wh-brand">
+        <div class="wh-brand-row">
+            <div class="wh-brand-icon">📦</div>
+            <span class="wh-brand-name">Warehouse</span>
+        </div>
+        <div class="wh-brand-sub" id="sidebarStoreName">Central</div>
+    </div>
+    <nav class="wh-nav">
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Main</div>
+            <a href="home.html" class="wh-nav-link"><span class="wh-nav-icon">📊</span>Overview</a>
+            <a href="dashboard.html" class="wh-nav-link active"><span class="wh-nav-icon">📦</span>New Supply</a>
+            <a href="inventory.html" class="wh-nav-link"><span class="wh-nav-icon">🗃️</span>Inventory</a>
+        </div>
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Finance</div>
+            
+            <a href="debts.html" class="wh-nav-link"><span class="wh-nav-icon">💸</span>Debts</a>
+            <a href="reports.html" class="wh-nav-link"><span class="wh-nav-icon">📈</span>Reports</a>
+        </div>
+    </nav>
+    <div class="wh-sidebar-foot">
+        <a href="../landing.html">← Switch workspace</a>
+    </div>
+</aside>
+
+<div class="wh-main">
+    <div class="wh-topbar">
+        <span class="wh-topbar-title">POS Supply</span>
+        <div class="wh-topbar-right">
+            <button class="wh-btn wh-btn-outline wh-btn-sm no-print" onclick="window.print()">🖨 Print</button>
+            <div class="wh-avatar" id="userAvatar">A</div>
+            <span class="wh-user-name" id="userName">Admin</span>
+        </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;">
+    <div class="wh-page">
+
+        <div class="wh-page-header page-header">
+            <div>
+                <div class="wh-page-title page-title">Supply to Store</div>
+                <div class="wh-page-sub page-subtitle">Select a store, add warehouse items, set quantities and prices, then save the supply transaction.</div>
             </div>
+        </div>
 
-            <div class="two-column">
-                <section class="card receipt-card">
-                    <div class="receipt-head">
-                        <div class="receipt-brand">DLOVAN PARDA</div>
-                        <div class="receipt-subbrand">المستودع المركزي &nbsp;|&nbsp; Central Warehouse</div>
-                    </div>
-                    <div class="receipt-meta">
-                        <div class="form-group">
-                            <label>Date / التاريخ</label>
-                            <input type="date" id="supplyDate">
-                        </div>
-                        <div class="form-group">
-                            <label>Store / المتجر</label>
-                            <select id="storeSelect" onchange="onStoreChange()">
-                                <option value="">— Select store —</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Notes / ملاحظات</label>
-                            <input id="supplyNotes" placeholder="Optional notes">
-                        </div>
-                    </div>
-                    <div class="card-body table-wrapper">
-                        <table class="receipt-table">
-                            <colgroup>
-                                <col style="width:28%">
-                                <col style="width:14%">
-                                <col style="width:12%">
-                                <col style="width:16%">
-                                <col style="width:22%">
-                                <col style="width:8%">
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>الصنف / Item</th>
-                                    <th>الكمية / Qty</th>
-                                    <th>الوحدة</th>
-                                    <th>سعر التكلفة</th>
-                                    <th>سعر الوحدة</th>
-                                    <th>المجموع</th>
-                                    <th class="receipt-actions-head">+</th>
-                                </tr>
-                            </thead>
-                            <tbody id="supplyRows"></tbody>
-                        </table>
-                    </div>
-                    <div class="receipt-bottom">
-                        <div class="receipt-bottom-item">
-                            <span>Store prev. debt / دين سابق</span>
-                            <strong id="storeDebtDisplay">0 IQD</strong>
-                        </div>
-                        <div class="receipt-bottom-item">
-                            <span>Subtotal / المجموع</span>
-                            <strong id="subtotalDisplay">0 IQD</strong>
-                        </div>
-                        <div class="receipt-bottom-item">
-                            <span>Invoice total / الإجمالي</span>
-                            <strong id="totalDisplay">0 IQD</strong>
-                        </div>
-                    </div>
-                </section>
-
-                <aside class="card" style="min-width:0;align-self:start;">
-                    <div class="card-header"><h2 class="card-title">Payment / الدفع</h2></div>
-                    <div class="card-body">
-                        <div id="submitMsg" class="alert" style="display:none;margin-bottom:12px;"></div>
-                        <div class="pay-panel">
-                            <div class="form-group">
-                                <label>Paid amount / المبلغ المدفوع</label>
-                                <input type="number" id="paidAmount" min="0" step="1000" placeholder="0" oninput="updatePaySummary()">
-                            </div>
-                            <div class="pay-summary">
-                                <div class="pay-summary-row"><span>Invoice total</span><strong id="sumTotal">0 IQD</strong></div>
-                                <div class="pay-summary-row"><span>Paid</span><strong id="sumPaid">0 IQD</strong></div>
-                                <div class="pay-summary-row total debt"><span>Remaining / Debt</span><strong id="sumRemaining">0 IQD</strong></div>
-                            </div>
-                            <button class="btn btn-success" onclick="submitSupply()">Save &amp; Record Supply</button>
-                            <button class="btn btn-outline" onclick="window.print()">Print receipt</button>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-
-            <div class="card" style="margin-top:20px;">
-                <div class="card-header">
-                    <h2 class="card-title">Recent warehouse supplies</h2>
-                    <select id="historyFilter" onchange="renderHistory()" style="width:auto;padding:6px 12px;">
-                        <option value="">All stores</option>
-                    </select>
+        <div class="two-column">
+            <section class="receipt-card">
+                <div class="receipt-head">
+                    <div class="receipt-brand">DLOVAN PARDA</div>
+                    <div class="receipt-subbrand">المستودع المركزي &nbsp;|&nbsp; Central Warehouse</div>
                 </div>
-                <div class="card-body table-wrapper">
-                    <table>
-                        <thead><tr><th>Reference</th><th>Date</th><th>Store</th><th>Items</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th></tr></thead>
-                        <tbody id="historyRows"></tbody>
+                <div class="receipt-meta">
+                    <div class="form-group">
+                        <label>Date / التاريخ</label>
+                        <input type="date" id="supplyDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Store / المتجر</label>
+                        <select id="storeSelect" onchange="onStoreChange()">
+                            <option value="">— Select store —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes / ملاحظات</label>
+                        <input id="supplyNotes" placeholder="Optional notes">
+                    </div>
+                </div>
+                <div class="wh-table-wrap">
+                    <table class="receipt-table">
+                        <colgroup>
+                            <col style="width:28%">
+                            <col style="width:14%">
+                            <col style="width:12%">
+                            <col style="width:16%">
+                            <col style="width:22%">
+                            <col style="width:8%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>الصنف / Item</th>
+                                <th>الكمية / Qty</th>
+                                <th>الوحدة</th>
+                                <th>سعر التكلفة</th>
+                                <th>سعر الوحدة</th>
+                                <th>المجموع</th>
+                                <th class="receipt-actions-head">+</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplyRows"></tbody>
                     </table>
                 </div>
+                <div class="receipt-bottom">
+                    <div class="receipt-bottom-item">
+                        <span>Store prev. debt / دين سابق</span>
+                        <strong id="storeDebtDisplay">0 IQD</strong>
+                    </div>
+                    <div class="receipt-bottom-item">
+                        <span>Subtotal / المجموع</span>
+                        <strong id="subtotalDisplay">0 IQD</strong>
+                    </div>
+                    <div class="receipt-bottom-item">
+                        <span>Invoice total / الإجمالي</span>
+                        <strong id="totalDisplay">0 IQD</strong>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="wh-card no-print" style="align-self:start;">
+                <div class="wh-card-head"><h3>Payment / الدفع</h3></div>
+                <div class="wh-card-body">
+                    <div id="submitMsg" class="alert" style="display:none;margin-bottom:12px;"></div>
+                    <div class="pay-panel">
+                        <div class="form-group">
+                            <label>Paid amount / المبلغ المدفوع</label>
+                            <input type="number" id="paidAmount" min="0" step="1000" placeholder="0" oninput="updatePaySummary()">
+                        </div>
+                        <div class="pay-summary">
+                            <div class="pay-summary-row"><span>Invoice total</span><strong id="sumTotal">0 IQD</strong></div>
+                            <div class="pay-summary-row"><span>Paid</span><strong id="sumPaid">0 IQD</strong></div>
+                            <div class="pay-summary-row" style="font-size:15px;font-weight:800;color:#ef4444;"><span>Remaining / Debt</span><strong id="sumRemaining">0 IQD</strong></div>
+                        </div>
+                        <button class="wh-btn wh-btn-success" onclick="submitSupply()" style="width:100%;margin-bottom:8px;">Save &amp; Record Supply</button>
+                        <button class="wh-btn wh-btn-outline" onclick="window.print()" style="width:100%;">Print receipt</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <div class="wh-card" style="margin-top:20px;">
+            <div class="wh-card-head">
+                <h3>Recent warehouse supplies</h3>
+                <select id="historyFilter" onchange="renderHistory()" style="width:auto;padding:6px 12px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:700;color:#0f172a;background:#fff;">
+                    <option value="">All stores</option>
+                </select>
             </div>
-        </main>
+            <div class="wh-table-wrap">
+                <table class="wh-table">
+                    <thead><tr><th>Reference</th><th>Date</th><th>Store</th><th>Items</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th></tr></thead>
+                    <tbody id="historyRows"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
+    </div>
+</div>
+
 </div>
 
 <script src="../js/api.js"></script>
@@ -240,6 +200,7 @@ const WH_ITEMS = [
 let _whItemCosts = {};
 let _whInvState  = {};
 let _dbSupplies  = [];
+let _whVariants  = {};
 
 function _whTok() { const t = getToken(); return t && t !== 'demo-frontend-token' ? t : null; }
 function _whPost(key, data) {
@@ -317,7 +278,7 @@ function addRow() {
         <tr>
             <td><select class="row-item" onchange="syncRow(this)">${itemOptions('')}</select></td>
             <td><input class="row-qty" type="number" min="0" step="1" value="1" oninput="calcTotals()"></td>
-            <td><input class="row-unit" type="text" readonly tabindex="-1" style="color:rgba(27,61,46,0.55);font-size:11px;"></td>
+            <td><input class="row-unit" type="text" readonly tabindex="-1" style="color:#94a3b8;font-size:11px;background:transparent;border:0;box-shadow:none;"></td>
             <td><input class="row-cost" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
             <td><input class="row-price" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
             <td class="row-total" style="font-weight:800;">—</td>
@@ -336,7 +297,6 @@ function syncRow(select) {
     const step = opt ? opt.dataset.step : 1;
     row.querySelector('.row-unit').value = unit;
     row.querySelector('.row-qty').step = step;
-    // Auto-fill cost price from Items Management settings
     const costInput = row.querySelector('.row-cost');
     if (costInput && opt) costInput.value = getItemCost(opt.value) || 0;
     calcTotals();
@@ -459,8 +419,6 @@ function submitSupply() {
 
 // ─── History Table ───────────────────────────────────────────────────────────
 
-let _dbSupplies = [];
-
 async function loadSuppliesFromDB() {
     const token = getToken();
     if (!token || token === 'demo-frontend-token') return;
@@ -481,17 +439,17 @@ function renderHistory() {
     document.getElementById('historyRows').innerHTML = sales.length
         ? sales.map(s => `
             <tr>
-                <td>${esc(s.reference)}</td>
-                <td>${esc((s.date||'').slice(0,10))}</td>
+                <td style="font-weight:700;">${esc(s.reference)}</td>
+                <td style="color:#64748b;">${esc((s.date||'').slice(0,10))}</td>
                 <td>${esc(s.storeName || storeName(s.store_id))}</td>
-                <td style="font-size:12px;color:#555;">${(s.items||[]).map(i => `${esc(i.item||i.item_name)} ×${i.quantity}`).join(', ')}</td>
-                <td>${money(s.finalTotal||s.total)}</td>
-                <td>${money(s.paid)}</td>
-                <td>${money(s.remaining)}</td>
+                <td style="font-size:12px;color:#64748b;">${(s.items||[]).map(i => `${esc(i.item||i.item_name)} ×${i.quantity}`).join(', ')}</td>
+                <td style="font-weight:800;">${money(s.finalTotal||s.total)}</td>
+                <td style="color:#10b981;">${money(s.paid)}</td>
+                <td style="color:#ef4444;">${money(s.remaining)}</td>
                 <td>${statusBadge(s.status)}</td>
             </tr>
         `).join('')
-        : '<tr><td colspan="8" style="text-align:center;color:#888;">No supply transactions yet.</td></tr>';
+        : '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:32px;">No supply transactions yet.</td></tr>';
 }
 
 async function loadAllWarehouseData() {
@@ -499,13 +457,15 @@ async function loadAllWarehouseData() {
     if (tok) {
         const h = { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' };
         try {
-            const [costsRes, invRes, suppliesRes] = await Promise.all([
+            const [costsRes, invRes, varRes, suppliesRes] = await Promise.all([
                 fetch(API_BASE_URL + '/warehouse/kv/item_costs', { headers: h }),
                 fetch(API_BASE_URL + '/warehouse/kv/inv',        { headers: h }),
+                fetch(API_BASE_URL + '/warehouse/kv/variants',   { headers: h }),
                 fetch(API_BASE_URL + '/warehouse/supplies',      { headers: h }),
             ]);
             if (costsRes.ok)   { const r = await costsRes.json();   if (r.data && typeof r.data === 'object') _whItemCosts = r.data; }
-            if (invRes.ok)     { const r = await invRes.json();     if (r.data && typeof r.data === 'object') _whInvState = r.data; }
+            if (invRes.ok)     { const r = await invRes.json();     if (r.data && typeof r.data === 'object') _whInvState  = r.data; }
+            if (varRes.ok)     { const r = await varRes.json();     if (r.data && typeof r.data === 'object') _whVariants  = r.data; }
             if (suppliesRes.ok){ const r = await suppliesRes.json(); if (Array.isArray(r.data)) _dbSupplies = r.data.map(s => ({
                 id: s.id, reference: s.reference, storeId: s.store_id,
                 date: (s.date||'').slice(0,10), finalTotal: parseFloat(s.total||0),

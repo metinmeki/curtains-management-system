@@ -10,6 +10,15 @@ class RetailOrderController extends Controller
     {
         $user    = $request->user();
         $data    = $request->json()->all();
+        $request->validate([
+            'finalTotal'   => 'sometimes|numeric|min:0',
+            'buyerPaid'    => 'sometimes|numeric|min:0',
+            'supplierShare'=> 'sometimes|numeric|min:0',
+            'supplierPaid' => 'sometimes|numeric|min:0',
+            'ourProfit'    => 'sometimes|numeric|min:0',
+            'deliveryPrice'=> 'sometimes|numeric|min:0',
+        ]);
+
         $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data['storeId'] ?? $user->store_id ?? 1);
 
         // Avoid duplicate saves
@@ -46,6 +55,60 @@ class RetailOrderController extends Controller
         ]);
 
         return response()->json(['status' => 'success', 'id' => $id]);
+    }
+
+    public function pay(Request $request, $orderId)
+    {
+        $data   = $request->json()->all();
+        $party  = $data['party'] ?? 'buyer'; // 'buyer' or 'supplier'
+        $amount = floatval($data['amount'] ?? 0);
+        $note   = $data['note'] ?? '';
+
+        if ($amount <= 0) return response()->json(['status' => 'error', 'message' => 'Invalid amount'], 422);
+
+        $order = DB::table('retail_orders')->find($orderId);
+        if (!$order) return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+
+        if ($party === 'supplier') {
+            $newPaid = floatval($order->supplier_paid) + $amount;
+            $newDue  = max(floatval($order->supplier_share) - $newPaid, 0);
+            $payments = json_decode($order->supplier_payments ?? '[]', true) ?: [];
+            $payments[] = ['date' => now()->toDateString(), 'amount' => $amount, 'note' => $note];
+            DB::table('retail_orders')->where('id', $orderId)->update([
+                'supplier_paid'     => $newPaid,
+                'supplier_due'      => $newDue,
+                'supplier_status'   => $newDue <= 0 ? 'paid' : ($newPaid > 0 ? 'partial' : 'debt'),
+                'supplier_payments' => json_encode($payments),
+                'updated_at'        => now(),
+            ]);
+        } else {
+            $newPaid = floatval($order->buyer_paid) + $amount;
+            $newDue  = max(floatval($order->final_total) - $newPaid, 0);
+            $payments = json_decode($order->buyer_payments ?? '[]', true) ?: [];
+            $payments[] = ['date' => now()->toDateString(), 'amount' => $amount, 'note' => $note];
+            DB::table('retail_orders')->where('id', $orderId)->update([
+                'buyer_paid'     => $newPaid,
+                'buyer_due'      => $newDue,
+                'buyer_status'   => $newDue <= 0 ? 'paid' : ($newPaid > 0 ? 'partial' : 'debt'),
+                'buyer_payments' => json_encode($payments),
+                'updated_at'     => now(),
+            ]);
+        }
+
+        $updated = DB::table('retail_orders')->find($orderId);
+        return response()->json(['status' => 'success', 'data' => $updated]);
+    }
+
+    public function destroy(Request $request, $orderId)
+    {
+        $user = $request->user();
+        if ($user->role === 'cashier') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+        $order = DB::table('retail_orders')->find($orderId);
+        if (!$order) return response()->json(['status' => 'error', 'message' => 'Not found'], 404);
+        DB::table('retail_orders')->where('id', $orderId)->delete();
+        return response()->json(['status' => 'success']);
     }
 
     public function index(Request $request, $storeId)

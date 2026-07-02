@@ -24,85 +24,6 @@
     --text-gray: #6b7b70;
 }
 
-/* ── Dark mode overrides ─────────────────────────────────────────────────── */
-body.dark {
-    --sidebar-bg: #111c18;
-    --sidebar-hover: #1d3028;
-    --sidebar-text: #d4cfc3;
-    --primary-color: #4da87c;
-    --primary-hover: #3d9068;
-    --danger-color: #d4706a;
-    --success-color: #5aaa80;
-    --warning-color: #d4a855;
-    --accent-color: #6ea869;
-    --bg-light: #151e1a;
-    --surface-color: #1c2821;
-    --surface-soft: #243028;
-    --border-color: #2e3f37;
-    --text-dark: #dde8e2;
-    --text-gray: #8da898;
-    background: var(--bg-light);
-}
-
-body.dark .navbar {
-    background: #111c18;
-    border-bottom-color: #2e3f37;
-}
-
-body.dark .sidebar {
-    background: var(--sidebar-bg);
-}
-
-body.dark input,
-body.dark select,
-body.dark textarea {
-    background: #1c2821;
-    color: var(--text-dark);
-    border-color: var(--border-color);
-}
-
-body.dark input::placeholder,
-body.dark textarea::placeholder {
-    color: var(--text-gray);
-}
-
-body.dark table th {
-    background: var(--surface-soft);
-}
-
-body.dark .modal-box,
-body.dark .modal-overlay {
-    background: rgba(0,0,0,0.65);
-}
-
-body.dark .modal-box {
-    background: #1c2821;
-    border-color: var(--border-color);
-}
-
-body.dark .badge-success { background: #1d3d2b; color: #6dcc99; }
-body.dark .badge-warning { background: #3a2e12; color: #e0b86a; }
-body.dark .badge-danger  { background: #3a1515; color: #e08080; }
-
-body.dark .store-card,
-body.dark .module-card,
-body.dark .metric-card,
-body.dark .stat-card {
-    background: var(--surface-color);
-    border-color: var(--border-color);
-}
-
-body.dark .store-rename-btn {
-    background: var(--surface-color);
-    border-color: var(--border-color);
-    color: var(--text-gray);
-}
-
-body.dark .app-shell-note {
-    background: #1d3028;
-    border-color: #2e4a3c;
-    color: var(--text-gray);
-}
 
 /* ── Cashier mode badge ──────────────────────────────────────────────────── */
 .cashier-mode-badge {
@@ -119,11 +40,6 @@ body.dark .app-shell-note {
     margin-left: 8px;
 }
 
-body.dark .cashier-mode-badge {
-    background: rgba(184,154,58,0.1);
-    border-color: rgba(184,154,58,0.3);
-    color: #c8a84a;
-}
 
 .cashier-mode-badge button {
     background: none;
@@ -138,24 +54,6 @@ body.dark .cashier-mode-badge {
 
 .cashier-mode-badge button:hover { opacity: 1; }
 
-/* ── Dark mode toggle button ─────────────────────────────────────────────── */
-.dark-mode-btn {
-    background: none;
-    border: 1.5px solid var(--border-color);
-    border-radius: 7px;
-    cursor: pointer;
-    padding: 5px 9px;
-    font-size: 16px;
-    line-height: 1;
-    color: var(--text-dark);
-    flex-shrink: 0;
-    transition: background 0.15s, border-color 0.15s;
-    margin-left: 6px;
-}
-
-.dark-mode-btn:hover {
-    background: var(--border-color);
-}
 
 html {
     direction: rtl;
@@ -948,8 +846,7 @@ textarea {
     .content { padding: 8px; }
     .card { border-radius: 8px; }
     .navbar { padding: 8px 10px; }
-    .sidebar-toggle-btn,
-    .dark-mode-btn { padding: 5px 7px; font-size: 15px; }
+    .sidebar-toggle-btn { padding: 5px 7px; font-size: 15px; }
     .store-cards-grid { grid-template-columns: 1fr; gap: 14px; }
     .module-grid { grid-template-columns: 1fr; }
     /* POS: payment options row becomes column */

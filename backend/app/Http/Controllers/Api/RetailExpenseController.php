@@ -37,4 +37,39 @@ class RetailExpenseController extends Controller
         ]);
         return response()->json(["status" => "success", "id" => $id]);
     }
+
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role === 'cashier') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+        $expense = DB::table('retail_expenses')->find($id);
+        if (!$expense) return response()->json(['status' => 'error', 'message' => 'Not found'], 404);
+
+        $request->validate([
+            'amount' => 'sometimes|numeric|min:0',
+        ]);
+        $data = $request->json()->all();
+        DB::table('retail_expenses')->where('id', $id)->update([
+            'category'   => $data['category']   ?? $expense->category,
+            'amount'     => $data['amount']      ?? $expense->amount,
+            'note'       => array_key_exists('note', $data) ? $data['note'] : $expense->note,
+            'date'       => $data['date']        ?? $expense->date,
+            'updated_at' => now(),
+        ]);
+        return response()->json(['status' => 'success', 'data' => DB::table('retail_expenses')->find($id)]);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role === 'cashier') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+        $expense = DB::table('retail_expenses')->find($id);
+        if (!$expense) return response()->json(['status' => 'error', 'message' => 'Not found'], 404);
+        DB::table('retail_expenses')->where('id', $id)->delete();
+        return response()->json(['status' => 'success']);
+    }
 }

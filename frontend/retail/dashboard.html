@@ -4,148 +4,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Dashboard - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="rt-style.css?v=1">
     <style>
-        .dashboard-metrics .metric-card { border-left: 5px solid var(--metric-accent, var(--primary-color)); background: linear-gradient(135deg, var(--metric-bg, #fffdf6), #fffdf6 72%); }
-        .dashboard-metrics .metric-card strong { color: var(--metric-strong, var(--text-dark)); }
-        .dashboard-metrics .metric-card:nth-child(1) { --metric-accent: #2f7d5b; --metric-bg: #eaf5ee; --metric-strong: #24583c; }
-        .dashboard-metrics .metric-card:nth-child(2) { --metric-accent: #3f8f67; --metric-bg: #e8f6ec; --metric-strong: #27684c; }
-        .dashboard-metrics .metric-card:nth-child(3) { --metric-accent: #b4534a; --metric-bg: #faebe8; --metric-strong: #7f332d; }
-        .dashboard-metrics .metric-card:nth-child(4) { --metric-accent: #c79543; --metric-bg: #fbf0d6; --metric-strong: #7a581d; }
-        .dashboard-metrics .metric-card:nth-child(5) { --metric-accent: #7f5f3f; --metric-bg: #f3eadf; --metric-strong: #5f4630; }
-        .dashboard-metrics .metric-card:nth-child(6) { --metric-accent: #3b7f88; --metric-bg: #e7f3f4; --metric-strong: #245a60; }
-        .dashboard-metrics .metric-card:nth-child(7) { --metric-accent: #8a6fb0; --metric-bg: #f0ebf7; --metric-strong: #5d4a7a; }
-        .dashboard-metrics .metric-card:nth-child(8) { --metric-accent: #4f7ca8; --metric-bg: #e8f0f7; --metric-strong: #355d82; }
-        .dashboard-metrics .metric-card:nth-child(9) { --metric-accent: #668f3f; --metric-bg: #eef5e5; --metric-strong: #44652a; }
-        .dashboard-metrics .metric-card:nth-child(10) { --metric-accent: #2f7d5b; --metric-bg: #e7f4ec; --metric-strong: #24583c; }
-        .dashboard-metrics .metric-card:nth-child(11) { --metric-accent: #5c8a7c; --metric-bg: #e8f2ef; --metric-strong: #3e6258; }
-        .dashboard-metrics .metric-card:nth-child(12) { --metric-accent: #b86755; --metric-bg: #f8ece7; --metric-strong: #844333; }
-        .dashboard-metrics .metric-card:nth-child(13) { --metric-accent: #6e8f4a; --metric-bg: #edf4e5; --metric-strong: #4d6b33; }
-        .dashboard-metrics .metric-card:nth-child(14) { --metric-accent: #a85c70; --metric-bg: #f7e9ee; --metric-strong: #763d4d; }
-        .dashboard-metrics .metric-card:nth-child(15) { --metric-accent: #8f7a3f; --metric-bg: #f6f0d8; --metric-strong: #6b5a2b; }
-        .dashboard-metrics .metric-card:nth-child(16) { --metric-accent: #52788f; --metric-bg: #e8f0f4; --metric-strong: #36596d; }
+        .dashboard-metrics .metric-card { color:#fff !important; border-left:none !important; border-radius:10px; }
+        .dashboard-metrics .metric-card span { color:rgba(255,255,255,0.82) !important; font-size:13px; }
+        .dashboard-metrics .metric-card strong { color:#fff !important; font-size:20px; }
+        .dashboard-metrics .metric-card small { color:rgba(255,255,255,0.65) !important; font-size:11px; }
+        .dashboard-metrics .metric-card:nth-child(1)  { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; }
+        .dashboard-metrics .metric-card:nth-child(2)  { background:linear-gradient(135deg,#1e6b3f,#3a9e60) !important; }
+        .dashboard-metrics .metric-card:nth-child(3)  { background:linear-gradient(135deg,#7f1d1d,#b91c1c) !important; }
+        .dashboard-metrics .metric-card:nth-child(4)  { background:linear-gradient(135deg,#5c4a10,#c4a24d) !important; }
+        .dashboard-metrics .metric-card:nth-child(5)  { background:linear-gradient(135deg,#4a3210,#9b6e28) !important; }
+        .dashboard-metrics .metric-card:nth-child(6)  { background:linear-gradient(135deg,#1a4d3a,#2e856b) !important; }
+        .dashboard-metrics .metric-card:nth-child(7)  { background:linear-gradient(135deg,#78350f,#d97706) !important; }
+        .dashboard-metrics .metric-card:nth-child(8)  { background:linear-gradient(135deg,#14532d,#16a34a) !important; }
+        .dashboard-metrics .metric-card:nth-child(9)  { background:linear-gradient(135deg,#1a3d2b,#3b7a52) !important; }
+        .dashboard-metrics .metric-card:nth-child(10) { background:linear-gradient(135deg,#1f4a1f,#c4a24d) !important; }
+        .dashboard-metrics .metric-card:nth-child(11) { background:linear-gradient(135deg,#2d4a1e,#5a8a30) !important; }
+        .dashboard-metrics .metric-card:nth-child(12) { background:linear-gradient(135deg,#6b1a1a,#a83232) !important; }
+        .dashboard-metrics .metric-card:nth-child(13) { background:linear-gradient(135deg,#064e3b,#059669) !important; }
+        .dashboard-metrics .metric-card:nth-child(14) { background:linear-gradient(135deg,#7c1d1d,#dc2626) !important; }
+        .dashboard-metrics .metric-card:nth-child(15) { background:linear-gradient(135deg,#6b4c0a,#c4a24d) !important; }
+        .dashboard-metrics .metric-card:nth-child(16) { background:linear-gradient(135deg,#1a3d2b,#4a9168) !important; }
+        .dashboard-metrics .metric-card:nth-child(17) { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; border-left:none !important; }
+        .dashboard-metrics .metric-card:nth-child(18) { background:linear-gradient(135deg,#1a3d2b,#c4a24d) !important; border-left:none !important; }
+        .ft td, .ft th { padding:10px 12px; border-bottom:1px solid var(--border-color); overflow:hidden; word-break:break-word; }
+        .ft th { font-size:12px; color:var(--text-gray); text-align:left; }
+        .ft td { font-size:14px; }
+        .ft tr:last-child td { border-bottom:none; }
+        @media(max-width:768px){ .worker-grid{ grid-template-columns:1fr !important; } }
     </style>
 </head>
 <body class="ltr">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html" class="active"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
-                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-                
-                <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
-            </ul>
-            <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-            
-       </aside>
-        <div class="main-content">
-            <nav class="navbar">
-                <div class="navbar-title">Retail Dashboard</div>
-                <div class="navbar-actions"><span class="scope-pill">store_id scoped</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
-            </nav>
-            <main class="content">
-                <div class="page-header">
-                    <div><h1 class="page-title">Store performance</h1></div>
-                    <div class="filter-controls">
-                        <button class="filter-btn active" onclick="setDashboardPeriod('today', this)">Today</button>
-                        <button class="filter-btn" onclick="setDashboardPeriod('week', this)">This week</button>
-                        <button class="filter-btn" onclick="setDashboardPeriod('month', this)">This month</button>
-                        <button class="filter-btn" onclick="setDashboardPeriod('all', this)">All time</button>
-                        <button class="filter-btn" onclick="toggleCustomRange(this)">Custom range</button>
-                    </div>
-                    <div id="customRangeForm" class="form-grid" style="display:none; width:100%; margin-top: 12px;">
-                        <div class="form-group"><label>Start date</label><input type="date" id="customStartDate"></div>
-                        <div class="form-group"><label>End date</label><input type="date" id="customEndDate"></div>
-                        <div class="form-group" style="align-self:end;"><button class="btn btn-primary" onclick="applyCustomRange()">Apply</button></div>
-                    </div>
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link active"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Retail Dashboard</span>
+            <div class="rt-topbar-right">
+                <span class="scope-pill">store_id scoped</span>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
+            <div class="page-header">
+                <div><h1 class="page-title">Store performance</h1></div>
+                <div class="filter-controls">
+                    <button class="filter-btn active" onclick="setDashboardPeriod('today', this)">Today</button>
+                    <button class="filter-btn" onclick="setDashboardPeriod('week', this)">This week</button>
+                    <button class="filter-btn" onclick="setDashboardPeriod('month', this)">This month</button>
+                    <button class="filter-btn" onclick="setDashboardPeriod('all', this)">All time</button>
+                    <button class="filter-btn" onclick="toggleCustomRange(this)">Custom range</button>
                 </div>
-                <div class="workspace-grid dashboard-metrics">
-                    <div class="metric-card"><span>Total sales</span><strong id="totalSales">...</strong><small>All sale totals</small></div>
-                    <div class="metric-card"><span>Fully paid</span><strong id="paidSales">...</strong><small>Paid revenue</small></div>
-                    <div class="metric-card"><span>Debt sales</span><strong id="debtSales">...</strong><small>Unpaid sales</small></div>
-                    <div class="metric-card"><span>Partial payments</span><strong id="partialSales">...</strong><small>Paid partly</small></div>
-                    <div class="metric-card"><span>Expenses</span><strong id="expenses">0 IQD</strong><small>Store costs</small></div>
-                    <div class="metric-card"><span>Net amount</span><strong id="netAmount">...</strong><small>Paid minus expenses</small></div>
-                    <div class="metric-card"><span>Discounts</span><strong id="discounts">...</strong><small>Tracked with notes</small></div>
-                    <div class="metric-card"><span>Clients</span><strong id="clients">...</strong><small>Repeat customers</small></div>
-                    <div class="metric-card"><span>Order sales</span><strong id="orderSales">0 IQD</strong><small>External supplier orders</small></div>
-                    <div class="metric-card"><span>Order profit</span><strong id="orderProfit">0 IQD</strong><small>Profit from orders</small></div>
-                    <div class="metric-card"><span>Supplier paid</span><strong id="orderSupplierPaid">0 IQD</strong><small>Paid to companies</small></div>
-                    <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid">0 IQD</strong><small>We still owe</small></div>
-                    <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid">0 IQD</strong><small>Collected from buyers</small></div>
-                    <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt">0 IQD</strong><small>Customers still owe</small></div>
-                    <div class="metric-card"><span>حساب الخياطة</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
-                    <div class="metric-card"><span>حساب التركيب</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
-                    <div class="metric-card" style="border-left:4px solid #2f7d5b;"><span>الربح الإجمالي</span><strong id="grossProfit">0 IQD</strong><small>(Selling − Cost) × Qty sold</small></div>
-                    <div class="metric-card" style="border-left:4px solid #1a5c3f;background:#eaf5ee;"><span>الربح الصافي</span><strong id="netProfit">0 IQD</strong><small>Gross − Expenses − Discounts</small></div>
+                <div id="customRangeForm" class="form-grid" style="display:none; width:100%; margin-top: 12px;">
+                    <div class="form-group"><label>Start date</label><input type="date" id="customStartDate"></div>
+                    <div class="form-group"><label>End date</label><input type="date" id="customEndDate"></div>
+                    <div class="form-group" style="align-self:end;"><button class="btn btn-primary" onclick="applyCustomRange()">Apply</button></div>
                 </div>
+            </div>
+            <div class="workspace-grid dashboard-metrics">
+                <div class="metric-card"><span>Total sales</span><strong id="totalSales">...</strong><small>All sale totals</small></div>
+                <div class="metric-card"><span>Fully paid</span><strong id="paidSales">...</strong><small>Paid revenue</small></div>
+                <div class="metric-card"><span>Debt sales</span><strong id="debtSales">...</strong><small>Unpaid sales</small></div>
+                <div class="metric-card"><span>Partial payments</span><strong id="partialSales">...</strong><small>Paid partly</small></div>
+                <div class="metric-card"><span>Expenses</span><strong id="expenses">0 IQD</strong><small>Store costs</small></div>
+                <div class="metric-card"><span>Net amount</span><strong id="netAmount">...</strong><small>Paid minus expenses</small></div>
+                <div class="metric-card"><span>Discounts</span><strong id="discounts">...</strong><small>Tracked with notes</small></div>
+                <div class="metric-card"><span>Clients</span><strong id="clients">...</strong><small>Repeat customers</small></div>
+                <div class="metric-card"><span>Order sales</span><strong id="orderSales">0 IQD</strong><small>External supplier orders</small></div>
+                <div class="metric-card"><span>Order profit</span><strong id="orderProfit">0 IQD</strong><small>Profit from orders</small></div>
+                <div class="metric-card"><span>Supplier paid</span><strong id="orderSupplierPaid">0 IQD</strong><small>Paid to companies</small></div>
+                <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid">0 IQD</strong><small>We still owe</small></div>
+                <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid">0 IQD</strong><small>Collected from buyers</small></div>
+                <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt">0 IQD</strong><small>Customers still owe</small></div>
+                <div class="metric-card"><span>حساب الخياطة</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
+                <div class="metric-card"><span>حساب التركيب</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
+                <div class="metric-card"><span>الربح الإجمالي</span><strong id="grossProfit">0 IQD</strong><small>(Selling − Cost) × Qty sold</small></div>
+                <div class="metric-card"><span>الربح الصافي</span><strong id="netProfit">0 IQD</strong><small>Gross − Expenses − Discounts</small></div>
+            </div>
 
-                <div class="card">
-                    <div class="card-header"><h2 class="card-title">Recent sales</h2></div>
-                    <div class="card-body table-wrapper">
-                        <table><thead><tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th><th>Measurements</th></tr></thead>
-                        <tbody id="salesRows"><tr><td colspan="9">Loading...</td></tr></tbody></table>
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">Recent sales</h2></div>
+                <div class="card-body table-wrapper">
+                    <table><thead><tr><th>Sale</th><th>Client</th><th>Cashier</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Date</th><th>Measurements</th></tr></thead>
+                    <tbody id="salesRows"><tr><td colspan="9">Loading...</td></tr></tbody></table>
+                </div>
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header"><h2 class="card-title">Recent orders</h2></div>
+                <div class="card-body table-wrapper">
+                    <table><thead><tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th></tr></thead>
+                    <tbody id="orderRows"><tr><td colspan="8">No orders yet.</td></tr></tbody></table>
+                </div>
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header"><h2 class="card-title">Discount details</h2></div>
+                <div class="card-body table-wrapper">
+                    <table><thead><tr><th>Date</th><th>Sale</th><th>Client</th><th>Phone</th><th>Subtotal</th><th>Discount</th><th>Final total</th><th>Note</th></tr></thead>
+                    <tbody id="discountRows"></tbody></table>
+                </div>
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header"><h2 class="card-title">Recent debts</h2></div>
+                <div class="card-body">
+                    <table class="ft" style="width:100%;table-layout:fixed;border-collapse:collapse;">
+                        <colgroup>
+                            <col style="width:28%">
+                            <col style="width:18%">
+                            <col style="width:18%">
+                            <col style="width:14%">
+                            <col style="width:22%">
+                        </colgroup>
+                        <thead><tr><th>Client</th><th>Phone</th><th>Remaining</th><th>Status</th><th>Note</th></tr></thead>
+                        <tbody id="debtRows"></tbody>
+                    </table>
+                </div>
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
+                <div class="card-body">
+                    <table class="ft" style="width:100%;table-layout:fixed;border-collapse:collapse;">
+                        <colgroup>
+                            <col style="width:28%">
+                            <col style="width:22%">
+                            <col style="width:30%">
+                            <col style="width:20%">
+                        </colgroup>
+                        <thead><tr><th>Category</th><th>Amount</th><th>Note</th><th>Date</th></tr></thead>
+                        <tbody id="expenseRows"><tr><td colspan="4">No expenses yet.</td></tr></tbody>
+                    </table>
+                </div>
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header"><h2 class="card-title">Worker accounts from POS sales</h2></div>
+                <div class="card-body worker-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                        <div style="font-weight:700;font-size:13px;color:var(--text-dark);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border-color);">Sewing account</div>
+                        <table class="ft" style="width:100%;table-layout:fixed;border-collapse:collapse;">
+                            <colgroup><col style="width:14%"><col style="width:20%"><col style="width:22%"><col style="width:14%"><col style="width:15%"><col style="width:15%"></colgroup>
+                            <thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Mtrs</th><th>Rate</th><th>Total</th></tr></thead>
+                            <tbody id="sewingRows"></tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:13px;color:var(--text-dark);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border-color);">Installation account</div>
+                        <table style="width:100%;table-layout:fixed;border-collapse:collapse;">
+                            <colgroup><col style="width:14%"><col style="width:20%"><col style="width:22%"><col style="width:14%"><col style="width:15%"><col style="width:15%"></colgroup>
+                            <thead><tr><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Sale</th><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Date</th><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Client</th><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Win</th><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Rate</th><th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Total</th></tr></thead>
+                            <tbody id="installationRows"></tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="card" style="margin-top:20px;">
-                    <div class="card-header"><h2 class="card-title">Recent orders</h2></div>
-                    <div class="card-body table-wrapper">
-                        <table><thead><tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th></tr></thead>
-                        <tbody id="orderRows"><tr><td colspan="8">No orders yet.</td></tr></tbody></table>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:20px;">
-                    <div class="card-header"><h2 class="card-title">Discount details</h2></div>
-                    <div class="card-body table-wrapper">
-                        <table><thead><tr><th>Date</th><th>Sale</th><th>Client</th><th>Phone</th><th>Subtotal</th><th>Discount</th><th>Final total</th><th>Note</th></tr></thead>
-                        <tbody id="discountRows"></tbody></table>
-                    </div>
-                </div>
-                <div class="module-grid" style="margin-top:20px;">
-                    <div class="card">
-                        <div class="card-header"><h2 class="card-title">Recent debts</h2></div>
-                        <div class="card-body table-wrapper">
-                            <table><thead><tr><th>Client</th><th>Phone</th><th>Remaining</th><th>Status</th><th>Note</th></tr></thead>
-                            <tbody id="debtRows"></tbody></table>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
-                        <div class="card-body table-wrapper">
-                            <table><thead><tr><th>Category</th><th>Amount</th><th>Note</th><th>Date</th></tr></thead>
-                            <tbody id="expenseRows"><tr><td colspan="4">No expenses yet.</td></tr></tbody></table>
-                        </div>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:20px;">
-                    <div class="card-header"><h2 class="card-title">Worker accounts from POS sales</h2></div>
-                    <div class="card-body">
-                        <div class="module-grid">
-                            <div class="card">
-                                <div class="card-header"><h3 class="card-title">حساب الخياط الشهري</h3></div>
-                                <div class="card-body table-wrapper">
-                                    <table><thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Meters</th><th>Rate</th><th>Total</th></tr></thead>
-                                    <tbody id="sewingRows"></tbody></table>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header"><h3 class="card-title">حساب التركيب الشهري</h3></div>
-                                <div class="card-body table-wrapper">
-                                    <table><thead><tr><th>Sale</th><th>Date</th><th>Client</th><th>Windows</th><th>Rate</th><th>Total</th></tr></thead>
-                                    <tbody id="installationRows"></tbody></table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+        </div>
         </div>
     </div>
+</div>
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
     <script>
@@ -199,13 +240,13 @@
             } catch(e) { console.error("API error:", e); }
 
             try {
-                const token = localStorage.getItem('auth_token');
+                const token = getToken();
                 const res = await fetch(API_BASE_URL + '/retail/expenses/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                 if (res.ok) { const r = await res.json(); if (r.data) allDbExpenses = r.data; }
             } catch(e) {}
 
             try {
-                const token = localStorage.getItem('auth_token');
+                const token = getToken();
                 const res = await fetch(API_BASE_URL + '/retail/orders/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                 if (res.ok) { const r = await res.json(); if (r.data) allDbOrders = r.data; }
             } catch(e) {}
@@ -264,12 +305,10 @@
             document.getElementById("sewingAccountTotal").textContent = money(accounts.sewing.total);
             document.getElementById("installationAccountTotal").textContent = money(accounts.installation.total);
 
-            // Gross profit: sum of (unit_price - cost_price) * qty from sale items
             const grossProfit = sales.reduce((sum, sale) => {
                 return sum + (sale.items || []).reduce((s, item) => s + parseFloat(item.profit_amount || 0), 0);
             }, 0);
-            // Net profit = gross - expenses - discounts
-            const netProfit = grossProfit - expenseTotal - discountTotal;
+            const netProfit = grossProfit + orderProfitTotal - expenseTotal - discountTotal;
             const gpEl = document.getElementById("grossProfit");
             const npEl = document.getElementById("netProfit");
             gpEl.textContent = money(grossProfit);
@@ -314,9 +353,8 @@
         setInterval(loadSalesFromAPI, 30000);
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
-<script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
 </body>
 </html>
-
-
-

@@ -151,8 +151,15 @@ class RetailDashboardController extends Controller
                 ->sum('profit_amount');
         }
 
-        // Net profit = gross profit - expenses - discounts
-        $netProfit = $grossProfit - $totalExpenses - (float)$totalDiscounts;
+        // Order profit (ربحنا) for this store in the same period
+        $ordersQuery = \Illuminate\Support\Facades\DB::table('retail_orders')->where('store_id', $storeId);
+        if ($dateRange) {
+            $ordersQuery->whereBetween('created_at', [$dateRange[0]->format('Y-m-d H:i:s'), $dateRange[1]->format('Y-m-d H:i:s')]);
+        }
+        $orderProfitTotal = (float)$ordersQuery->sum('our_profit');
+
+        // Net profit = gross profit + order profit - expenses - discounts
+        $netProfit = $grossProfit + $orderProfitTotal - $totalExpenses - (float)$totalDiscounts;
 
         return [
             'total_sales'        => (float)$totalAmount ?: 0,

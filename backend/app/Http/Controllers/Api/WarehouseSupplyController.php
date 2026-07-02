@@ -20,6 +20,9 @@ class WarehouseSupplyController extends Controller
         if ($storeId <= 0) {
             return response()->json(['status' => 'error', 'message' => 'Valid store ID required'], 422);
         }
+        if (!DB::table('stores')->where('id', $storeId)->exists()) {
+            return response()->json(['status' => 'error', 'message' => 'Store not found'], 422);
+        }
 
         $items = $data['items'] ?? [];
         if (!is_array($items) || empty($items)) {

@@ -4,62 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Inventory - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="rt-style.css?v=1">
     <style>
-        /* ── Stats ── */
         .inv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
-        .inv-stat { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--primary-color); }
-        .inv-stat:nth-child(1) { border-left-color: #2f7d5b; }
-        .inv-stat:nth-child(2) { border-left-color: #4f7ca8; }
-        .inv-stat:nth-child(3) { border-left-color: #c79543; }
-        .inv-stat:nth-child(4) { border-left-color: #b4534a; }
-        .inv-stat-label { font-size: 12px; color: var(--text-gray); font-weight: 700; margin-bottom: 4px; }
-        .inv-stat-value { font-size: 22px; font-weight: 800; color: var(--text-dark); }
+        .inv-stat { border-radius: 10px; padding: 16px 18px; border: none; color: #fff; }
+        .inv-stat:nth-child(1) { background: linear-gradient(135deg, #1a3d2b, #2d6a47); }
+        .inv-stat:nth-child(2) { background: linear-gradient(135deg, #1e4a7a, #2e7dc4); }
+        .inv-stat:nth-child(3) { background: linear-gradient(135deg, #5c4a10, #c4a24d); }
+        .inv-stat:nth-child(4) { background: linear-gradient(135deg, #7f1d1d, #b91c1c); }
+        .inv-stat-label { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 700; margin-bottom: 4px; }
+        .inv-stat-value { font-size: 22px; font-weight: 800; color: #fff; }
 
-        /* ── Toolbar ── */
         .inv-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
         .inv-toolbar .form-group { margin-bottom: 0; min-width: 160px; }
         .inv-toolbar input, .inv-toolbar select { height: 38px; padding: 6px 10px; font-size: 13px; }
-        .view-toggle { display: flex; gap: 0; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-left: auto; }
-        .view-toggle button { border: 0; background: var(--surface-color); padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-gray); }
-        .view-toggle button.active { background: var(--primary-color); color: #fff; }
+        .view-toggle { display: flex; gap: 0; border: 1px solid #e8e4da; border-radius: 8px; overflow: hidden; margin-left: auto; }
+        .view-toggle button { border: 0; background: #fff; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; color: #6b7c73; }
+        .view-toggle button.active { background: #1a3d2b; color: #fff; }
 
-        /* ── Hierarchy view ── */
-        .inv-category-block { border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 14px; background: var(--surface-color); }
+        .inv-category-block { border: 1px solid #e8e4da; border-radius: 10px; overflow: hidden; margin-bottom: 14px; background: #fff; }
         .inv-category-header { display: flex; align-items: center; gap: 12px; padding: 13px 16px; cursor: pointer; background: #f0f6f1; user-select: none; }
         .inv-category-header:hover { background: #e5f0e8; }
         .inv-category-chevron { font-size: 16px; transition: transform 0.2s; display: inline-block; }
         .inv-category-block.open .inv-category-chevron { transform: rotate(90deg); }
-        .inv-category-name { font-weight: 800; font-size: 15px; color: var(--text-dark); flex: 1; }
-        .inv-category-meta { font-size: 12px; color: var(--text-gray); }
-        .inv-category-body { display: none; padding: 10px 14px 14px; border-top: 1px solid var(--border-color); }
+        .inv-category-name { font-weight: 800; font-size: 15px; color: #1a2e1f; flex: 1; }
+        .inv-category-meta { font-size: 12px; color: #6b7c73; }
+        .inv-category-body { display: none; padding: 10px 14px 14px; border-top: 1px solid #e8e4da; }
         .inv-category-block.open .inv-category-body { display: block; }
 
-        .inv-item-block { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: #fff; }
+        .inv-item-block { border: 1px solid #e8e4da; border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: #fff; }
         .inv-item-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; background: #f9f7f0; user-select: none; }
         .inv-item-header:hover { background: #f3f0e5; }
         .inv-item-block.open .inv-item-chevron { transform: rotate(90deg); }
         .inv-item-chevron { font-size: 14px; transition: transform 0.2s; display: inline-block; }
-        .inv-item-name { font-weight: 700; font-size: 14px; color: var(--text-dark); flex: 1; }
-        .inv-item-meta { font-size: 12px; color: var(--text-gray); }
-        .inv-item-body { display: none; padding: 12px; border-top: 1px solid var(--border-color); }
+        .inv-item-name { font-weight: 700; font-size: 14px; color: #1a2e1f; flex: 1; }
+        .inv-item-meta { font-size: 12px; color: #6b7c73; }
+        .inv-item-body { display: none; padding: 12px; border-top: 1px solid #e8e4da; }
         .inv-item-block.open .inv-item-body { display: block; }
 
         .inv-variant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
-        .inv-variant-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--surface-color); transition: box-shadow 0.15s; }
+        .inv-variant-card { border: 1px solid #e8e4da; border-radius: 8px; overflow: hidden; background: #fff; transition: box-shadow 0.15s; }
         .inv-variant-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
         .inv-variant-img { width: 100%; height: 100px; object-fit: cover; background: #f0ede3; display: flex; align-items: center; justify-content: center; color: #b8b0a0; font-size: 28px; }
         .inv-variant-img img { width: 100%; height: 100%; object-fit: cover; }
         .inv-variant-info { padding: 10px 12px 6px; }
-        .inv-variant-name { font-weight: 700; font-size: 13px; color: var(--text-dark); margin-bottom: 3px; }
-        .inv-variant-code { font-size: 11px; color: var(--text-gray); font-family: monospace; background: #f3f0e6; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
-        .inv-variant-qty { font-size: 13px; color: var(--text-dark); font-weight: 800; margin-bottom: 4px; }
+        .inv-variant-name { font-weight: 700; font-size: 13px; color: #1a2e1f; margin-bottom: 3px; }
+        .inv-variant-code { font-size: 11px; color: #6b7c73; font-family: monospace; background: #f3f0e6; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
+        .inv-variant-qty { font-size: 13px; color: #1a2e1f; font-weight: 800; margin-bottom: 4px; }
         .inv-variant-actions { display: flex; gap: 6px; padding: 6px 12px 10px; }
-        .inv-variant-actions button { flex: 1; padding: 5px 4px; font-size: 11px; font-weight: 700; border-radius: 5px; border: 1px solid var(--border-color); cursor: pointer; background: #fff; color: var(--text-dark); }
-        .inv-variant-actions button:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .inv-variant-actions button { flex: 1; padding: 5px 4px; font-size: 11px; font-weight: 700; border-radius: 5px; border: 1px solid #e8e4da; cursor: pointer; background: #fff; color: #1a2e1f; }
+        .inv-variant-actions button:hover { background: #1a3d2b; color: #fff; border-color: #1a3d2b; }
         .inv-variant-actions button.danger:hover { background: #b4534a; border-color: #b4534a; }
 
-        /* ── Table view ── */
         #tableView { display: none; }
         #tableView.active { display: block; }
         #hierarchyView.active { display: block; }
@@ -68,78 +64,93 @@
         .inv-table-img img { width: 40px; height: 40px; object-fit: cover; border-radius: 5px; }
         .code-chip { font-family: monospace; font-size: 11px; background: #f3f0e6; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
 
-        /* ── Status badges ── */
         .status-in { color: #2f7d5b; background: #e8f5ec; border: 1px solid #b8dec8; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .status-low { color: #8a6010; background: #fdf3d8; border: 1px solid #e8d090; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .status-out { color: #8c3028; background: #fbeae8; border: 1px solid #e0b0aa; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
-        /* ── Modal ── */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.46); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.open { display: flex; }
         .modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.22); }
-        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid var(--border-color); }
-        .modal-header h3 { font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0; }
-        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-gray); line-height: 1; padding: 0 4px; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid #e8e4da; }
+        .modal-header h3 { font-size: 16px; font-weight: 800; color: #1a2e1f; margin: 0; }
+        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #6b7c73; line-height: 1; padding: 0 4px; }
         .modal-close:hover { color: #b4534a; }
         .modal-body { padding: 20px; }
-        .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-footer { padding: 14px 20px; border-top: 1px solid #e8e4da; display: flex; gap: 10px; justify-content: flex-end; }
         .modal-footer button { min-width: 90px; }
 
-        /* ── Movement log ── */
-        .movement-entry { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .movement-entry { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #e8e4da; }
         .movement-entry:last-child { border-bottom: 0; }
         .movement-delta { font-weight: 800; font-size: 15px; min-width: 48px; text-align: right; }
         .movement-delta.neg { color: #b4534a; }
         .movement-delta.pos { color: #2f7d5b; }
         .mov-delta { font-size:16px; font-weight:900; }
-        .mov-neg { color: var(--danger-color); }
-        .mov-pos { color: var(--success-color); }
-        .movement-meta { flex: 1; font-size: 13px; color: var(--text-dark); }
-        .movement-meta small { color: var(--text-gray); font-size: 11px; }
+        .mov-neg { color: #ef4444; }
+        .mov-pos { color: #10b981; }
+        .movement-meta { flex: 1; font-size: 13px; color: #1a2e1f; }
+        .movement-meta small { color: #6b7c73; font-size: 11px; }
 
-        /* ── Add buttons row ── */
         .add-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
-
-        /* ── Empty state ── */
-        .inv-empty { text-align: center; padding: 60px 20px; color: var(--text-gray); }
+        .inv-empty { text-align: center; padding: 60px 20px; color: #6b7c73; }
         .inv-empty-icon { font-size: 48px; margin-bottom: 14px; }
-        .inv-empty h3 { font-size: 18px; color: var(--text-dark); margin-bottom: 8px; }
+        .inv-empty h3 { font-size: 18px; color: #1a2e1f; margin-bottom: 8px; }
     </style>
 </head>
 <body class="ltr">
-<div class="layout">
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">Retail Store</div>
-            <div class="sidebar-store-name" id="sidebarStoreName">Store</div>
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
         </div>
-        <ul class="sidebar-menu">
-            <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-            <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
-            <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
-            <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-            <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-            <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-            
-            <li class="menu-item"><a href="inventory.html" class="active"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
-        </ul>
-        <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-    </aside>
-
-    <div class="main-content">
-        <nav class="navbar">
-            <div class="navbar-title">Store Inventory</div>
-            <div class="navbar-actions">
-                <span class="scope-pill">Track each store item by code and quantity. POS sales deduct stock by code.</span>
-                <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link active"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
             </div>
         </nav>
-
-        <main class="content">
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Store Inventory</span>
+            <div class="rt-topbar-right">
+                <span class="scope-pill">Track each store item by code and quantity. POS sales deduct stock by code.</span>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Variant Inventory</h1>
                     <p class="page-subtitle">Category → Item → Variant structure. Each variant has its own code, quantity, and stock history per store.</p>
+                </div>
+                <div class="add-btn-row">
+                    <button class="btn btn-primary" onclick="openModal('catModal')">+ Category</button>
+                    <button class="btn btn-primary" onclick="openAddItemFor(getInvCategories()[0]?.id||'')">+ Item</button>
+                    <button class="btn btn-success" onclick="openAddVariantFor(getInvCategories()[0]?.id||'','')">+ Variant</button>
+                    <button class="btn" onclick="openModal('movLogModal')">📋 Movement log</button>
                 </div>
             </div>
 
@@ -150,7 +161,6 @@
                 <div class="inv-stat"><div class="inv-stat-label" id="statLabel3">Low stock</div><div class="inv-stat-value" id="statLow">0</div></div>
                 <div class="inv-stat"><div class="inv-stat-label" id="statLabel4">Out of stock</div><div class="inv-stat-value" id="statOut">0</div></div>
             </div>
-
 
             <!-- Toolbar -->
             <div class="inv-toolbar">
@@ -201,19 +211,19 @@
                         </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- ── Last activities footer ── -->
-            <div id="footerActivities" style="margin-top:24px;border-top:2px solid var(--border-color);padding-top:18px;">
-                <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">Last Activities</div>
+            <!-- Last activities footer -->
+            <div id="footerActivities" style="margin-top:24px;border-top:2px solid #e8e4da;padding-top:18px;">
+                <div style="font-size:13px;font-weight:800;color:#1a2e1f;margin-bottom:12px;">Last Activities</div>
                 <div id="footerActivityList"></div>
             </div>
-
-        </main>
+            </div>
+        </div>
+        </div>
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Add/Edit Category ════════════════ -->
+<!-- MODAL: Add/Edit Category -->
 <div class="modal-overlay" id="catModal">
     <div class="modal-box">
         <div class="modal-header">
@@ -232,7 +242,7 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Add/Edit Item ════════════════ -->
+<!-- MODAL: Add/Edit Item -->
 <div class="modal-overlay" id="itemModal">
     <div class="modal-box">
         <div class="modal-header">
@@ -255,7 +265,7 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Add/Edit Variant ════════════════ -->
+<!-- MODAL: Add/Edit Variant -->
 <div class="modal-overlay" id="variantModal">
     <div class="modal-box">
         <div class="modal-header">
@@ -308,7 +318,7 @@
             </div>
             <div class="form-group">
                 <label>Photo (optional)</label>
-                <div id="variantImagePreview" style="display:none;margin-bottom:8px;"><img id="variantImageThumb" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);" /></div>
+                <div id="variantImagePreview" style="display:none;margin-bottom:8px;"><img id="variantImageThumb" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #e8e4da;" /></div>
                 <input id="variantImageFile" type="file" accept="image/*" style="display:none;" onchange="onVariantFileChange(this)">
                 <button type="button" class="btn" style="width:100%;justify-content:center;" onclick="document.getElementById('variantImageFile').click()">📷 Upload photo</button>
                 <input id="variantImage" type="hidden" value="">
@@ -321,7 +331,7 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Adjust Stock ════════════════ -->
+<!-- MODAL: Adjust Stock -->
 <div class="modal-overlay" id="adjustModal">
     <div class="modal-box">
         <div class="modal-header">
@@ -363,7 +373,7 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Movement Log ════════════════ -->
+<!-- MODAL: Movement Log -->
 <div class="modal-overlay" id="movLogModal">
     <div class="modal-box" style="max-width:640px;">
         <div class="modal-header">
@@ -375,7 +385,7 @@
     </div>
 </div>
 
-<!-- ════════════════ MODAL: Delete confirm ════════════════ -->
+<!-- MODAL: Delete confirm -->
 <div class="modal-overlay" id="deleteModal">
     <div class="modal-box" style="max-width:380px;">
         <div class="modal-header">
@@ -383,7 +393,7 @@
             <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
         </div>
         <div class="modal-body">
-            <p id="deleteModalMsg" style="color:var(--text-dark);font-size:14px;"></p>
+            <p id="deleteModalMsg" style="color:#1a2e1f;font-size:14px;"></p>
         </div>
         <div class="modal-footer">
             <button class="btn" onclick="closeModal('deleteModal')">Cancel</button>
@@ -569,7 +579,7 @@
                 if (itemVariants.length === 0 && (f.search || f.status)) return;
 
                 const cardsHtml = itemVariants.length === 0
-                    ? `<p style="color:var(--text-gray);font-size:13px;padding:8px 0;">No variants yet. <button class="btn btn-primary" style="padding:3px 10px;font-size:12px;" onclick="openAddVariantFor('${cat.id}','${item.id}')">+ Add variant</button></p>`
+                    ? `<p style="color:#6b7c73;font-size:13px;padding:8px 0;">No variants yet. <button class="btn btn-primary" style="padding:3px 10px;font-size:12px;" onclick="openAddVariantFor('${cat.id}','${item.id}')">+ Add variant</button></p>`
                     : `<div class="inv-variant-grid">${itemVariants.map(v => variantCard(v)).join('')}</div>
                        <button class="btn btn-primary" style="margin-top:8px;padding:4px 12px;font-size:12px;" onclick="openAddVariantFor('${cat.id}','${item.id}')">+ Add type</button>`;
 
@@ -598,7 +608,7 @@
                         <button class="btn btn-danger" style="padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();confirmDeleteCategory('${cat.id}')">Delete</button>
                     </div>
                     <div class="inv-category-body">
-                        ${itemsHtml || `<p style="color:var(--text-gray);font-size:13px;">No items in this category yet.</p>`}
+                        ${itemsHtml || `<p style="color:#6b7c73;font-size:13px;">No items in this category yet.</p>`}
                         <button class="btn btn-primary" style="margin-top:8px;padding:4px 12px;font-size:12px;" onclick="openAddItemFor('${cat.id}')">+ Add item to this category</button>
                     </div>
                 </div>`;
@@ -616,7 +626,7 @@
                 <div class="inv-variant-img">${variantImgHtml(v.image, 'full')}</div>
                 <div class="inv-variant-info">
                     <div class="inv-variant-name">${esc(v.name)}</div>
-                    ${attrs ? `<div style="font-size:11px;color:var(--text-gray);margin-bottom:4px;">${esc(attrs)}</div>` : ''}
+                    ${attrs ? `<div style="font-size:11px;color:#6b7c73;margin-bottom:4px;">${esc(attrs)}</div>` : ''}
                     <div class="inv-variant-code">${esc(v.code)}</div>
                     <div class="inv-variant-qty">${qty.toLocaleString()} ${getItemUnit(v.itemId)}</div>
                     <span class="${s.cls}">${s.label}</span>
@@ -625,8 +635,7 @@
                     <button onclick="openAdjust('${v.id}')">Adjust</button>
                     <button onclick="openEditVariant('${v.id}')">Edit</button>
                     <button class="danger" onclick="confirmDeleteVariant('${v.id}')">Delete</button>
-                </div>
-            </div>`;
+                </div>`;
     }
 
     // ─── Table view ───────────────────────────────────────────────
@@ -640,7 +649,7 @@
         const filtered = variants.filter(v => variantPassesFilter(v, f));
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-gray);padding:40px;">No variants found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#6b7c73;padding:40px;">No variants found.</td></tr>`;
             return;
         }
 
@@ -654,10 +663,10 @@
                     <td><div class="inv-table-img">${variantImgHtml(v.image, 40)}</div></td>
                     <td>${esc(cat ? cat.name : '—')}</td>
                     <td>${esc(item ? item.name : '—')}</td>
-                    <td>${esc(v.name)}${v.color || v.size ? `<br><small style="color:var(--text-gray);">${esc([v.color,v.size].filter(Boolean).join(' / '))}</small>` : ''}</td>
+                    <td>${esc(v.name)}${v.color || v.size ? `<br><small style="color:#6b7c73;">${esc([v.color,v.size].filter(Boolean).join(' / '))}</small>` : ''}</td>
                     <td><span class="code-chip">${esc(v.code)}</span></td>
                     <td style="font-weight:800;font-size:15px;">${qty.toLocaleString()}</td>
-                    <td style="color:var(--text-gray);">${v.minQty || 5}</td>
+                    <td style="color:#6b7c73;">${v.minQty || 5}</td>
                     <td><span class="${s.cls}">${s.label}</span></td>
                     <td>
                         <div style="display:flex;gap:5px;flex-wrap:wrap;">
@@ -693,7 +702,7 @@
         if (!list) return;
         const movements = (getInvMovements ? getInvMovements(STORE_ID) : []).slice(0, 10);
         if (!movements.length) {
-            list.innerHTML = '<p style="color:var(--text-gray);padding:12px 0;font-size:13px;">No activities yet.</p>';
+            list.innerHTML = '<p style="color:#6b7c73;padding:12px 0;font-size:13px;">No activities yet.</p>';
             return;
         }
         const variants = getInvVariants();
@@ -703,16 +712,15 @@
             const sign = Number(m.delta) > 0 ? '+' : '';
             const typeMap = { sale: 'Sale', add: 'Stock added', remove: 'Stock removed', adjust: 'Adjusted', set: 'Set', damaged: 'Damaged' };
             const dateStr = m.date ? new Date(m.date).toLocaleString() : '';
-            return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-color);">
+            return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #e8e4da;">
                 <span class="mov-delta ${isNeg ? 'mov-neg' : 'mov-pos'}" style="min-width:44px;text-align:center;">${sign}${m.delta}</span>
                 <div style="flex:1;">
                     <span style="font-weight:700;font-size:13px;">${v ? v.name : (m.variantName || '—')}</span>
-                    ${v && v.code ? `<span style="margin-left:6px;font-size:11px;background:var(--surface-hover);border-radius:4px;padding:2px 6px;">${v.code}</span>` : ''}
-                    <span style="margin-left:8px;font-size:12px;color:var(--text-gray);">${typeMap[m.type] || m.type}</span>
-                    ${m.note ? `<span style="margin-left:8px;font-size:11px;color:var(--text-gray);">${m.note}</span>` : ''}
+                    ${v && v.code ? `<span style="margin-left:6px;font-size:11px;background:#f3f0e6;border-radius:4px;padding:2px 6px;">${v.code}</span>` : ''}
+                    <span style="margin-left:8px;font-size:12px;color:#6b7c73;">${typeMap[m.type] || m.type}</span>
+                    ${m.note ? `<span style="margin-left:8px;font-size:11px;color:#6b7c73;">${m.note}</span>` : ''}
                 </div>
-                <span style="font-size:11px;color:var(--text-gray);white-space:nowrap;">${dateStr}</span>
-            </div>`;
+                <span style="font-size:11px;color:#6b7c73;white-space:nowrap;">${dateStr}</span>`;
         }).join('');
     }
 
@@ -1039,7 +1047,7 @@
         const movements = getInvMovements(STORE_ID);
         const body = document.getElementById('movLogBody');
         if (movements.length === 0) {
-            body.innerHTML = `<p style="color:var(--text-gray);text-align:center;padding:30px 0;">No movements yet.</p>`;
+            body.innerHTML = `<p style="color:#6b7c73;text-align:center;padding:30px 0;">No movements yet.</p>`;
             return;
         }
         body.innerHTML = movements.map(m => {
@@ -1112,9 +1120,8 @@
     renderAll();
 </script>
 <script src="../js/i18n.js?v=inv-1"></script>
-<script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
 </body>
 </html>
-
-
-

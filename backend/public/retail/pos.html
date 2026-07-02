@@ -3,547 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS System - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
-    <style>
-        /* ══════════════════════════════════════════════════
-           RECEIPT CARD — Premium Ledger Style
-        ══════════════════════════════════════════════════ */
-        .receipt-card {
-            --receipt-ink:   #1b3d2e;
-            --receipt-gold:  #b89a3a;
-            --receipt-cream: #fdf9f0;
-            --receipt-sage:  #d8e8dc;
-            --receipt-line:  rgba(27, 61, 46, 0.12);
-            background: var(--receipt-cream);
-            border: 1px solid rgba(27, 61, 46, 0.14);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow:
-                0 2px 4px rgba(0,0,0,0.04),
-                0 10px 32px rgba(27, 61, 46, 0.10),
-                0 28px 60px rgba(27, 61, 46, 0.07);
-        }
-
-        /* ── Header ── */
-        .receipt-head {
-            position: relative;
-            text-align: center;
-            background: linear-gradient(148deg, #163329 0%, #1f4a38 45%, #265c47 100%);
-            padding: 32px 24px 26px;
-            overflow: hidden;
-        }
-
-        /* decorative ring top-right */
-        .receipt-head::before {
-            content: "";
-            position: absolute;
-            top: -44px;
-            right: -44px;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 2px solid rgba(184, 154, 58, 0.15);
-            pointer-events: none;
-        }
-
-        /* gold accent bottom line */
-        .receipt-head::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent 5%, #b89a3a 30%, #d4b84e 50%, #b89a3a 70%, transparent 95%);
-        }
-
-        .receipt-brand {
-            font-size: clamp(26px, 4.5vw, 44px);
-            letter-spacing: 8px;
-            font-weight: 900;
-            color: #fff;
-            line-height: 1.1;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        }
-
-        .receipt-subbrand {
-            font-size: clamp(16px, 2.8vw, 27px);
-            font-weight: 700;
-            color: rgba(255,255,255,0.84);
-            margin-top: 9px;
-            letter-spacing: 2px;
-        }
-
-        /* ── Meta row (date / client / phone) ── */
-        .receipt-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 0;
-            background: #f0ece0;
-            border-bottom: 1px solid var(--receipt-line);
-        }
-
-        .receipt-meta .form-group {
-            margin-bottom: 0;
-            padding: 13px 16px 11px;
-            border-right: 1px solid var(--receipt-line);
-        }
-
-        .receipt-meta .form-group:last-child { border-right: 0; }
-
-        .receipt-meta label {
-            display: block;
-            color: var(--receipt-ink);
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            opacity: 0.6;
-            margin-bottom: 5px;
-        }
-
-        .receipt-meta input {
-            background: transparent;
-            border: 0;
-            border-bottom: 1.5px solid rgba(27, 61, 46, 0.2);
-            border-radius: 0;
-            padding: 4px 0 4px;
-            box-shadow: none;
-            color: var(--receipt-ink);
-            font-size: 14px;
-            font-weight: 700;
-            width: 100%;
-        }
-
-        .receipt-meta input:focus {
-            border-bottom-color: var(--receipt-gold);
-            outline: none;
-        }
-
-        /* ── Table ── */
-        .receipt-table {
-            direction: rtl;
-            table-layout: fixed;
-            width: 100%;
-            min-width: 0;
-            border-collapse: collapse;
-            color: var(--receipt-ink);
-        }
-
-        .receipt-table th {
-            background: var(--receipt-sage);
-            font-weight: 800;
-            font-size: 10px;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
-            padding: 12px 6px;
-            color: var(--receipt-ink);
-            border-bottom: 2px solid rgba(27, 61, 46, 0.2);
-            border-right: 1px solid rgba(27, 61, 46, 0.09);
-            white-space: normal;
-            word-break: keep-all;
-            vertical-align: middle;
-        }
-
-        .receipt-table th:last-child { border-right: 0; }
-
-        .receipt-table td {
-            height: 54px;
-            padding: 0;
-            border-bottom: 1px solid rgba(27, 61, 46, 0.07);
-            border-right: 1px solid rgba(27, 61, 46, 0.05);
-            vertical-align: middle;
-            text-align: center;
-        }
-
-        .receipt-table td:last-child { border-right: 0; }
-
-        .receipt-table tbody tr:nth-child(even) td {
-            background: rgba(216, 232, 220, 0.28);
-        }
-
-        .receipt-table tbody tr.is-added-row td {
-            background: rgba(200, 230, 210, 0.22);
-        }
-
-        .receipt-table tbody tr:hover td {
-            background: rgba(27, 61, 46, 0.04);
-        }
-
-        .receipt-table input,
-        .receipt-table select {
-            border: 0;
-            box-shadow: none;
-            border-radius: 0;
-            min-width: 0;
-            width: 100%;
-            height: 100%;
-            padding: 8px 5px;
-            background: transparent;
-            color: var(--receipt-ink);
-            text-align: center;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .receipt-table input:focus,
-        .receipt-table select:focus {
-            outline: none;
-            background: rgba(184, 154, 58, 0.06);
-        }
-
-        .receipt-table input::placeholder {
-            color: rgba(27, 61, 46, 0.28);
-            font-weight: 400;
-        }
-
-        .receipt-table .row-note {
-            text-align: center;
-            font-weight: 500;
-            white-space: normal;
-            overflow-wrap: anywhere;
-        }
-
-        /* ── Row action buttons ── */
-        .receipt-actions-head,
-        .receipt-action-cell {
-            width: 44px;
-            background: rgba(216, 232, 220, 0.45);
-            padding: 0;
-            text-align: center;
-            vertical-align: middle;
-            border-right: 0 !important;
-        }
-
-        .receipt-row-actions {
-            direction: ltr;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            height: 54px;
-            width: 100%;
-            padding: 4px;
-        }
-
-        .receipt-action-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 24px;
-            width: 24px;
-            height: 24px;
-            padding: 0;
-            border-radius: 50%;
-            font-size: 16px;
-            font-weight: 800;
-            line-height: 0;
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .receipt-action-btn:not(.delete-row-btn) {
-            background: rgba(27, 61, 46, 0.1);
-            color: var(--receipt-ink);
-            border: 1px solid rgba(27, 61, 46, 0.18);
-        }
-
-        .receipt-action-btn:not(.delete-row-btn):hover {
-            background: var(--receipt-ink);
-            color: #fff;
-        }
-
-        .receipt-action-btn.delete-row-btn {
-            background: rgba(180, 83, 74, 0.08);
-            color: #b4534a;
-            border: 1px solid rgba(180, 83, 74, 0.2);
-        }
-
-        .receipt-action-btn.delete-row-btn:hover {
-            background: #b4534a;
-            color: #fff;
-        }
-
-        /* ── Totals footer ── */
-        .receipt-bottom {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            border-top: 2px solid rgba(27, 61, 46, 0.14);
-        }
-
-        .receipt-bottom-item {
-            padding: 16px 18px;
-            border-right: 1px solid rgba(27, 61, 46, 0.1);
-            background: var(--receipt-cream);
-        }
-
-        .receipt-bottom-item:last-child {
-            border-right: 0;
-            background: linear-gradient(135deg, #163329, #245f49);
-            color: #fff;
-        }
-
-        .receipt-bottom-item span {
-            display: block;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            opacity: 0.62;
-            margin-bottom: 5px;
-        }
-
-        .receipt-bottom-item strong {
-            display: block;
-            font-size: 19px;
-            font-weight: 800;
-        }
-
-        @media (max-width: 900px) {
-            .receipt-table { min-width: 0; }
-            .receipt-bottom { grid-template-columns: 1fr; }
-        }
-
-        @media print {
-            body { background: #fff; }
-
-            .sidebar,
-            .navbar,
-            .page-header,
-            .two-column > aside,
-            .receipt-action-cell,
-            .receipt-actions-head {
-                display: none !important;
-            }
-
-            .layout,
-            .main-content,
-            .content,
-            .two-column {
-                display: block !important;
-                height: auto !important;
-                overflow: visible !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            .receipt-card {
-                width: 100% !important;
-                max-width: none !important;
-                border: 1px solid #1b3d2e !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                page-break-inside: avoid;
-            }
-
-            .receipt-head {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .card-body.table-wrapper {
-                overflow: visible !important;
-                padding: 0 !important;
-            }
-
-            .receipt-table { min-width: 0 !important; font-size: 11px; }
-
-            .receipt-table th {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .receipt-table input,
-            .receipt-table select {
-                color: #1b3d2e !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .receipt-bottom-item:last-child {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
-    </style>
+    <title>Retail POS - Curtains Management System</title>
+    <link rel="stylesheet" href="rt-style.css?v=1">
 </head>
 <body class="ltr">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="pos.html" class="active"><span class="menu-icon">P</span><span>POS System</span></a></li>
-                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-                
-                <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
-            </ul>
-            <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-        </aside>
-
-        <div class="main-content">
-            <nav class="navbar">
-                <div class="navbar-title">Retail POS</div>
-                <div class="navbar-actions"><span class="scope-pill">invoice sale</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div>
-            </nav>
-
-            <main class="content">
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Dlovan Parda POS</h1>
-                        <p class="page-subtitle">Select materials, enter meters or windows, calculate totals, and record paid/debt amounts.</p>
-                    </div>
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link active"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Retail POS</span>
+            <div class="rt-topbar-right">
+                <span class="scope-pill">invoice sale</span>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Dlovan Parda POS</h1>
+                    <p class="page-subtitle">Select materials, enter meters or windows, calculate totals, and record paid/debt amounts.</p>
                 </div>
 
-                <div class="two-column">
-                    <section class="card receipt-card">
-                        <div class="receipt-head">
-                            <div class="receipt-brand">DLOVAN PARDA</div>
-                            <div class="receipt-subbrand">دلوفان للستائر</div>
-                        </div>
+            <div class="two-column">
+                <section class="card receipt-card">
+                    <div class="receipt-head">
+                        <div class="receipt-brand">DLOVAN PARDA</div>
+                        <div class="receipt-subbrand">دلوفان للستائر</div>
+                    </div>
 
-                        <div class="receipt-meta">
+                    <div class="receipt-meta">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="saleDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Client name</label>
+                            <input id="clientName" list="clientNameSuggestions" placeholder="Search saved client name" oninput="selectSavedClient('name')">
+                            <datalist id="clientNameSuggestions"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone number</label>
+                            <input id="clientPhone" list="clientPhoneSuggestions" placeholder="07xx xxx xxxx" oninput="selectSavedClient('phone')">
+                            <datalist id="clientPhoneSuggestions"></datalist>
+                        </div>
+                    </div>
+
+                    <div class="card-body table-wrapper">
+                        <table class="receipt-table">
+                            <colgroup>
+                                <col style="width: 12%;">
+                                <col style="width: 11%;">
+                                <col style="width: 10%;">
+                                <col style="width: 11%;">
+                                <col style="width: 12%;">
+                                <col style="width: 12%;">
+                                <col style="width: 26%;">
+                                <col style="width: 6%;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>المواد</th>
+                                    <th>كود / Code</th>
+                                    <th>متر / نافذة</th>
+                                    <th>سعر المتر</th>
+                                    <th>المجموع</th>
+                                    <th>الحساب</th>
+                                    <th>ملاحظات</th>
+                                    <th class="receipt-actions-head">إضافة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceRows"></tbody>
+                        </table>
+                    </div>
+                    <div class="receipt-bottom">
+                        <div class="receipt-bottom-item">
+                            <span>Subtotal</span>
+                            <strong id="receiptSubtotal">0 IQD</strong>
+                        </div>
+                        <div class="receipt-bottom-item">
+                            <span>Discount</span>
+                            <strong id="receiptDiscount">0 IQD</strong>
+                        </div>
+                        <div class="receipt-bottom-item">
+                            <span>Total</span>
+                            <strong id="receiptFinalTotal">0 IQD</strong>
+                        </div>
+                    </div>
+                    <div style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
+                        <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
+                        <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
+                    </div>
+
+                    <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
+                    <div style="padding:10px 18px;border-top:1px solid rgba(27,61,46,0.12);background:rgba(27,61,46,0.03);">
+                        <button class="btn btn-secondary btn-small" onclick="togglePosOrder()" id="posOrderToggleBtn" style="font-size:11px;">+ Add Order Items (طلبية)</button>
+                    </div>
+
+                    <div id="posOrderSection" style="display:none;">
+                        <div id="posOrderCards"></div>
+                        <div style="padding:8px 18px;border-top:1px solid rgba(27,61,46,0.08);background:rgba(27,61,46,0.02);">
+                            <button class="btn btn-secondary btn-small" onclick="addPosOrderCard()" style="font-size:11px;">+ Add another order (طلبية إضافية)</button>
+                        </div>
+                    </div>
+
+                    <!-- ── GRAND TOTAL banner (shown when order is active) ─── -->
+                    <div id="posGrandTotalBar" style="display:none;background:linear-gradient(135deg,#163329,#245f49);color:#fff;padding:14px 20px;justify-content:space-between;align-items:center;gap:12px;">
+                        <span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:0.75;">Grand Total — Sale + All Orders</span>
+                        <strong id="posGrandTotalBanner" style="font-size:22px;">0 IQD</strong>
+                    </div>
+                </section>
+
+                <aside class="card">
+                    <div class="card-header"><h2 class="card-title">Payment and accounts</h2></div>
+                    <div class="card-body">
+                        <div class="summary-line"><span>Customer sale subtotal</span><strong id="saleSubtotal">0 IQD</strong></div>
+                        <div class="form-grid" style="margin-top:14px;">
                             <div class="form-group">
-                                <label>Date</label>
-                                <input type="date" id="saleDate">
+                                <label>Discount amount</label>
+                                <input id="discountAmount" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
                             </div>
                             <div class="form-group">
-                                <label>Client name</label>
-                                <input id="clientName" list="clientNameSuggestions" placeholder="Search saved client name" oninput="selectSavedClient('name')">
-                                <datalist id="clientNameSuggestions"></datalist>
+                                <label>Discount note</label>
+                                <input id="discountNote" placeholder="Reason for discount">
+                            </div>
+                        </div>
+                        <div class="summary-line"><span>Customer sale total</span><strong id="saleTotal">0 IQD</strong></div>
+                        <div class="summary-line"><span>خياطة account</span><strong id="sewingTotal">0 IQD</strong></div>
+                        <div class="summary-line"><span>تركيب account</span><strong id="installationTotal">0 IQD</strong></div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Paid amount</label>
+                                <input id="paidAmount" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
                             </div>
                             <div class="form-group">
-                                <label>Phone number</label>
-                                <input id="clientPhone" list="clientPhoneSuggestions" placeholder="07xx xxx xxxx" oninput="selectSavedClient('phone')">
-                                <datalist id="clientPhoneSuggestions"></datalist>
+                                <label>Remaining debt</label>
+                                <input id="remainingDebt" readonly value="0 IQD">
                             </div>
                         </div>
 
-                        <div class="card-body table-wrapper">
-                            <table class="receipt-table">
-                                <colgroup>
-                                    <col style="width: 12%;">
-                                    <col style="width: 11%;">
-                                    <col style="width: 10%;">
-                                    <col style="width: 11%;">
-                                    <col style="width: 12%;">
-                                    <col style="width: 12%;">
-                                    <col style="width: 26%;">
-                                    <col style="width: 6%;">
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>المواد</th>
-                                        <th>كود / Code</th>
-                                        <th>متر / نافذة</th>
-                                        <th>سعر المتر</th>
-                                        <th>المجموع</th>
-                                        <th>الحساب</th>
-                                        <th>ملاحظات</th>
-                                        <th class="receipt-actions-head">إضافة</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="invoiceRows"></tbody>
-                            </table>
-                        </div>
-                        <div class="receipt-bottom">
-                            <div class="receipt-bottom-item">
-                                <span>Subtotal</span>
-                                <strong id="receiptSubtotal">0 IQD</strong>
-                            </div>
-                            <div class="receipt-bottom-item">
-                                <span>Discount</span>
-                                <strong id="receiptDiscount">0 IQD</strong>
-                            </div>
-                            <div class="receipt-bottom-item">
-                                <span>Total</span>
-                                <strong id="receiptFinalTotal">0 IQD</strong>
-                            </div>
-                        </div>
-                        <div style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
-                            <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
-                            <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
-                        </div>
-
-                        <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
-                        <div style="padding:10px 18px;border-top:1px solid rgba(27,61,46,0.12);background:rgba(27,61,46,0.03);">
-                            <button class="btn btn-secondary btn-small" onclick="togglePosOrder()" id="posOrderToggleBtn" style="font-size:11px;">+ Add Order Items (طلبية)</button>
-                        </div>
-
-                        <div id="posOrderSection" style="display:none;">
-                            <div id="posOrderCards"></div>
-                            <div style="padding:8px 18px;border-top:1px solid rgba(27,61,46,0.08);background:rgba(27,61,46,0.02);">
-                                <button class="btn btn-secondary btn-small" onclick="addPosOrderCard()" style="font-size:11px;">+ Add another order (طلبية إضافية)</button>
-                            </div>
-                        </div>
-
-                        <!-- ── GRAND TOTAL (shown when order is active) ─── -->
-                        <div id="posGrandTotalBar" style="display:none;background:linear-gradient(135deg,#163329,#245f49);color:#fff;padding:14px 20px;justify-content:space-between;align-items:center;gap:12px;">
-                            <span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:0.75;">Grand Total — Sale + All Orders</span>
-                            <strong id="posGrandTotal" style="font-size:22px;">0 IQD</strong>
-                        </div>
-                    </section>
-
-                    <aside class="card">
-                        <div class="card-header"><h2 class="card-title">Payment and accounts</h2></div>
-                        <div class="card-body">
-                            <div class="summary-line"><span>Customer sale subtotal</span><strong id="saleSubtotal">0 IQD</strong></div>
-                            <div class="form-grid" style="margin-top:14px;">
-                                <div class="form-group">
-                                    <label>Discount amount</label>
-                                    <input id="discountAmount" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
+                        <div id="posOrderPayRow" style="display:none;">
+                            <!-- Combined breakdown -->
+                            <div style="background:linear-gradient(135deg,#1a3d2b,#2d6a47);border-radius:8px;padding:12px 14px;margin-bottom:12px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.15);">
+                                    <span style="font-size:12px;color:rgba(255,255,255,0.75);font-weight:600;">Sale total</span>
+                                    <strong id="grandBarSaleTotal" style="color:#fff;font-size:13px;">0 IQD</strong>
                                 </div>
-                                <div class="form-group">
-                                    <label>Discount note</label>
-                                    <input id="discountNote" placeholder="Reason for discount">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.15);">
+                                    <span style="font-size:12px;color:rgba(255,255,255,0.75);font-weight:600;">+ Orders total</span>
+                                    <strong id="grandBarOrderTotal" style="color:#c4a24d;font-size:13px;">0 IQD</strong>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 0;">
+                                    <span style="font-size:13px;color:#fff;font-weight:800;letter-spacing:.5px;">= GRAND TOTAL</span>
+                                    <strong id="posGrandTotal" style="color:#c4a24d;font-size:18px;font-weight:900;">0 IQD</strong>
                                 </div>
                             </div>
-                            <div class="summary-line"><span>Customer sale total</span><strong id="saleTotal">0 IQD</strong></div>
-                            <div class="summary-line"><span>خياطة account</span><strong id="sewingTotal">0 IQD</strong></div>
-                            <div class="summary-line"><span>تركيب account</span><strong id="installationTotal">0 IQD</strong></div>
-
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label>Paid amount</label>
-                                    <input id="paidAmount" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
+                                    <label>Order buyer paid</label>
+                                    <input id="posOrderBuyerPaid" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
                                 </div>
                                 <div class="form-group">
-                                    <label>Remaining debt</label>
-                                    <input id="remainingDebt" readonly value="0 IQD">
+                                    <label>Grand remaining</label>
+                                    <input id="posGrandRemaining" readonly value="0 IQD">
                                 </div>
                             </div>
-
-                            <div id="posOrderPayRow" style="display:none;">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>Order buyer paid</label>
-                                        <input id="posOrderBuyerPaid" class="quick-number" type="number" value="0" min="0" onfocus="selectNumber(this)" oninput="calculateInvoice()">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Grand remaining</label>
-                                        <input id="posGrandRemaining" readonly value="0 IQD">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Debt note</label>
-                                <textarea id="debtNote" placeholder="Optional note for unpaid amount"></textarea>
-                            </div>
-
-                            <button class="btn btn-success btn-block" onclick="submitSale()">Add sale</button>
-                            <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printReceipt()">Print receipt</button>
-                            <div id="submitMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
                         </div>
-                   </aside>
-                </div>
-            </main>
+
+                        <div class="form-group">
+                            <label>Debt note</label>
+                            <textarea id="debtNote" placeholder="Optional note for unpaid amount"></textarea>
+                        </div>
+
+                        <button class="btn btn-success btn-block" onclick="submitSale()">Add sale</button>
+                        <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printReceipt()">Print receipt</button>
+                        <div id="submitMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
+                    </div>
+                </aside>
+        </div>
         </div>
     </div>
+</div>
 
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
@@ -851,16 +524,29 @@
             document.getElementById('installationTotal').textContent  = money(data.installationTotal);
             document.getElementById('remainingDebt').value            = money(finalTotal - paid);
 
-            // Grand total when order section is open
-            if (document.getElementById('posOrderSection').style.display !== 'none') {
-                const allOrders   = getPosOrdersData();
-                const orderTotal  = allOrders.reduce((s, o) => s + o.total, 0);
-                const orderBPaid  = Math.min(Number(document.getElementById('posOrderBuyerPaid').value || 0), orderTotal);
+            // Grand total — only confirmed order cards count
+            {
+                let orderTotal = 0;
+                document.querySelectorAll('.pos-order-card').forEach(function(card) {
+                    if (card.dataset.confirmed !== 'true') return;
+                    let cardSub = 0;
+                    card.querySelectorAll('.po-item-rows tr').forEach(function(row) {
+                        const qty   = parseFloat(row.querySelector('.po-qty') && row.querySelector('.po-qty').value) || 0;
+                        const price = parseFloat(row.querySelector('.po-price') && row.querySelector('.po-price').value) || 0;
+                        cardSub += qty * price;
+                    });
+                    const delivery = parseFloat(card.querySelector('.po-delivery') && card.querySelector('.po-delivery').value) || 0;
+                    orderTotal += cardSub + delivery;
+                });
+                const orderBPaid  = Math.min(parseFloat(document.getElementById('posOrderBuyerPaid').value) || 0, orderTotal);
                 const grandTotal  = finalTotal + orderTotal;
                 const grandPaid   = paid + orderBPaid;
                 const grandRemain = Math.max(grandTotal - grandPaid, 0);
-                document.getElementById('posGrandTotal').textContent = money(grandTotal);
-                document.getElementById('posGrandRemaining').value   = money(grandRemain);
+                document.getElementById('posGrandTotal').textContent        = money(grandTotal);
+                document.getElementById('posGrandTotalBanner').textContent  = money(grandTotal);
+                document.getElementById('grandBarSaleTotal').textContent    = money(finalTotal);
+                document.getElementById('grandBarOrderTotal').textContent   = money(orderTotal);
+                document.getElementById('posGrandRemaining').value          = money(grandRemain);
             }
         }
 
@@ -983,14 +669,30 @@
                     savedOrders.push(order);
                     const t = getToken();
                     if (t && t !== 'demo-frontend-token') {
-                        fetch(API_BASE_URL + '/retail/orders', { method: 'POST', headers: { 'Authorization': 'Bearer ' + t, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(order) }).catch(() => {});
+                        fetch(API_BASE_URL + '/retail/orders', { method: 'POST', headers: { 'Authorization': 'Bearer ' + t, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(order) })
+                            .then(res => { if (!res.ok && typeof showSaveError === 'function') showSaveError('Order ' + order.reference); })
+                            .catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order ' + order.reference, e); });
                     }
                 });
             }
 
             saveStoreSale(sale);
-            localStorage.setItem('last_saved_sale_id', String(sale.id));
-            (function(){ const t=getToken(); if(!t) return; fetch(API_BASE_URL+'/retail/sales',{method:'POST',headers:{'Authorization':'Bearer '+t,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(sale)}).then(r=>r.ok?r.json():null).then(res=>{ if(res) console.log('Saved to DB:',res); }).catch(err=>console.error('DB save failed:',err)); })();
+            const _tok = getToken();
+            if (_tok && _tok !== 'demo-frontend-token') {
+                fetch(API_BASE_URL+'/retail/sales', {method:'POST', headers:{'Authorization':'Bearer '+_tok,'Accept':'application/json','Content-Type':'application/json'}, body:JSON.stringify(sale)})
+                    .then(r => {
+                        if (!r.ok) { if (typeof showSaveError === 'function') showSaveError('Sale'); return null; }
+                        return r.json();
+                    })
+                    .then(res => {
+                        if (res && res.sale_id) {
+                            const idx = _storeSales.findIndex(s => s.id === sale.id);
+                            if (idx >= 0) _storeSales[idx].id = res.sale_id;
+                            sale.id = res.sale_id;
+                            if (typeof showToast === 'function') showToast('Sale saved to history.', 'success');
+                        }
+                    }).catch((e) => { if (typeof showSaveError === 'function') showSaveError('Sale', e); });
+            }
 
             // Deduct inventory stock for any row that matched a variant code
             const missingVariants = [];
@@ -1031,6 +733,7 @@
             { name: 'سلايد', unit: 'cubic metres' },
         ];
         let _orderCardCounter = 0;
+        let _currentOrderTotal = 0;
 
         function orderTypeOptions() {
             return ORDER_TYPES.map(t => `<option value="${t.name}" data-unit="${t.unit}">${t.name}</option>`).join('');
@@ -1043,32 +746,41 @@
             card.dataset.cardId = cardId;
             card.style.cssText = 'border-top:2px dashed rgba(184,154,58,0.35);';
             card.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 18px 4px;background:rgba(184,154,58,0.06);">
-                    <span style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#b89a3a;">طلبية ${cardId} / Order ${cardId}</span>
-                    <button class="btn btn-danger btn-small" onclick="removePosOrderCard(${cardId})" style="font-size:10px;padding:2px 8px;">Remove</button>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 18px 4px;background:rgba(196,162,77,0.12);border-radius:8px 8px 0 0;">
+                    <span style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#c4a24d;">طلبية ${cardId} / Order ${cardId}</span>
+                    <button class="btn btn-danger btn-small" onclick="removePosOrderCard(${cardId})" style="font-size:10px;padding:2px 8px;">حذف</button>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 18px;">
-                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Supplier / Company</label><input class="po-supplier" placeholder="اسم الشركة / Supplier name"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Delivery price</label><input class="po-delivery" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Supplier / Company</label><input class="po-supplier" placeholder="اسم الشركة / Supplier name"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:.5px;text-transform:uppercase;">سعر التوصيل</label><input class="po-delivery" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
                 </div>
                 <div class="card-body table-wrapper" style="padding-top:0;padding-bottom:0;">
                     <table class="receipt-table" style="direction:ltr;">
-                        <thead><tr>
-                            <th>Item type</th><th>Code</th><th>Qty</th><th>Unit</th><th>Price</th><th>Line total</th>
-                            <th class="receipt-actions-head">Add</th>
+                        <thead><tr style="background:linear-gradient(135deg,#1a3d2b,#2d6a47);">
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">نوع المادة</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">الكود</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">Qty</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">الوحدة</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">السعر</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">مجموع السطر</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;" class="receipt-actions-head">إضافة</th>
                         </tr></thead>
                         <tbody class="po-item-rows"></tbody>
                     </table>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 18px;">
-                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Our profit</label><input class="po-profit" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Supplier share</label><input class="po-sshare" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:10px;">Paid to supplier</label><input class="po-spaid" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:.5px;text-transform:uppercase;">ربحنا</label><input class="po-profit" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:.5px;text-transform:uppercase;">حصة المورد</label><input class="po-sshare" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
+                    <div class="form-group" style="margin:0;"><label style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:.5px;text-transform:uppercase;">المدفوع للمورد</label><input class="po-spaid" type="number" min="0" value="0" oninput="calcPosOrder()"></div>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(27,61,46,0.08);">
-                    <div style="padding:10px 14px;border-right:1px solid rgba(27,61,46,0.08);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.55;margin-bottom:3px;">Subtotal</span><strong class="po-subtotal-display" style="font-size:14px;color:#1b3d2e;">0 IQD</strong></div>
-                    <div style="padding:10px 14px;border-right:1px solid rgba(27,61,46,0.08);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.55;margin-bottom:3px;">Order total</span><strong class="po-total-display" style="font-size:14px;color:#1b3d2e;">0 IQD</strong></div>
-                    <div style="padding:10px 14px;"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#b4534a;opacity:0.8;margin-bottom:3px;">Buyer due</span><strong class="po-due-display" style="font-size:14px;color:#b4534a;">0 IQD</strong></div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid rgba(196,162,77,0.3);">
+                    <div style="padding:10px 14px;border-right:1px solid rgba(196,162,77,0.2);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-bottom:3px;">المجموع قبل الخصم</span><strong class="po-subtotal-display" style="font-size:14px;color:#fff;">0 IQD</strong></div>
+                    <div style="padding:10px 14px;border-right:1px solid rgba(196,162,77,0.2);"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-bottom:3px;">Order total</span><strong class="po-total-display" style="font-size:14px;color:#fff;">0 IQD</strong></div>
+                    <div style="padding:10px 14px;"><span style="display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#c4a24d;margin-bottom:3px;">Buyer due</span><strong class="po-due-display" style="font-size:14px;color:#c4a24d;">0 IQD</strong></div>
+                </div>
+                <div class="po-confirm-bar" style="padding:10px 18px;border-top:2px solid rgba(196,162,77,0.3);display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                    <span class="po-confirm-status" style="font-size:12px;color:rgba(255,255,255,0.55);font-style:italic;">⚠ Not confirmed — not included in grand total</span>
+                    <button class="btn btn-success btn-small po-confirm-btn" onclick="confirmPosOrder(${cardId})" style="font-size:11px;font-weight:800;padding:5px 14px;background:linear-gradient(135deg,#1e6b3f,#3a9e60);border:none;">✓ Confirm Order</button>
                 </div>`;
             document.getElementById('posOrderCards').appendChild(card);
             addPosOrderItemRow(card.querySelector('.po-item-rows'));
@@ -1080,9 +792,47 @@
             if (card) { card.remove(); calcPosOrder(); }
         }
 
+        function confirmPosOrder(cardId) {
+            const card = document.querySelector(`.pos-order-card[data-card-id="${cardId}"]`);
+            if (!card) return;
+            card.dataset.confirmed = 'true';
+            // Lock all inputs
+            card.querySelectorAll('input, select').forEach(el => el.disabled = true);
+            // Style card as confirmed
+            card.style.cssText = 'border-top:3px solid #3a9e60; box-shadow:0 0 0 2px rgba(58,158,96,0.35);';
+            // Update confirm bar
+            const bar = card.querySelector('.po-confirm-bar');
+            if (bar) {
+                bar.style.background = 'linear-gradient(135deg,#1e6b3f,#2d8a52)';
+                bar.innerHTML = `
+                    <span style="font-size:12px;color:#fff;font-weight:700;">✓ Order confirmed — included in grand total</span>
+                    <button class="btn btn-small" onclick="unconfirmPosOrder(${cardId})" style="font-size:11px;padding:4px 12px;background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);">✎ Edit</button>`;
+            }
+            calculateInvoice();
+        }
+
+        function unconfirmPosOrder(cardId) {
+            const card = document.querySelector(`.pos-order-card[data-card-id="${cardId}"]`);
+            if (!card) return;
+            card.dataset.confirmed = '';
+            // Re-enable all inputs
+            card.querySelectorAll('input, select').forEach(el => el.disabled = false);
+            // Restore card style
+            card.style.cssText = 'border-top:2px dashed rgba(184,154,58,0.35);';
+            // Restore confirm bar
+            const bar = card.querySelector('.po-confirm-bar');
+            if (bar) {
+                bar.style.background = '';
+                bar.innerHTML = `
+                    <span class="po-confirm-status" style="font-size:12px;color:rgba(255,255,255,0.55);font-style:italic;">⚠ Not confirmed — not included in grand total</span>
+                    <button class="btn btn-success btn-small po-confirm-btn" onclick="confirmPosOrder(${cardId})" style="font-size:11px;font-weight:800;padding:5px 14px;background:linear-gradient(135deg,#1e6b3f,#3a9e60);border:none;">✓ Confirm Order</button>`;
+            }
+            calculateInvoice();
+        }
+
         function addPosOrderItemRow(tbody, afterRow = null) {
             const row = document.createElement('tr');
-            row.className = afterRow ? 'invoice-row is-added-row' : 'invoice-row';
+            row.className = afterRow ? 'po-order-row po-order-row-added' : 'po-order-row';
             row.innerHTML = `
                 <td><select class="po-type" onchange="syncPosOrderUnit(this);calcPosOrder()">${orderTypeOptions()}</select></td>
                 <td><input class="po-code" placeholder="code"></td>
@@ -1152,7 +902,8 @@
         }
 
         function calcPosOrder() {
-            getPosOrdersData(); // updates each card's display
+            const allOrders = getPosOrdersData(); // updates each card's display
+            _currentOrderTotal = allOrders.reduce((s, o) => s + o.total, 0);
             calculateInvoice();
         }
 
@@ -1181,8 +932,7 @@
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
 </body>
 </html>
-
-
-

@@ -499,11 +499,11 @@ const translations = {
 const originalTextNodes = new WeakMap();
 
 function getLanguage() {
-  return localStorage.getItem('language') || 'en';
+  return (typeof getCookie === 'function' ? getCookie('language') : null) || 'en';
 }
 
 function setLanguage(language) {
-  localStorage.setItem('language', language);
+  if (typeof setCookie === 'function') setCookie('language', language, 365);
   applyLanguage();
 }
 

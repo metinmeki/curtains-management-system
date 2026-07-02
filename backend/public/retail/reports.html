@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Reports - Curtains Management System</title>
+    <link rel="stylesheet" href="rt-style.css?v=1">
+    <style>
+        @media print {
+            .rt-sidebar, .rt-topbar, .no-print { display:none !important; }
+            .rt-main { margin:0 !important; }
+            .rt-page { padding:0 !important; }
+            .metric-card { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+        .report-filters { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; background:#f0f7f2; border:1px solid #c4d9cc; border-radius:10px; padding:16px; margin-bottom:20px; }
+        .report-filters .form-group { margin:0; min-width:140px; }
+        .report-filters label { color:#1a3d2b !important; font-weight:700; font-size:12px; }
+        .period-btns { display:flex; gap:6px; flex-wrap:wrap; }
+        .period-btn { padding:6px 14px; border-radius:6px; border:1px solid #c4a24d; background:#fff; color:#1a3d2b; font-weight:700; font-size:12px; cursor:pointer; }
+        .period-btn.active { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; border-color:#1a3d2b; }
+        .report-section { margin-bottom:28px; }
+        .report-section h2 { font-size:15px; font-weight:800; color:#1a3d2b; margin:0 0 10px; border-bottom:2px solid #c4a24d; padding-bottom:6px; }
+        .metrics-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+        .metric-card { border-radius:10px; padding:14px 16px; color:#fff; }
+        .metric-card span { font-size:12px; opacity:.82; display:block; margin-bottom:4px; }
+        .metric-card strong { font-size:18px; font-weight:800; display:block; }
+        .mc-1 { background:linear-gradient(135deg,#1a3d2b,#2d6a47); }
+        .mc-2 { background:linear-gradient(135deg,#1f4a1f,#3b7a52); }
+        .mc-3 { background:linear-gradient(135deg,#7a3b10,#c4a24d); }
+        .mc-4 { background:linear-gradient(135deg,#5c1a1a,#a04040); }
+        .mc-5 { background:linear-gradient(135deg,#1a3d4a,#2d6a7a); }
+        .mc-6 { background:linear-gradient(135deg,#2d1a4a,#5a3d7a); }
+        .mc-7 { background:linear-gradient(135deg,#1a4a3d,#2d7a6a); }
+        .mc-8 { background:linear-gradient(135deg,#3d1a2b,#7a2d47); }
+        .rpt-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .rpt-table th { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; padding:8px 10px; text-align:left; border-bottom:2px solid #c4a24d; }
+        .rpt-table td { padding:8px 10px; border-bottom:1px solid #e8f0eb; }
+        .rpt-table tr:hover td { background:#f5faf6; }
+        .status-full { color:#1a7a3d; font-weight:700; }
+        .status-partial { color:#c4a24d; font-weight:700; }
+        .status-debt { color:#a04040; font-weight:700; }
+        .print-btn { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; border:none; padding:9px 20px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; }
+    </style>
+</head>
+<body class="ltr">
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link active"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Reports</span>
+            <div class="rt-topbar-right">
+                <button class="print-btn no-print" onclick="window.print()">🖨 Print Report</button>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
+            <div class="page-header no-print">
+                <div><h1 class="page-title">Reports</h1><p class="page-subtitle">Date-filtered summary of sales, expenses, and profit.</p></div>
+            </div>
+
+            <!-- Filters -->
+            <div class="report-filters no-print">
+                <div class="form-group">
+                    <label>Period</label>
+                    <div class="period-btns">
+                        <button class="period-btn active" onclick="setPeriod('today',this)">Today</button>
+                        <button class="period-btn" onclick="setPeriod('week',this)">This Week</button>
+                        <button class="period-btn" onclick="setPeriod('month',this)">This Month</button>
+                        <button class="period-btn" onclick="setPeriod('all',this)">All Time</button>
+                        <button class="period-btn" onclick="setPeriod('custom',this)">Custom</button>
+                    </div>
+                </div>
+                <div class="form-group" id="customDateGroup" style="display:none;">
+                    <label>From</label>
+                    <input type="date" id="startDate" onchange="loadReport()">
+                </div>
+                <div class="form-group" id="customDateGroup2" style="display:none;">
+                    <label>To</label>
+                    <input type="date" id="endDate" onchange="loadReport()">
+                </div>
+            </div>
+
+            <!-- Report header for print -->
+            <div id="reportHeader" style="display:none;margin-bottom:16px;">
+                <h2 style="color:#1a3d2b;margin:0;">DLOVAN PARDA — Retail Report</h2>
+                <p id="reportPeriodLabel" style="color:#555;font-size:13px;margin:4px 0 0;"></p>
+            </div>
+
+            <!-- Metric cards -->
+            <div class="metrics-row" id="metricsRow">
+                <div class="metric-card mc-1"><span>Total Sales</span><strong id="mTotalSales">—</strong></div>
+                <div class="metric-card mc-2"><span>Total Paid</span><strong id="mTotalPaid">—</strong></div>
+                <div class="metric-card mc-3"><span>Total Debt</span><strong id="mTotalDebt">—</strong></div>
+                <div class="metric-card mc-4"><span>Total Expenses</span><strong id="mTotalExpenses">—</strong></div>
+                <div class="metric-card mc-5"><span>Total Discounts</span><strong id="mTotalDiscounts">—</strong></div>
+                <div class="metric-card mc-6"><span>Gross Profit</span><strong id="mGrossProfit">—</strong></div>
+                <div class="metric-card mc-7"><span>Order Profit (ربحنا)</span><strong id="mOrderProfit">—</strong></div>
+                <div class="metric-card mc-8"><span>Net Profit</span><strong id="mNetProfit">—</strong></div>
+            </div>
+
+            <!-- Sales table -->
+            <div class="report-section">
+                <h2>Sales (<span id="salesCount">0</span>)</h2>
+                <div style="overflow-x:auto;">
+                    <table class="rpt-table">
+                        <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Details</th></tr></thead>
+                        <tbody id="salesRows"><tr><td colspan="8" style="text-align:center;color:#888;">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Expenses table -->
+            <div class="report-section">
+                <h2>Expenses (<span id="expensesCount">0</span>)</h2>
+                <div style="overflow-x:auto;">
+                    <table class="rpt-table">
+                        <thead><tr><th>#</th><th>Date</th><th>Category</th><th>Amount</th><th>Note</th></tr></thead>
+                        <tbody id="expensesRows"><tr><td colspan="5" style="text-align:center;color:#888;">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orders table -->
+            <div class="report-section">
+                <h2>Orders (<span id="ordersCount">0</span>)</h2>
+                <div style="overflow-x:auto;">
+                    <table class="rpt-table">
+                        <thead><tr><th>Ref</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Our Profit</th><th>Buyer Due</th><th>Supplier Due</th></tr></thead>
+                        <tbody id="ordersRows"><tr><td colspan="8" style="text-align:center;color:#888;">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=1"></script>
+<script>
+    if (!checkAuth()) throw new Error('Not authenticated');
+    if (!getStoreId()) window.location.href = '../landing.html';
+    loadShell(getStoreName());
+
+    let _period = 'today';
+
+    function money(v) { return Number(v || 0).toLocaleString('en-US') + ' IQD'; }
+
+    function setPeriod(p, btn) {
+        _period = p;
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const isCustom = p === 'custom';
+        document.getElementById('customDateGroup').style.display  = isCustom ? '' : 'none';
+        document.getElementById('customDateGroup2').style.display = isCustom ? '' : 'none';
+        if (!isCustom) loadReport();
+    }
+
+    function periodLabel() {
+        const labels = { today:'Today', week:'This Week', month:'This Month', all:'All Time', custom:'Custom Range' };
+        if (_period === 'custom') {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            return s && e ? s + ' → ' + e : 'Custom Range';
+        }
+        return labels[_period] || _period;
+    }
+
+    async function loadReport() {
+        const storeId = getStoreId();
+        const token   = getToken();
+        if (!token) return;
+
+        // Build dashboard URL
+        let url = API_BASE_URL + '/retail/dashboard/' + storeId + '?period=' + _period;
+        if (_period === 'custom') {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (!s || !e) return;
+            url += '&start_date=' + s + '&end_date=' + e;
+        }
+
+        // Fetch dashboard stats + sales + expenses + orders in parallel
+        const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+
+        let salesPeriodParam = _period === 'all' ? '' : ('?period=' + _period);
+        if (_period === 'custom') {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            salesPeriodParam = s && e ? '?period=custom&start_date=' + s + '&end_date=' + e : '';
+        }
+
+        try {
+            const [dashRes, salesRes, expRes, ordRes] = await Promise.all([
+                fetch(url, { headers }),
+                fetch(API_BASE_URL + '/retail/sales/' + storeId, { headers }),
+                fetch(API_BASE_URL + '/retail/expenses/' + storeId, { headers }),
+                fetch(API_BASE_URL + '/retail/orders/' + storeId, { headers }),
+            ]);
+
+            const dash    = dashRes.ok  ? await dashRes.json()  : null;
+            const salesD  = salesRes.ok ? await salesRes.json() : null;
+            const expD    = expRes.ok   ? await expRes.json()   : null;
+            const ordD    = ordRes.ok   ? await ordRes.json()   : null;
+
+            const stats = dash?.data?.stats || {};
+
+            // Metrics
+            document.getElementById('mTotalSales').textContent    = money(stats.total_sales);
+            document.getElementById('mTotalPaid').textContent     = money(stats.total_paid);
+            document.getElementById('mTotalDebt').textContent     = money(stats.total_debt);
+            document.getElementById('mTotalExpenses').textContent = money(stats.total_expenses);
+            document.getElementById('mTotalDiscounts').textContent= money(stats.total_discounts);
+            document.getElementById('mGrossProfit').textContent   = money(stats.gross_profit);
+            document.getElementById('mNetProfit').textContent     = money(stats.net_profit);
+
+            // Order profit: compute from orders in period
+            let allOrders = (ordD?.data || []);
+            allOrders = filterByPeriod(allOrders, 'date');
+            const orderProfit = allOrders.reduce((s, o) => s + Number(o.our_profit || 0), 0);
+            document.getElementById('mOrderProfit').textContent = money(orderProfit);
+
+            // Filter sales & expenses by period
+            let allSales    = filterByPeriod(salesD?.data || [], 'sale_date');
+            let allExpenses = filterByPeriod(expD?.data  || [], 'date');
+
+            // Sales table
+            document.getElementById('salesCount').textContent = allSales.length;
+            document.getElementById('salesRows').innerHTML = allSales.length
+                ? allSales.map((s, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${s.sale_date || '-'}</td>
+                        <td>${esc(s.client_name || '-')}</td>
+                        <td>${money(s.total_amount)}</td>
+                        <td>${money(s.paid_amount)}</td>
+                        <td>${money(s.remaining_amount)}</td>
+                        <td><span class="status-${s.payment_status === 'full' ? 'full' : s.payment_status === 'partial' ? 'partial' : 'debt'}">${s.payment_status}</span></td>
+                        <td style="font-size:11px;color:#666;">${esc(s.sale_details || s.notes || '-')}</td>
+                    </tr>`).join('')
+                : '<tr><td colspan="8" style="text-align:center;color:#888;">No sales in this period.</td></tr>';
+
+            // Expenses table
+            document.getElementById('expensesCount').textContent = allExpenses.length;
+            document.getElementById('expensesRows').innerHTML = allExpenses.length
+                ? allExpenses.map((e, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${e.date}</td>
+                        <td>${esc(e.category)}</td>
+                        <td>${money(e.amount)}</td>
+                        <td>${esc(e.note || '-')}</td>
+                    </tr>`).join('')
+                : '<tr><td colspan="5" style="text-align:center;color:#888;">No expenses in this period.</td></tr>';
+
+            // Orders table
+            document.getElementById('ordersCount').textContent = allOrders.length;
+            document.getElementById('ordersRows').innerHTML = allOrders.length
+                ? allOrders.map(o => `
+                    <tr>
+                        <td>${esc(o.reference || '-')}</td>
+                        <td>${o.date || '-'}</td>
+                        <td>${esc(o.buyer_name || '-')}</td>
+                        <td>${esc(o.supplier_name || '-')}</td>
+                        <td>${money(o.final_total)}</td>
+                        <td>${money(o.our_profit)}</td>
+                        <td>${money(o.buyer_due)}</td>
+                        <td>${money(o.supplier_due)}</td>
+                    </tr>`).join('')
+                : '<tr><td colspan="8" style="text-align:center;color:#888;">No orders in this period.</td></tr>';
+
+            // Print header
+            document.getElementById('reportPeriodLabel').textContent = 'Period: ' + periodLabel() + ' | Store: ' + getStoreName();
+
+        } catch(e) {
+            console.error('Report load error:', e);
+        }
+    }
+
+    function filterByPeriod(rows, dateField) {
+        if (_period === 'all') return rows;
+        const today = new Date(); today.setHours(0,0,0,0);
+        let from, to;
+        if (_period === 'today') {
+            from = to = today;
+        } else if (_period === 'week') {
+            const day = today.getDay();
+            from = new Date(today); from.setDate(today.getDate() - day);
+            to   = new Date(from);  to.setDate(from.getDate() + 6);
+        } else if (_period === 'month') {
+            from = new Date(today.getFullYear(), today.getMonth(), 1);
+            to   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        } else if (_period === 'custom') {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (!s || !e) return rows;
+            from = new Date(s); to = new Date(e);
+        } else return rows;
+
+        return rows.filter(row => {
+            const d = new Date((row[dateField] || '').slice(0, 10));
+            return d >= from && d <= to;
+        });
+    }
+
+    function esc(v) {
+        return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // Show print header on print
+    window.addEventListener('beforeprint', () => { document.getElementById('reportHeader').style.display = 'block'; });
+    window.addEventListener('afterprint',  () => { document.getElementById('reportHeader').style.display = 'none'; });
+
+    // Init
+    const today = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const todayStr = today.getFullYear() + '-' + pad(today.getMonth()+1) + '-' + pad(today.getDate());
+    document.getElementById('startDate').value = todayStr;
+    document.getElementById('endDate').value   = todayStr;
+    loadReport();
+</script>
+<script src="../js/i18n.js?v=1"></script>
+<script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
+</body>
+</html>

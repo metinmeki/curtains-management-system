@@ -42,11 +42,16 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/retail/dashboard/{storeId}", [RetailDashboardController::class, "index"]);
     Route::post("/retail/sales", [RetailSaleController::class, "store"]);
     Route::post("/retail/sales/{saleId}/pay", [RetailSaleController::class, "pay"]);
+    Route::delete("/retail/sales/{saleId}", [RetailSaleController::class, "destroy"]);
     Route::get("/retail/sales/{storeId}", [RetailSaleController::class, "index"]);
     Route::get("/retail/expenses/{storeId}", [RetailExpenseController::class, "index"]);
     Route::post("/retail/expenses", [RetailExpenseController::class, "store"]);
+    Route::put("/retail/expenses/{id}", [RetailExpenseController::class, "update"]);
+    Route::delete("/retail/expenses/{id}", [RetailExpenseController::class, "destroy"]);
     Route::get("/retail/clients/{storeId}", [RetailClientController::class, "index"]);
     Route::post("/retail/orders", [RetailOrderController::class, "store"]);
+    Route::post("/retail/orders/{orderId}/pay", [RetailOrderController::class, "pay"]);
+    Route::delete("/retail/orders/{orderId}", [RetailOrderController::class, "destroy"]);
     Route::get("/retail/orders/{storeId}", [RetailOrderController::class, "index"]);
 
     // Warehouse — isolated from retail stores
@@ -68,7 +73,9 @@ Route::middleware("auth:sanctum")->group(function () {
 
     // Stores
     Route::get("/stores", [StoreController::class, "index"]);
+    Route::post("/stores", [StoreController::class, "store"]);
     Route::put("/stores/{id}", [StoreController::class, "update"]);
+    Route::delete("/stores/{id}", [StoreController::class, "destroy"]);
 
     // Cashiers
     Route::get("/cashiers", [CashierController::class, "index"]);

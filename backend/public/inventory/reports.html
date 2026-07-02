@@ -1,11 +1,359 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Inventory Reports</title><link rel="stylesheet" href="../css/style.css?v=mobile-1"></head>
-<body class="ltr inventory-theme">
-    <div class="layout">
-        <aside class="sidebar"><div class="sidebar-header"><div class="sidebar-title">Inventory Unit</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div><ul class="sidebar-menu"><li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li><li class="menu-item"><a href="sales.html"><span class="menu-icon">S</span><span>Sales</span></a></li><li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li><li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li><li class="menu-item"><a href="reports.html" class="active"><span class="menu-icon">R</span><span>Reports</span></a></li></ul><div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div></aside>
-        <div class="main-content"><nav class="navbar"><div class="navbar-title">Inventory Reports</div><div class="navbar-actions"><span class="scope-pill">date-based summaries</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav><main class="content"><div class="page-header"><div><h1 class="page-title">Reports</h1><p class="page-subtitle">Sales by category, product type, client, debt status, and date range.</p></div></div><div class="module-grid"><div class="module-card"><h3>Sales by category</h3><p>Compare warehouse revenue across fabrics, rails, accessories, and other product groups.</p></div><div class="module-card"><h3>Client balance report</h3><p>Show total sales, paid amount, remaining debt, and payment history per wholesale account.</p></div><div class="module-card"><h3>Date summary</h3><p>Filter all inventory sales, payments, and debts by custom start and end dates.</p></div></div><div class="card"><div class="card-body table-wrapper"><table><thead><tr><th>Report area</th><th>Primary filters</th><th>Output</th></tr></thead><tbody><tr><td>Sales</td><td>Date, client, category, product type</td><td>Total, paid, remaining</td></tr><tr><td>Debts</td><td>Client, debt status, date</td><td>Balances and payment history</td></tr><tr><td>Products</td><td>Category, product type</td><td>Quantity and total value</td></tr></tbody></table></div></div></main></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports — Warehouse</title>
+    <link rel="stylesheet" href="wh-style.css?v=1">
+    <style>
+        /* ── Filter bar ─────────────────────────────────────────────── */
+        .rpt-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:24px;
+            background:linear-gradient(135deg,#1a3d2b 0%,#2d6a47 100%);
+            padding:16px 20px;border-radius:14px;}
+        .rpt-filters .form-group{margin:0;min-width:140px;}
+        .rpt-filters label{font-size:11px;font-weight:700;letter-spacing:.5px;color:rgba(255,255,255,.75);display:block;margin-bottom:4px;text-transform:uppercase;}
+        .rpt-filters input,.rpt-filters select{padding:8px 11px;border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;background:rgba(255,255,255,.12);color:#fff;width:100%;outline:none;}
+        .rpt-filters input::placeholder{color:rgba(255,255,255,.5);}
+        .rpt-filters select option{background:#1a3d2b;color:#fff;}
+        .rpt-btn{padding:9px 20px;background:#c4a24d;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.3px;transition:background .15s;}
+        .rpt-btn:hover{background:#b08d3a;}
+        .rpt-btn.refresh{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);}
+        .rpt-btn.refresh:hover{background:rgba(255,255,255,.25);}
+
+        /* ── Metric cards ───────────────────────────────────────────── */
+        .rpt-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+        .rpt-metric{border-radius:14px;padding:18px 20px;color:#fff;position:relative;overflow:hidden;}
+        .rpt-metric::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.1);}
+        .rpt-metric::after{content:'';position:absolute;bottom:-30px;right:10px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.07);}
+        .rpt-metric span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;opacity:.85;}
+        .rpt-metric strong{display:block;font-size:22px;font-weight:900;margin:6px 0 3px;letter-spacing:-.3px;}
+        .rpt-metric small{font-size:11px;opacity:.75;}
+        .rpt-metric.m-green{background:linear-gradient(135deg,#1e6b45,#2d9e66);}
+        .rpt-metric.m-blue{background:linear-gradient(135deg,#5c4a10,#c4a24d);}
+        .rpt-metric.m-red{background:linear-gradient(135deg,#8b2020,#c0392b);}
+        .rpt-metric.m-gold{background:linear-gradient(135deg,#7a5a10,#c4a24d);}
+
+        /* ── Section cards ──────────────────────────────────────────── */
+        .rpt-card{background:#fff;border-radius:14px;margin-bottom:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);}
+        .rpt-card-head{padding:16px 20px 0;display:flex;align-items:center;gap:10px;}
+        .rpt-card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+        .rpt-card-title{font-size:14px;font-weight:800;color:#1a2e1f;}
+        .rpt-card-body{padding:0 4px 8px;}
+
+        /* ── Tables ─────────────────────────────────────────────────── */
+        .ft{width:100%;border-collapse:collapse;table-layout:fixed;}
+        .ft thead tr{background:linear-gradient(90deg,#1a3d2b,#2d6a47);}
+        .ft th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:rgba(255,255,255,.9);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+        .ft td{padding:11px 14px;font-size:13px;border-bottom:1px solid #f0ede8;word-break:break-word;overflow:hidden;color:#2a3a2a;}
+        .ft tr:last-child td{border-bottom:none;}
+        .ft tbody tr:nth-child(even) td{background:#f9f8f5;}
+        .ft tbody tr:hover td{background:#eef5f0;}
+
+        /* ── Badges ─────────────────────────────────────────────────── */
+        .badge-paid{background:#d4f0e1;color:#1a6630;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;}
+        .badge-debt{background:#fde0e0;color:#8b2020;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;}
+        .badge-partial{background:#fef3cd;color:#7a5c00;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;}
+
+        .empty-row td{color:#aaa;font-style:italic;text-align:center;padding:28px;}
+
+        @media(max-width:900px){.rpt-metrics{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:580px){.rpt-metrics{grid-template-columns:1fr 1fr;}.rpt-filters{flex-direction:column;}.rpt-filters .form-group{min-width:0;width:100%;}}
+    </style>
+</head>
+<body>
+<div class="wh-layout">
+
+<aside class="wh-sidebar">
+    <div class="wh-brand">
+        <div class="wh-brand-row">
+            <div class="wh-brand-icon">📦</div>
+            <span class="wh-brand-name">Warehouse</span>
+        </div>
+        <div class="wh-brand-sub" id="sidebarStoreName">Central</div>
     </div>
-    <script src="../js/api.js"></script><script src="../js/demo-data.js?v=arabic-en-1"></script><script>if(!checkAuth())throw new Error('Not authenticated');loadShell('Inventory / Warehouse');</script><script src="../js/i18n.js?v=arabic-en-2"></script>
+    <nav class="wh-nav">
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Main</div>
+            <a href="home.html" class="wh-nav-link"><span class="wh-nav-icon">📊</span>Overview</a>
+            <a href="dashboard.html" class="wh-nav-link"><span class="wh-nav-icon">📦</span>New Supply</a>
+            <a href="inventory.html" class="wh-nav-link"><span class="wh-nav-icon">🗃️</span>Inventory</a>
+        </div>
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Finance</div>
+            <a href="clients.html" class="wh-nav-link"><span class="wh-nav-icon">🏪</span>Store Accounts</a>
+            <a href="debts.html" class="wh-nav-link"><span class="wh-nav-icon">💸</span>Debts</a>
+            <a href="reports.html" class="wh-nav-link active"><span class="wh-nav-icon">📈</span>Reports</a>
+        </div>
+    </nav>
+    <div class="wh-sidebar-foot">
+        <a href="../landing.html">← Switch workspace</a>
+    </div>
+</aside>
+
+<div class="wh-main">
+    <div class="wh-topbar">
+        <span class="wh-topbar-title">Reports</span>
+        <div class="wh-topbar-right">
+            <div class="wh-avatar" id="userAvatar">A</div>
+            <span class="wh-user-name" id="userName">Admin</span>
+        </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;">
+    <div class="wh-page">
+
+        <div class="wh-page-header">
+            <div>
+                <div class="wh-page-title">Reports</div>
+                <div class="wh-page-sub">Warehouse supply transactions, store balances, and item breakdown.</div>
+            </div>
+            <button class="rpt-btn" onclick="loadAll()">↻ Refresh</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="rpt-filters">
+            <div class="form-group">
+                <label>From date</label>
+                <input type="date" id="filterFrom">
+            </div>
+            <div class="form-group">
+                <label>To date</label>
+                <input type="date" id="filterTo">
+            </div>
+            <div class="form-group">
+                <label>Store</label>
+                <select id="filterStore"><option value="">All stores</option></select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="filterStatus">
+                    <option value="">All</option>
+                    <option value="paid">Paid</option>
+                    <option value="debt">Debt</option>
+                    <option value="partial">Partial</option>
+                </select>
+            </div>
+            <div class="form-group" style="align-self:flex-end;">
+                <button class="rpt-btn" onclick="applyFilters()">🔍 Apply</button>
+            </div>
+        </div>
+
+        <!-- Summary metrics -->
+        <div class="rpt-metrics">
+            <div class="rpt-metric m-green"><span>💰 Total revenue</span><strong id="mTotal">—</strong><small>From all supply transactions</small></div>
+            <div class="rpt-metric m-blue"><span>✅ Total paid</span><strong id="mPaid">—</strong><small>Collected from stores</small></div>
+            <div class="rpt-metric m-red"><span>⚠️ Outstanding debt</span><strong id="mDebt">—</strong><small>Still owed by stores</small></div>
+            <div class="rpt-metric m-gold"><span>📈 Gross profit</span><strong id="mProfit">—</strong><small>Selling − cost price</small></div>
+        </div>
+
+        <!-- Supplies table -->
+        <div class="rpt-card">
+            <div class="rpt-card-head">
+                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#1a3d2b,#2d6a47);">📋</div>
+                <div class="rpt-card-title">Supply transactions</div>
+            </div>
+            <div class="rpt-card-body">
+                <div style="overflow-x:auto;">
+                    <table class="ft">
+                        <colgroup>
+                            <col style="width:16%"><col style="width:10%"><col style="width:16%">
+                            <col style="width:14%"><col style="width:14%"><col style="width:14%">
+                            <col style="width:10%"><col style="width:6%">
+                        </colgroup>
+                        <thead><tr>
+                            <th>Reference</th><th>Date</th><th>Store</th>
+                            <th>Total</th><th>Paid</th><th>Remaining</th>
+                            <th>Status</th><th>Items</th>
+                        </tr></thead>
+                        <tbody id="suppliesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Per-store balances -->
+        <div class="rpt-card">
+            <div class="rpt-card-head">
+                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#5c4a10,#c4a24d);">🏪</div>
+                <div class="rpt-card-title">Balance by store</div>
+            </div>
+            <div class="rpt-card-body">
+                <div style="overflow-x:auto;">
+                    <table class="ft">
+                        <colgroup>
+                            <col style="width:28%"><col style="width:18%"><col style="width:18%">
+                            <col style="width:18%"><col style="width:18%">
+                        </colgroup>
+                        <thead><tr>
+                            <th>Store</th><th>Transactions</th><th>Total</th><th>Paid</th><th>Remaining</th>
+                        </tr></thead>
+                        <tbody id="storeBalanceBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items breakdown -->
+        <div class="rpt-card">
+            <div class="rpt-card-head">
+                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#7a5a10,#c4a24d);">📦</div>
+                <div class="rpt-card-title">Items sold</div>
+            </div>
+            <div class="rpt-card-body">
+                <div style="overflow-x:auto;">
+                    <table class="ft">
+                        <colgroup>
+                            <col style="width:22%"><col style="width:16%"><col style="width:12%">
+                            <col style="width:14%"><col style="width:14%"><col style="width:12%"><col style="width:10%">
+                        </colgroup>
+                        <thead><tr>
+                            <th>Item</th><th>Supply ref</th><th>Date</th>
+                            <th>Qty</th><th>Unit price</th><th>Line total</th><th>Profit</th>
+                        </tr></thead>
+                        <tbody id="itemsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+</div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=arabic-en-1"></script>
+<script>
+if (!checkAuth()) throw new Error('Not authenticated');
+loadShell('Inventory / Warehouse');
+
+let allSupplies = [];
+let storeMap = {};
+
+function money(v) {
+    v = Number(v) || 0;
+    return v.toLocaleString('en-IQ', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' IQD';
+}
+
+function statusBadge(s) {
+    if (!s) return '';
+    const cls = s === 'paid' ? 'badge-paid' : s === 'debt' ? 'badge-debt' : 'badge-partial';
+    return `<span class="${cls}">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
+}
+
+function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadAll() {
+    try {
+        const [supRes, storeRes] = await Promise.all([
+            apiCall('GET', '/warehouse/supplies'),
+            fetch(API_BASE_URL + '/stores', { headers: { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/json' } })
+        ]);
+        if (supRes && supRes.data) allSupplies = supRes.data;
+        if (storeRes && storeRes.ok) {
+            const sd = await storeRes.json();
+            if (sd.data) sd.data.forEach(s => { storeMap[s.id] = s.name; });
+            const sel = document.getElementById('filterStore');
+            sd.data && sd.data.forEach(s => {
+                const o = document.createElement('option');
+                o.value = s.id; o.textContent = s.name;
+                sel.appendChild(o);
+            });
+        }
+    } catch(e) { console.error(e); }
+    applyFilters();
+}
+
+function getFiltered() {
+    const from   = document.getElementById('filterFrom').value;
+    const to     = document.getElementById('filterTo').value;
+    const store  = document.getElementById('filterStore').value;
+    const status = document.getElementById('filterStatus').value;
+    return allSupplies.filter(s => {
+        if (from && s.date < from) return false;
+        if (to   && s.date > to)   return false;
+        if (store  && String(s.store_id) !== String(store)) return false;
+        if (status && s.status !== status) return false;
+        return true;
+    });
+}
+
+function applyFilters() {
+    const data = getFiltered();
+
+    // metrics
+    const total   = data.reduce((a, s) => a + Number(s.total   || 0), 0);
+    const paid    = data.reduce((a, s) => a + Number(s.paid    || 0), 0);
+    const remaining = data.reduce((a, s) => a + Number(s.remaining || 0), 0);
+    const profit  = data.reduce((a, s) => a + (s.items || []).reduce((b, i) => b + Number(i.profit_amount || 0), 0), 0);
+    document.getElementById('mTotal').textContent  = money(total);
+    document.getElementById('mPaid').textContent   = money(paid);
+    document.getElementById('mDebt').textContent   = money(remaining);
+    document.getElementById('mProfit').textContent = money(profit);
+
+    // supplies table
+    document.getElementById('suppliesBody').innerHTML = data.length
+        ? data.map(s => `<tr>
+            <td style="font-family:monospace;font-size:12px;">${esc(s.reference)}</td>
+            <td>${esc(s.date)}</td>
+            <td>${esc(storeMap[s.store_id] || 'Store ' + s.store_id)}</td>
+            <td>${money(s.total)}</td>
+            <td style="color:#2f7d5b;">${money(s.paid)}</td>
+            <td style="color:${s.remaining > 0 ? '#b4534a' : '#2f7d5b'};">${money(s.remaining)}</td>
+            <td>${statusBadge(s.status)}</td>
+            <td style="text-align:center;">${(s.items||[]).length}</td>
+        </tr>`).join('')
+        : '<tr class="empty-row"><td colspan="8">No transactions match the current filters.</td></tr>';
+
+    // store balances
+    const stores = {};
+    data.forEach(s => {
+        const k = s.store_id;
+        if (!stores[k]) stores[k] = { name: storeMap[k] || 'Store ' + k, count: 0, total: 0, paid: 0, remaining: 0 };
+        stores[k].count++;
+        stores[k].total     += Number(s.total     || 0);
+        stores[k].paid      += Number(s.paid      || 0);
+        stores[k].remaining += Number(s.remaining || 0);
+    });
+    const storeRows = Object.values(stores).sort((a, b) => b.total - a.total);
+    document.getElementById('storeBalanceBody').innerHTML = storeRows.length
+        ? storeRows.map(s => `<tr>
+            <td style="font-weight:700;">${esc(s.name)}</td>
+            <td>${s.count}</td>
+            <td>${money(s.total)}</td>
+            <td style="color:#2f7d5b;">${money(s.paid)}</td>
+            <td style="color:${s.remaining > 0 ? '#b4534a' : '#2f7d5b'};font-weight:700;">${money(s.remaining)}</td>
+        </tr>`).join('')
+        : '<tr class="empty-row"><td colspan="5">No store data.</td></tr>';
+
+    // items
+    const items = [];
+    data.forEach(s => (s.items || []).forEach(i => items.push({ ...i, ref: s.reference, date: s.date })));
+    document.getElementById('itemsBody').innerHTML = items.length
+        ? items.map(i => `<tr>
+            <td style="font-weight:600;">${esc(i.item_name)}</td>
+            <td style="font-family:monospace;font-size:11px;">${esc(i.ref)}</td>
+            <td>${esc(i.date)}</td>
+            <td>${esc(i.quantity)} ${esc(i.unit||'')}</td>
+            <td>${money(i.price)}</td>
+            <td>${money(i.line_total)}</td>
+            <td style="color:${i.profit_amount > 0 ? '#2f7d5b' : 'var(--text-gray)'};">${money(i.profit_amount)}</td>
+        </tr>`).join('')
+        : '<tr class="empty-row"><td colspan="7">No items found.</td></tr>';
+}
+
+// Set default date range: last 30 days
+(function setDefaultDates() {
+    const today = new Date();
+    const from  = new Date(today); from.setDate(today.getDate() - 30);
+    document.getElementById('filterTo').value   = today.toISOString().slice(0, 10);
+    document.getElementById('filterFrom').value = from.toISOString().slice(0, 10);
+})();
+
+loadAll();
+</script>
+<script src="../js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>

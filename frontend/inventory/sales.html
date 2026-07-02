@@ -1,86 +1,139 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Sales - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <title>Supply History — Warehouse</title>
+    <link rel="stylesheet" href="wh-style.css?v=1">
 </head>
-<body class="ltr inventory-theme">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Inventory Unit</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="sales.html" class="active"><span class="menu-icon">S</span><span>Sales</span></a></li>
-                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="reports.html"><span class="menu-icon">R</span><span>Reports</span></a></li>
-            </ul>
-            <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-        </aside>
-        <div class="main-content">
-            <nav class="navbar"><div class="navbar-title">Inventory Sales</div><div class="navbar-actions"><span class="scope-pill">wholesale workflow</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
-            <main class="content">
-                <div class="page-header"><div><h1 class="page-title">Wholesale sale entry</h1><p class="page-subtitle">Inventory sales use categories, product types, quantity, unit price, and client account balances.</p></div></div>
-                <div class="two-column">
-                    <section class="card">
-                        <div class="card-header"><h2 class="card-title">Sale form</h2></div>
-                        <div class="card-body">
-                            <div class="form-grid">
-                                <div class="form-group"><label>Client</label><select id="clientSelect"></select></div>
-                                <div class="form-group"><label>Main category</label><select id="categorySelect"></select></div>
-                                <div class="form-group"><label>Product type</label><input value="Blackout 280cm"></div>
-                                <div class="form-group"><label>Quantity</label><input id="qty" type="number" value="10" oninput="calcInventorySale()"></div>
-                                <div class="form-group"><label>Unit price</label><input id="unitPrice" type="number" value="18500" oninput="calcInventorySale()"></div>
-                            </div>
-                            <div class="summary-line"><span>Total</span><strong id="lineTotal">0 IQD</strong></div>
-                            <button class="btn btn-primary" onclick="calcInventorySale()">Calculate</button>
-                        </div>
-                    </section>
-                    <section class="card">
-                        <div class="card-header"><h2 class="card-title">Defined categories</h2></div>
-                        <div class="card-body table-wrapper"><table><thead><tr><th>Category</th><th>Type</th><th>Quantity</th><th>Unit price</th></tr></thead><tbody id="categoryRows"></tbody></table></div>
-                    </section>
-                </div>
-            </main>
+<body>
+<div class="wh-layout">
+
+<aside class="wh-sidebar">
+    <div class="wh-brand">
+        <div class="wh-brand-row">
+            <div class="wh-brand-icon">📦</div>
+            <span class="wh-brand-name">Warehouse</span>
+        </div>
+        <div class="wh-brand-sub" id="sidebarStoreName">Central</div>
+    </div>
+    <nav class="wh-nav">
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Main</div>
+            <a href="home.html" class="wh-nav-link"><span class="wh-nav-icon">📊</span>Overview</a>
+            <a href="dashboard.html" class="wh-nav-link active"><span class="wh-nav-icon">📦</span>New Supply</a>
+            <a href="inventory.html" class="wh-nav-link"><span class="wh-nav-icon">🗃️</span>Inventory</a>
+        </div>
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Finance</div>
+            
+            <a href="debts.html" class="wh-nav-link"><span class="wh-nav-icon">💸</span>Debts</a>
+            <a href="reports.html" class="wh-nav-link"><span class="wh-nav-icon">📈</span>Reports</a>
+        </div>
+    </nav>
+    <div class="wh-sidebar-foot">
+        <a href="../landing.html">← Switch workspace</a>
+    </div>
+</aside>
+
+<div class="wh-main">
+    <div class="wh-topbar">
+        <span class="wh-topbar-title">Supply History</span>
+        <div class="wh-topbar-right">
+            <div class="wh-avatar" id="userAvatar">A</div>
+            <span class="wh-user-name" id="userName">Admin</span>
         </div>
     </div>
-    <script src="../js/api.js"></script>
-    <script src="../js/demo-data.js?v=arabic-en-1"></script>
-    <script>
-        if (!checkAuth()) throw new Error('Not authenticated');
-        loadShell('Inventory / Warehouse');
-        function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-        function calcInventorySale() {
-            document.getElementById('lineTotal').textContent = money(Number(document.getElementById('qty').value || 0) * Number(document.getElementById('unitPrice').value || 0));
+
+    <div style="flex:1;overflow-y:auto;">
+    <div class="wh-page">
+
+        <div class="wh-page-header">
+            <div>
+                <div class="wh-page-title">Wholesale sale entry</div>
+                <div class="wh-page-sub">Recent supply history and store transactions.</div>
+            </div>
+            <a href="dashboard.html" class="wh-btn wh-btn-primary">+ New Supply</a>
+        </div>
+
+        <div class="supply-layout">
+            <section class="wh-card">
+                <div class="wh-card-head">
+                    <h3>Sale form</h3>
+                </div>
+                <div class="wh-card-body">
+                    <div class="wh-fg"><label>Client</label><select id="clientSelect"></select></div>
+                    <div class="wh-fg"><label>Main category</label><select id="categorySelect"></select></div>
+                    <div class="wh-fg"><label>Product type</label><input value="Blackout 280cm"></div>
+                    <div class="wh-fg"><label>Quantity</label><input id="qty" type="number" value="10" oninput="calcInventorySale()"></div>
+                    <div class="wh-fg"><label>Unit price</label><input id="unitPrice" type="number" value="18500" oninput="calcInventorySale()"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid #f1f5f9;margin-top:4px;">
+                        <span style="font-size:13px;color:#64748b;">Total</span>
+                        <strong id="lineTotal" style="font-size:18px;font-weight:800;">0 IQD</strong>
+                    </div>
+                    <button class="wh-btn wh-btn-primary" onclick="calcInventorySale()" style="width:100%;">Calculate</button>
+                </div>
+            </section>
+
+            <section class="wh-card">
+                <div class="wh-card-head">
+                    <h3>Supply history</h3>
+                </div>
+                <div class="wh-table-wrap">
+                    <table class="wh-table">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Store</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Remaining</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryRows"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+    </div>
+    </div>
+</div>
+
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=arabic-en-1"></script>
+<script>
+    if (!checkAuth()) throw new Error('Not authenticated');
+    loadShell('Inventory / Warehouse');
+    function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function calcInventorySale() {
+        document.getElementById('lineTotal').textContent = money(Number(document.getElementById('qty').value || 0) * Number(document.getElementById('unitPrice').value || 0));
+    }
+    const WH_STORES = [{id:1,name:'Store 1'},{id:2,name:'Store 2'},{id:3,name:'Store 3'},{id:4,name:'Store 4'}];
+    async function loadPage() {
+        const token = getToken();
+        document.getElementById('clientSelect').innerHTML = WH_STORES.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+        if (token && token !== 'demo-frontend-token') {
+            try {
+                const res = await fetch(API_BASE_URL + '/warehouse/supplies', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                if (res.ok) {
+                    const r = await res.json();
+                    const supplies = r.data || [];
+                    document.getElementById('categoryRows').innerHTML = supplies.length
+                        ? supplies.slice(0,20).map(s=>`<tr><td style="font-weight:700;">${esc(s.reference)}</td><td>${esc(WH_STORES.find(x=>x.id==s.store_id)?.name||'Store '+s.store_id)}</td><td>${money(s.total)}</td><td style="color:#10b981;">${money(s.paid)}</td><td style="color:#ef4444;">${money(s.remaining)}</td><td style="color:#64748b;">${esc((s.date||'').slice(0,10))}</td></tr>`).join('')
+                        : '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:32px;">No supply history yet.</td></tr>';
+                    return;
+                }
+            } catch(e) {}
         }
-        const WH_STORES = [{id:1,name:'Store 1'},{id:2,name:'Store 2'},{id:3,name:'Store 3'},{id:4,name:'Store 4'}];
-        async function loadPage() {
-            const token = getToken();
-            // Populate store select
-            document.getElementById('clientSelect').innerHTML = WH_STORES.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
-            // Load supplies from DB for the category rows (recent supply history)
-            if (token && token !== 'demo-frontend-token') {
-                try {
-                    const res = await fetch(API_BASE_URL + '/warehouse/supplies', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
-                    if (res.ok) {
-                        const r = await res.json();
-                        const supplies = r.data || [];
-                        document.getElementById('categoryRows').innerHTML = supplies.length
-                            ? supplies.slice(0,20).map(s=>`<tr><td>${esc(s.reference)}</td><td>${esc(WH_STORES.find(x=>x.id==s.store_id)?.name||'Store '+s.store_id)}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.remaining)}</td><td>${esc((s.date||'').slice(0,10))}</td></tr>`).join('')
-                            : '<tr><td colspan="6" style="text-align:center;color:#888;">No supply history yet.</td></tr>';
-                        // Update table headers
-                        document.querySelector('#categoryRows').closest('table').querySelector('thead tr').innerHTML = '<th>Reference</th><th>Store</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Date</th>';
-                        return;
-                    }
-                } catch(e) {}
-            }
-            document.getElementById('categoryRows').innerHTML = inventoryDemo.categories.map(item=>`<tr><td>${item.category}</td><td>${item.type}</td><td>${item.quantity}</td><td>${money(item.unitPrice)}</td></tr>`).join('');
-        }
-        calcInventorySale();
-        loadPage();
-    </script>
-    <script src="../js/i18n.js?v=arabic-en-2"></script>
+        document.getElementById('categoryRows').innerHTML = inventoryDemo.categories.map(item=>`<tr><td>${item.category}</td><td>${item.type}</td><td>${item.quantity}</td><td>${money(item.unitPrice)}</td><td>—</td><td>—</td></tr>`).join('');
+    }
+    calcInventorySale();
+    loadPage();
+</script>
+<script src="../js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>

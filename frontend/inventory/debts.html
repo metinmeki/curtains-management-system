@@ -1,49 +1,124 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Inventory Debts</title><link rel="stylesheet" href="../css/style.css?v=mobile-1"></head>
-<body class="ltr inventory-theme">
-    <div class="layout">
-        <aside class="sidebar"><div class="sidebar-header"><div class="sidebar-title">Inventory Unit</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div><ul class="sidebar-menu"><li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li><li class="menu-item"><a href="sales.html"><span class="menu-icon">S</span><span>Sales</span></a></li><li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li><li class="menu-item"><a href="debts.html" class="active"><span class="menu-icon">B</span><span>Debts</span></a></li><li class="menu-item"><a href="reports.html"><span class="menu-icon">R</span><span>Reports</span></a></li></ul><div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div></aside>
-        <div class="main-content"><nav class="navbar"><div class="navbar-title">Inventory Debts</div><div class="navbar-actions"><span class="scope-pill">warehouse debts only</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav><main class="content"><div class="page-header"><div><h1 class="page-title">Inventory debts and balances</h1><p class="page-subtitle">Warehouse client balances are separate from retail store debts.</p></div><div class="filter-controls"><button class="filter-btn active">All</button><button class="filter-btn">Client</button><button class="filter-btn">Date range</button></div></div><div class="card"><div class="card-body table-wrapper"><table><thead><tr><th>Client</th><th>Total sales</th><th>Paid</th><th>Remaining balance</th><th>Action</th></tr></thead><tbody id="debtRows"></tbody></table></div></div></main></div>
-    </div>
-    <script src="../js/api.js"></script><script src="../js/demo-data.js?v=arabic-en-1"></script>
-    <script>
-        if(!checkAuth()) throw new Error('Not authenticated');
-        loadShell('Inventory / Warehouse');
-        function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-        let _whDebts = [];
-        function renderDebts(clients) {
-            const debtors = clients.filter(c => (c.total_debt||c.balance||0) > 0);
-            document.getElementById('debtRows').innerHTML = debtors.length
-                ? debtors.map(c=>`<tr><td>${esc(c.name)}</td><td>${money(c.total_sales||c.totalSales||0)}</td><td>${money(c.total_paid||c.paid||0)}</td><td>${money(c.total_debt||c.balance||0)}</td><td>-</td></tr>`).join('')
-                : '<tr><td colspan="5" style="text-align:center;color:#888;">No outstanding debts.</td></tr>';
-        }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debts — Warehouse</title>
+    <link rel="stylesheet" href="wh-style.css?v=1">
+</head>
+<body>
+<div class="wh-layout">
 
-        // Warehouse debts come from supply transactions (stores owing the warehouse)
-        async function loadWhDebts() {
-            const token = getToken();
-            if (!token || token === 'demo-frontend-token') { renderDebts(inventoryDemo.clients); return; }
-            try {
-                const res = await fetch(API_BASE_URL + '/warehouse/supplies', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
-                if (res.ok) {
-                    const r = await res.json();
-                    const supplies = r.data || [];
-                    // Group by store
-                    const storeMap = {};
-                    supplies.forEach(s => {
-                        const sid = s.store_id;
-                        if (!storeMap[sid]) storeMap[sid] = { name: 'Store ' + sid, total_sales: 0, total_paid: 0, total_debt: 0, _supplies: [] };
-                        storeMap[sid].total_sales += parseFloat(s.total||0);
-                        storeMap[sid].total_paid  += parseFloat(s.paid||0);
-                        storeMap[sid].total_debt  += parseFloat(s.remaining||0);
-                        storeMap[sid]._supplies.push(s);
-                    });
-                    renderDebts(Object.values(storeMap));
-                } else { renderDebts(inventoryDemo.clients); }
-            } catch(e) { renderDebts(inventoryDemo.clients); }
-        }
-        loadWhDebts();
-    </script>
-    <script src="../js/i18n.js?v=arabic-en-2"></script>
+<aside class="wh-sidebar">
+    <div class="wh-brand">
+        <div class="wh-brand-row">
+            <div class="wh-brand-icon">📦</div>
+            <span class="wh-brand-name">Warehouse</span>
+        </div>
+        <div class="wh-brand-sub" id="sidebarStoreName">Central</div>
+    </div>
+    <nav class="wh-nav">
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Main</div>
+            <a href="home.html" class="wh-nav-link"><span class="wh-nav-icon">📊</span>Overview</a>
+            <a href="dashboard.html" class="wh-nav-link"><span class="wh-nav-icon">📦</span>New Supply</a>
+            <a href="inventory.html" class="wh-nav-link"><span class="wh-nav-icon">🗃️</span>Inventory</a>
+        </div>
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Finance</div>
+            
+            <a href="debts.html" class="wh-nav-link active"><span class="wh-nav-icon">💸</span>Debts</a>
+            <a href="reports.html" class="wh-nav-link"><span class="wh-nav-icon">📈</span>Reports</a>
+        </div>
+    </nav>
+    <div class="wh-sidebar-foot">
+        <a href="../landing.html">← Switch workspace</a>
+    </div>
+</aside>
+
+<div class="wh-main">
+    <div class="wh-topbar">
+        <span class="wh-topbar-title">Debts</span>
+        <div class="wh-topbar-right">
+            <div class="wh-avatar" id="userAvatar">A</div>
+            <span class="wh-user-name" id="userName">Admin</span>
+        </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;">
+    <div class="wh-page">
+
+        <div class="wh-page-header">
+            <div>
+                <div class="wh-page-title">Inventory debts and balances</div>
+                <div class="wh-page-sub">Warehouse client balances — separate from retail store debts.</div>
+            </div>
+            <div class="filter-controls">
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">With debt</button>
+            </div>
+        </div>
+
+        <div class="wh-card">
+            <div class="wh-table-wrap">
+                <table class="wh-table">
+                    <thead>
+                        <tr>
+                            <th>Client / Store</th>
+                            <th>Total supplied</th>
+                            <th>Paid</th>
+                            <th>Remaining balance</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="debtRows"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    </div>
+</div>
+
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=arabic-en-1"></script>
+<script>
+    if(!checkAuth()) throw new Error('Not authenticated');
+    loadShell('Inventory / Warehouse');
+    function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    let _whDebts = [];
+    function renderDebts(clients) {
+        const debtors = clients.filter(c => (c.total_debt||c.balance||0) > 0);
+        document.getElementById('debtRows').innerHTML = debtors.length
+            ? debtors.map(c=>`<tr><td style="font-weight:700;">${esc(c.name)}</td><td>${money(c.total_sales||c.totalSales||0)}</td><td style="color:#10b981;">${money(c.total_paid||c.paid||0)}</td><td style="color:#ef4444;font-weight:800;">${money(c.total_debt||c.balance||0)}</td><td><a href="dashboard.html" class="wh-btn wh-btn-sm wh-btn-outline">Pay →</a></td></tr>`).join('')
+            : '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:32px;">No outstanding debts.</td></tr>';
+    }
+
+    async function loadWhDebts() {
+        const token = getToken();
+        if (!token || token === 'demo-frontend-token') { renderDebts(inventoryDemo.clients); return; }
+        try {
+            const res = await fetch(API_BASE_URL + '/warehouse/supplies', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+            if (res.ok) {
+                const r = await res.json();
+                const supplies = r.data || [];
+                const storeMap = {};
+                supplies.forEach(s => {
+                    const sid = s.store_id;
+                    if (!storeMap[sid]) storeMap[sid] = { name: 'Store ' + sid, total_sales: 0, total_paid: 0, total_debt: 0, _supplies: [] };
+                    storeMap[sid].total_sales += parseFloat(s.total||0);
+                    storeMap[sid].total_paid  += parseFloat(s.paid||0);
+                    storeMap[sid].total_debt  += parseFloat(s.remaining||0);
+                    storeMap[sid]._supplies.push(s);
+                });
+                renderDebts(Object.values(storeMap));
+            } else { renderDebts(inventoryDemo.clients); }
+        } catch(e) { renderDebts(inventoryDemo.clients); }
+    }
+    loadWhDebts();
+</script>
+<script src="../js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>

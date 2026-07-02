@@ -1,32 +1,107 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Inventory Clients</title><link rel="stylesheet" href="../css/style.css?v=mobile-1"></head>
-<body class="ltr inventory-theme">
-    <div class="layout">
-        <aside class="sidebar"><div class="sidebar-header"><div class="sidebar-title">Inventory Unit</div><div class="sidebar-store-name" id="sidebarStoreName">Warehouse</div></div><ul class="sidebar-menu"><li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li><li class="menu-item"><a href="sales.html"><span class="menu-icon">S</span><span>Sales</span></a></li><li class="menu-item"><a href="clients.html" class="active"><span class="menu-icon">C</span><span>Clients</span></a></li><li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li><li class="menu-item"><a href="reports.html"><span class="menu-icon">R</span><span>Reports</span></a></li></ul><div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div></aside>
-        <div class="main-content"><nav class="navbar"><div class="navbar-title">Inventory Clients</div><div class="navbar-actions"><span class="scope-pill">client accounts</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav><main class="content"><div class="page-header"><div><h1 class="page-title">Wholesale client accounts</h1><p class="page-subtitle">Each inventory client has balance, sales history, paid total, debts, and reports by date.</p></div><button class="btn btn-primary">Add inventory client</button></div><div class="card"><div class="card-body table-wrapper"><table><thead><tr><th>Client</th><th>Phone</th><th>Balance</th><th>Total sales</th><th>Total paid</th><th>Last transaction</th></tr></thead><tbody id="clientRows"></tbody></table></div></div></main></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Accounts — Warehouse</title>
+    <link rel="stylesheet" href="wh-style.css?v=1">
+</head>
+<body>
+<div class="wh-layout">
+
+<aside class="wh-sidebar">
+    <div class="wh-brand">
+        <div class="wh-brand-row">
+            <div class="wh-brand-icon">📦</div>
+            <span class="wh-brand-name">Warehouse</span>
+        </div>
+        <div class="wh-brand-sub" id="sidebarStoreName">Central</div>
     </div>
-    <script src="../js/api.js"></script><script src="../js/demo-data.js?v=arabic-en-1"></script>
-    <script>
-        if(!checkAuth()) throw new Error('Not authenticated');
-        loadShell('Inventory / Warehouse');
-        function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-        function renderClients(clients) {
-            document.getElementById('clientRows').innerHTML = clients.length
-                ? clients.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone||'-')}</td><td>${money(c.total_debt||c.balance||0)}</td><td>${money(c.total_sales||c.totalSales||0)}</td><td>${money(c.total_paid||c.paid||0)}</td><td>${(c.last_date||c.lastDate||'-').slice(0,10)}</td></tr>`).join('')
-                : '<tr><td colspan="6" style="text-align:center;color:#888;">No clients yet.</td></tr>';
-        }
-        async function loadClients() {
-            const token = getToken();
-            if (!token || token === 'demo-frontend-token') { renderClients(inventoryDemo.clients); return; }
-            try {
-                const res = await fetch(API_BASE_URL + '/warehouse/clients', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
-                if (res.ok) { const r = await res.json(); renderClients(r.data || []); }
-                else renderClients(inventoryDemo.clients);
-            } catch(e) { renderClients(inventoryDemo.clients); }
-        }
-        loadClients();
-    </script>
-    <script src="../js/i18n.js?v=arabic-en-2"></script>
+    <nav class="wh-nav">
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Main</div>
+            <a href="home.html" class="wh-nav-link"><span class="wh-nav-icon">📊</span>Overview</a>
+            <a href="dashboard.html" class="wh-nav-link"><span class="wh-nav-icon">📦</span>New Supply</a>
+            <a href="inventory.html" class="wh-nav-link"><span class="wh-nav-icon">🗃️</span>Inventory</a>
+        </div>
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Finance</div>
+            <a href="clients.html" class="wh-nav-link active"><span class="wh-nav-icon">🏪</span>Store Accounts</a>
+            <a href="debts.html" class="wh-nav-link"><span class="wh-nav-icon">💸</span>Debts</a>
+            <a href="reports.html" class="wh-nav-link"><span class="wh-nav-icon">📈</span>Reports</a>
+        </div>
+    </nav>
+    <div class="wh-sidebar-foot">
+        <a href="../landing.html">← Switch workspace</a>
+    </div>
+</aside>
+
+<div class="wh-main">
+    <div class="wh-topbar">
+        <span class="wh-topbar-title">Store Accounts</span>
+        <div class="wh-topbar-right">
+            <div class="wh-avatar" id="userAvatar">A</div>
+            <span class="wh-user-name" id="userName">Admin</span>
+        </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;">
+    <div class="wh-page">
+
+        <div class="wh-page-header">
+            <div>
+                <div class="wh-page-title">Wholesale client accounts</div>
+                <div class="wh-page-sub">Each inventory client has balance, sales history, paid total, and debts.</div>
+            </div>
+            <button class="wh-btn wh-btn-primary">+ Add client</button>
+        </div>
+
+        <div class="wh-card">
+            <div class="wh-table-wrap">
+                <table class="wh-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Phone</th>
+                            <th>Balance</th>
+                            <th>Total sales</th>
+                            <th>Total paid</th>
+                            <th>Last transaction</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientRows"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    </div>
+</div>
+
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=arabic-en-1"></script>
+<script>
+    if(!checkAuth()) throw new Error('Not authenticated');
+    loadShell('Inventory / Warehouse');
+    function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function renderClients(clients) {
+        document.getElementById('clientRows').innerHTML = clients.length
+            ? clients.map(c=>`<tr><td style="font-weight:700;">${esc(c.name)}</td><td>${esc(c.phone||'-')}</td><td>${money(c.total_debt||c.balance||0)}</td><td>${money(c.total_sales||c.totalSales||0)}</td><td>${money(c.total_paid||c.paid||0)}</td><td style="color:#64748b;">${(c.last_date||c.lastDate||'-').slice(0,10)}</td></tr>`).join('')
+            : '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:32px;">No clients yet.</td></tr>';
+    }
+    async function loadClients() {
+        const token = getToken();
+        if (!token || token === 'demo-frontend-token') { renderClients(inventoryDemo.clients); return; }
+        try {
+            const res = await fetch(API_BASE_URL + '/warehouse/clients', { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+            if (res.ok) { const r = await res.json(); renderClients(r.data || []); }
+            else renderClients(inventoryDemo.clients);
+        } catch(e) { renderClients(inventoryDemo.clients); }
+    }
+    loadClients();
+</script>
+<script src="../js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>

@@ -1,203 +1,228 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warehouse Dashboard — Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <title>Warehouse Overview — Curtains Management System</title>
+    <link rel="stylesheet" href="wh-style.css?v=1">
     <style>
-        body { background: #f4f1e8; }
-        .wh-page { max-width:1300px; margin:0 auto; padding:28px 24px 60px; }
+        /* ── Page background ────────────────────────────────────────── */
+        .wh-page { background: transparent; }
 
-        /* ── Section label ── */
-        .wh-section-label { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:#163329; opacity:0.65; margin:28px 0 14px; }
-        .wh-section-label::after { content:""; flex:1; height:1px; background:rgba(22,51,41,0.15); }
+        /* ── KPI cards — full gradient, white text ───────────────────── */
+        .kpi-row { grid-template-columns: repeat(3,1fr); gap:14px; margin-bottom:8px; }
+        .kpi-row-finance { display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-bottom:24px; }
+        .kpi-card { border:none; border-radius:14px; padding:20px 22px; color:#fff; position:relative; overflow:hidden; border-top:none; }
+        .kpi-card::before { content:''; position:absolute; top:-18px; right:-18px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,.12); }
+        .kpi-card::after  { content:''; position:absolute; bottom:-24px; right:12px; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.07); }
+        .kpi-card .k-label { color:rgba(255,255,255,.8); margin-bottom:8px; }
+        .kpi-card .k-value { color:#fff; font-size:clamp(16px,2vw,24px); }
+        .kpi-card .k-sub   { color:rgba(255,255,255,.7); }
+        /* Stock row */
+        .kpi-row .kpi-card:nth-child(1) { background: linear-gradient(135deg,#1a3d2b,#2d6a47); }
+        .kpi-row .kpi-card:nth-child(2) { background: linear-gradient(135deg,#7a5c10,#c4a24d); }
+        .kpi-row .kpi-card:nth-child(3) { background: linear-gradient(135deg,#8b1a1a,#c0392b); }
+        /* Finance row */
+        .kpi-row-finance .kpi-card:nth-child(1) { background: linear-gradient(135deg,#1a3d2b,#2d9e66); }
+        .kpi-row-finance .kpi-card:nth-child(2) { background: linear-gradient(135deg,#0d6b3f,#16a168); }
+        .kpi-row-finance .kpi-card:nth-child(3) { background: linear-gradient(135deg,#8b1a1a,#c0392b); }
+        .kpi-row-finance .kpi-card:nth-child(4) { background: linear-gradient(135deg,#5c4a10,#c4a24d); }
+        .kpi-row-finance .kpi-card:nth-child(5) { background: linear-gradient(135deg,#3d2b0a,#a8872e); }
+        .kpi-row-finance .kpi-card:nth-child(6) { background: linear-gradient(135deg,#1a3d2b,#c4a24d); }
+        .kpi-row-finance { grid-template-columns: repeat(3,1fr); }
+        .kpi-card.red   { background: linear-gradient(135deg,#8b1a1a,#c0392b) !important; }
+        .kpi-card.gold  { background: linear-gradient(135deg,#7a5c10,#c4a24d) !important; }
+        .kpi-card.green { background: linear-gradient(135deg,#1a3d2b,#2d9e66) !important; }
+        .kpi-card .k-value { color:#fff !important; }
+        .kpi-row-label { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+            color:#94a3b8; margin:14px 0 8px 2px; }
+        @media(max-width:600px){ .kpi-row-finance{grid-template-columns:1fr 1fr;} }
 
-        /* ── KPI bar ── */
-        .kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
-        @media(max-width:1100px){ .kpi-row{ grid-template-columns:repeat(3,1fr); } }
-        @media(max-width:700px) { .kpi-row{ grid-template-columns:repeat(2,1fr); } }
-        .kpi-card { background:#fff; border:1px solid rgba(22,51,41,0.1); border-radius:12px; padding:16px 18px; min-width:0; overflow:hidden; }
-        .kpi-card .k-label { font-size:9px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#888; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .kpi-card .k-value { font-size:clamp(14px,1.6vw,22px); font-weight:800; color:#163329; line-height:1.2; word-break:break-word; overflow-wrap:anywhere; }
-        .kpi-card .k-sub   { font-size:11px; color:#aaa; margin-top:4px; }
-        .kpi-card.red .k-value  { color:#8b2222; }
-        .kpi-card.gold .k-value { color:#b89a3a; }
-        .kpi-card.green .k-value{ color:#2d7a44; }
+        /* ── Card headers — dark green gradient ─────────────────────── */
+        .stock-card-head, .stores-card-head, .mov-card-head, .tx-card-head {
+            background: linear-gradient(90deg,#1a3d2b,#2d6a47);
+            border-bottom: none; padding: 14px 18px;
+        }
+        .stock-card-head h3, .stores-card-head h3, .mov-card-head h3, .tx-card-head h3 { color:#fff; }
+        .stores-card-head p { color:rgba(255,255,255,.65); }
+        .mov-card-head a, .tx-card-head a, .dash-link { color:#c4a24d !important; font-weight:800; }
+        .stock-card-head a { color:#c4a24d; font-weight:800; text-decoration:none; }
 
-        /* ── Two-col layout ── */
-        .dash-grid { display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start; }
-        @media(max-width:980px){ .dash-grid{ grid-template-columns:1fr; } }
+        /* ── Cards — subtle shadow, rounded ─────────────────────────── */
+        .stock-card, .stores-card, .mov-card, .tx-card {
+            border-radius:14px; border:none;
+            box-shadow: 0 3px 16px rgba(0,0,0,.08);
+        }
 
-        /* ── Stock summary table ── */
-        .stock-card { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; }
-        .stock-card-head { padding:14px 20px; background:#f0ece0; border-bottom:1px solid rgba(22,51,41,0.1); display:flex; justify-content:space-between; align-items:center; }
-        .stock-card-head h3 { font-size:14px; font-weight:800; color:#163329; margin:0; }
-        .stock-table { width:100%; border-collapse:collapse; }
-        .stock-table th { background:#f9f7f1; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; padding:9px 16px; color:#888; border-bottom:1px solid rgba(22,51,41,0.08); text-align:left; }
-        .stock-table td { padding:10px 16px; border-bottom:1px solid rgba(22,51,41,0.06); color:#333; vertical-align:middle; }
-        .stock-table tr:last-child td { border-bottom:0; }
-        .stock-table tr:hover td { background:rgba(22,51,41,0.02); }
-        .item-name-cell { font-size:15px; font-weight:800; color:#163329; }
-        .item-unit-tag  { display:inline-block; font-size:9px; background:rgba(22,51,41,0.08); color:#555; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
-        .variant-chips  { display:flex; flex-wrap:wrap; gap:4px; }
-        .variant-chip   { font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; border:1px solid; }
-        .variant-chip.ok       { background:rgba(45,122,68,0.1); color:#2d7a44; border-color:rgba(45,122,68,0.2); }
-        .variant-chip.low      { background:rgba(184,134,11,0.1); color:#b8860b; border-color:rgba(184,134,11,0.2); }
-        .variant-chip.critical { background:rgba(139,34,34,0.1); color:#8b2222; border-color:rgba(139,34,34,0.2); }
-        .variant-chip.empty    { background:rgba(139,34,34,0.15); color:#8b2222; border-color:rgba(139,34,34,0.3); }
-        .no-variants-hint { font-size:12px; color:#ccc; font-style:italic; }
-        .stock-bar-wrap { display:flex; align-items:center; gap:8px; }
-        .stock-bar-bg   { flex:1; background:#e8e4d8; border-radius:4px; height:5px; overflow:hidden; }
-        .stock-bar-fill { height:100%; border-radius:4px; }
-        .stock-bar-fill.ok       { background:#2d7a44; }
-        .stock-bar-fill.low      { background:#b8860b; }
-        .stock-bar-fill.critical { background:#8b2222; }
-        .stock-bar-fill.empty    { background:#ddd; width:0!important; }
+        /* ── Stock table rows ────────────────────────────────────────── */
+        .stock-table tbody tr:nth-child(even) td { background:#f7f9f7; }
+        .stock-table tbody tr:hover td { background:#eef5f0; }
+        .item-name-cell { font-weight:800; color:#1a3d2b; font-size:14px; }
+        .item-unit-tag  { background:#e8f5ee; color:#2d7a4a; border-radius:6px; padding:2px 7px; font-size:10px; font-weight:700; margin-left:5px; }
 
-        /* ── Store accounts panel ── */
-        .stores-card { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; }
-        .stores-card-head { padding:14px 20px; background:#f0ece0; border-bottom:1px solid rgba(22,51,41,0.1); }
-        .stores-card-head h3 { font-size:14px; font-weight:800; color:#163329; margin:0 0 2px; }
-        .stores-card-head p  { font-size:11px; color:#888; margin:0; }
-        .store-row { padding:14px 18px; border-bottom:1px solid rgba(22,51,41,0.07); }
-        .store-row:last-child { border-bottom:0; }
-        .store-row-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-        .store-row-name { font-size:14px; font-weight:800; color:#163329; }
-        .store-row-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
-        .store-stat { text-align:center; }
-        .store-stat label { display:block; font-size:8px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#aaa; margin-bottom:2px; }
-        .store-stat strong { display:block; font-size:12px; font-weight:800; color:#163329; }
-        .store-stat.debt-col strong { color:#8b2222; }
-        .store-debt-bar { margin-top:8px; background:#eee; border-radius:4px; height:3px; overflow:hidden; }
-        .store-debt-fill { height:100%; background:#8b2222; border-radius:4px; }
+        /* ── Stock bar — thicker, more vibrant ───────────────────────── */
+        .stock-bar-bg   { height:8px; border-radius:6px; background:#f0ede8; }
+        .stock-bar-fill { height:100%; border-radius:6px; }
+        .stock-bar-fill.ok       { background:linear-gradient(90deg,#27ae60,#2ecc71); }
+        .stock-bar-fill.low      { background:linear-gradient(90deg,#e67e22,#f39c12); }
+        .stock-bar-fill.critical,
+        .stock-bar-fill.empty    { background:linear-gradient(90deg,#c0392b,#e74c3c); }
 
-        /* ── Recent movements ── */
-        .mov-card { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; }
-        .mov-card-head { padding:14px 20px; background:#f0ece0; border-bottom:1px solid rgba(22,51,41,0.1); display:flex; justify-content:space-between; align-items:center; }
-        .mov-card-head h3 { font-size:14px; font-weight:800; color:#163329; margin:0; }
-        .mov-card-head a { font-size:12px; color:#163329; font-weight:700; }
-        .mov-list { max-height:340px; overflow-y:auto; }
-        .mov-row { display:flex; align-items:center; gap:10px; padding:10px 18px; border-bottom:1px solid rgba(22,51,41,0.06); }
-        .mov-row:last-child { border-bottom:0; }
-        .mov-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-        .mov-dot.pos { background:#2d7a44; }
-        .mov-dot.neg { background:#8b2222; }
-        .mov-text { flex:1; }
-        .mov-text strong { display:block; font-size:12px; font-weight:800; color:#163329; }
-        .mov-text span   { font-size:11px; color:#888; }
-        .mov-delta-val { font-size:13px; font-weight:800; white-space:nowrap; }
-        .mov-delta-val.pos { color:#2d7a44; }
-        .mov-delta-val.neg { color:#8b2222; }
-        .mov-empty { padding:30px; text-align:center; color:#ccc; font-size:13px; }
+        /* ── Variant chips — bolder ──────────────────────────────────── */
+        .variant-chip { font-size:11px; padding:3px 10px; border-radius:12px; font-weight:800; }
+        .variant-chip.ok       { background:#d4f0e1; color:#1a6630; border-color:rgba(26,102,48,.2); }
+        .variant-chip.low      { background:#fef3cd; color:#7a5c00; border-color:rgba(122,92,0,.2); }
+        .variant-chip.critical,
+        .variant-chip.empty    { background:#fde0e0; color:#8b2020; border-color:rgba(139,32,32,.2); }
 
-        /* ── Recent transactions panel ── */
-        .tx-card { background:#fff; border:1px solid rgba(22,51,41,0.12); border-radius:12px; overflow:hidden; margin-top:16px; }
-        .tx-card-head { padding:14px 20px; background:#f0ece0; border-bottom:1px solid rgba(22,51,41,0.1); display:flex; justify-content:space-between; align-items:center; }
-        .tx-card-head h3 { font-size:14px; font-weight:800; color:#163329; margin:0; }
-        .tx-card-head a  { font-size:12px; color:#163329; font-weight:700; }
-        .tx-list { padding:0 4px; }
-        .tx-row { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid rgba(22,51,41,0.06); flex-wrap:wrap; gap:6px; }
-        .tx-row:last-child { border-bottom:0; }
-        .tx-ref  { font-size:12px; font-weight:800; color:#163329; }
-        .tx-store{ font-size:11px; color:#888; }
-        .tx-date { font-size:11px; color:#aaa; }
-        .tx-amount { font-size:13px; font-weight:800; color:#163329; }
+        /* ── Store balance rows ──────────────────────────────────────── */
+        .store-row { padding:13px 18px; border-bottom:1px solid #f0ede8; transition:background .15s; }
+        .store-row:hover { background:#f7faf8; }
+        .store-row-name { color:#1a3d2b; font-size:14px; }
+        .store-debt-bar  { background:#f0ede8; border-radius:4px; height:5px; overflow:hidden; margin-top:8px; }
+        .store-debt-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#c0392b,#e74c3c); }
+        .store-stat label { color:#475569; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+        .store-stat strong { font-size:13px; font-weight:800; color:#1a3d2b; display:block; margin-top:2px; }
+        .debt-col strong { color:#c0392b !important; }
 
-        a.dash-link { color:#163329; text-decoration:none; font-weight:700; font-size:12px; }
-        a.dash-link:hover { text-decoration:underline; }
+        /* ── TX rows ─────────────────────────────────────────────────── */
+        .tx-row { border-bottom:1px solid #f0ede8; transition:background .15s; }
+        .tx-row:hover { background:#f7faf8; }
+        .tx-ref   { font-family:monospace; font-size:12px; color:#1a3d2b; font-weight:700; }
+        .tx-store { font-size:11px; color:#94a3b8; margin-top:2px; }
+        .tx-amount{ font-size:15px; font-weight:800; color:#1a3d2b; }
+        .tx-date  { font-size:11px; color:#94a3b8; }
+
+        /* ── Movement rows ───────────────────────────────────────────── */
+        .mov-row { border-bottom:1px solid #f0ede8; transition:background .15s; }
+        .mov-row:hover { background:#f7faf8; }
+        .mov-dot      { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .mov-dot.pos  { background:linear-gradient(135deg,#27ae60,#2ecc71); box-shadow:0 0 5px rgba(46,204,113,.4); }
+        .mov-dot.neg  { background:linear-gradient(135deg,#c0392b,#e74c3c); box-shadow:0 0 5px rgba(231,76,60,.4); }
+        .mov-delta-val.pos { color:#27ae60; font-weight:800; }
+        .mov-delta-val.neg { color:#c0392b; font-weight:800; }
+
+        /* ── Section label ───────────────────────────────────────────── */
+        .wh-section { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
+            color:#1a3d2b; margin:24px 0 12px; padding-left:4px;
+            border-left:3px solid #c4a24d; padding-left:10px; }
+
+        /* ── Responsive ──────────────────────────────────────────────── */
+        @media(max-width:1000px){ .kpi-row{grid-template-columns:repeat(3,1fr);} .dash-grid{grid-template-columns:1fr;} }
+        @media(max-width:600px) { .kpi-row{grid-template-columns:1fr 1fr;} }
     </style>
 </head>
-<body class="ltr">
+<body>
+<div class="wh-layout">
 
-<div class="layout">
-<aside class="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-title">Warehouse</div>
-        <div class="sidebar-store-name" id="sidebarStoreName">المستودع</div>
+<aside class="wh-sidebar">
+    <div class="wh-brand">
+        <div class="wh-brand-row">
+            <div class="wh-brand-icon">📦</div>
+            <span class="wh-brand-name">Warehouse</span>
+        </div>
+        <div class="wh-brand-sub" id="sidebarStoreName">Central</div>
     </div>
-    <ul class="sidebar-menu">
-        <li class="menu-item"><a href="home.html" class="active"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-        <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">S</span><span>Supply</span></a></li>
-        <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Inventory</span></a></li>
-    </ul>
-    <div class="sidebar-footer"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
+    <nav class="wh-nav">
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Main</div>
+            <a href="home.html" class="wh-nav-link active"><span class="wh-nav-icon">📊</span>Overview</a>
+            <a href="dashboard.html" class="wh-nav-link"><span class="wh-nav-icon">📦</span>New Supply</a>
+            <a href="inventory.html" class="wh-nav-link"><span class="wh-nav-icon">🗃️</span>Inventory</a>
+        </div>
+        <div class="wh-nav-group">
+            <div class="wh-nav-label">Finance</div>
+            
+            <a href="debts.html" class="wh-nav-link"><span class="wh-nav-icon">💸</span>Debts</a>
+            <a href="reports.html" class="wh-nav-link"><span class="wh-nav-icon">📈</span>Reports</a>
+        </div>
+    </nav>
+    <div class="wh-sidebar-foot">
+        <a href="../landing.html">← Switch workspace</a>
+    </div>
 </aside>
-<div class="main-content">
 
-<nav class="navbar">
-    <div class="navbar-title">Warehouse Dashboard</div>
-    <div class="navbar-actions">
-        <span class="scope-pill">warehouse scope</span>
-        <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div>
+<div class="wh-main">
+    <div class="wh-topbar">
+        <span class="wh-topbar-title">Warehouse Overview</span>
+        <div class="wh-topbar-right">
+            <div class="wh-avatar" id="userAvatar">A</div>
+            <span class="wh-user-name" id="userName">Admin</span>
+        </div>
     </div>
-</nav>
-<main class="content">
-<div class="wh-page">
 
-    <!-- KPI row -->
-    <div class="kpi-row" id="kpiRow"></div>
+    <div style="flex:1;overflow-y:auto;">
+    <div class="wh-page">
 
-    <!-- Stock + Stores -->
-    <div class="wh-section-label">Stock Overview / نظرة عامة على المخزون</div>
-    <div class="dash-grid">
+        <div class="wh-page-header">
+            <div>
+                <div class="wh-page-title">Overview</div>
+                <div class="wh-page-sub">Stock levels, store balances, and recent activity</div>
+            </div>
+            <a href="dashboard.html" class="wh-btn wh-btn-primary">+ New Supply</a>
+        </div>
 
-        <div>
-            <!-- Stock summary table -->
-            <div class="stock-card">
-                <div class="stock-card-head">
-                    <h3>Item stock levels</h3>
-                    <a class="dash-link" href="inventory.html">Manage →</a>
+        <!-- KPI rows -->
+        <div class="kpi-row-label">Stock</div>
+        <div class="kpi-row" id="kpiRow"></div>
+        <div class="kpi-row-label">Financials</div>
+        <div class="kpi-row-finance" id="kpiFinanceRow"></div>
+
+        <!-- Stock + Stores -->
+        <div class="wh-section">Stock Overview</div>
+        <div class="dash-grid">
+            <div>
+                <div class="stock-card">
+                    <div class="stock-card-head">
+                        <h3>Item stock levels</h3>
+                        <a class="dash-link" href="inventory.html">Manage →</a>
+                    </div>
+                    <table class="stock-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Variants &amp; codes</th>
+                                <th>Total stock</th>
+                                <th>Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody"></tbody>
+                    </table>
                 </div>
-                <table class="stock-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Variants &amp; codes</th>
-                            <th>Total stock</th>
-                            <th>Level</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stockTableBody"></tbody>
-                </table>
+
+                <div class="tx-card">
+                    <div class="tx-card-head">
+                        <h3>Recent supply transactions</h3>
+                        <a class="dash-link" href="dashboard.html">All →</a>
+                    </div>
+                    <div class="tx-list" id="recentTxList"></div>
+                </div>
             </div>
 
-            <!-- Recent transactions -->
-            <div class="tx-card">
-                <div class="tx-card-head">
-                    <h3>Recent supply transactions</h3>
-                    <a class="dash-link" href="dashboard.html">All transactions →</a>
+            <div>
+                <div class="stores-card">
+                    <div class="stores-card-head">
+                        <h3>Store balances</h3>
+                        <p>Outstanding debt per store</p>
+                    </div>
+                    <div id="storeBalanceRows"></div>
                 </div>
-                <div class="tx-list" id="recentTxList"></div>
+
+                <div class="mov-card" style="margin-top:16px;">
+                    <div class="mov-card-head">
+                        <h3>Recent stock movements</h3>
+                        <a class="dash-link" href="inventory.html">All →</a>
+                    </div>
+                    <div class="mov-list" id="movList"></div>
+                </div>
             </div>
         </div>
 
-        <div>
-            <!-- Store accounts -->
-            <div class="stores-card">
-                <div class="stores-card-head">
-                    <h3>Store balances</h3>
-                    <p>Outstanding debt per store</p>
-                </div>
-                <div id="storeBalanceRows"></div>
-            </div>
-
-            <!-- Recent movements -->
-            <div class="mov-card" style="margin-top:16px;">
-                <div class="mov-card-head">
-                    <h3>Recent stock movements</h3>
-                    <a class="dash-link" href="inventory.html">All →</a>
-                </div>
-                <div class="mov-list" id="movList"></div>
-            </div>
-        </div>
-
+    </div><!-- /.wh-page -->
     </div>
+</div><!-- /.wh-main -->
 
-</div>
-</main>
-</div>
-</div>
+</div><!-- /.wh-layout -->
 
 <script src="../js/api.js"></script>
 <script src="../js/demo-data.js?v=wh-2"></script>
@@ -258,8 +283,6 @@ function storeStats(storeId){
 function renderKPI(){
     const variants = getVariants();
     const sales    = getSales();
-    const movs     = getMov();
-    const today    = todayVal();
 
     let totalVariants=0, lowCount=0, criticalCount=0, totalItems=0;
     WH_ITEMS.forEach(item=>{
@@ -277,22 +300,34 @@ function renderKPI(){
     const totalPaid      = sales.reduce((s,x)=>s+Number(x.paid||0),0);
     const totalRemaining = sales.reduce((s,x)=>s+Number(x.remaining||0),0);
 
-    const kpis = [
-        { label:'Total variants',    value: totalVariants,        sub: totalItems+' item types', cls:'' },
-        { label:'Low stock',         value: lowCount,             sub:'Below minimum',           cls:'gold' },
-        { label:'Empty / Critical',  value: criticalCount,        sub:'Needs restock',           cls:'red' },
-        { label:'Total supplied',    value: money(totalSupplied), sub:'All time',                cls:'' },
-        { label:'Total collected',   value: money(totalPaid),     sub:'Received from stores',    cls:'green' },
-        { label:'Outstanding debt',  value: money(totalRemaining),sub:'Owed to warehouse',       cls: totalRemaining>0?'red':'' },
+    const grossProfit = sales.reduce((s,x)=>{
+        return s + (x.items||[]).reduce((si,item)=>si+Number(item.profitAmount||0),0);
+    },0);
+    const netProfit = grossProfit - totalRemaining;
+
+    const stockKpis = [
+        { label:'Total variants',   value: totalVariants,        sub: totalItems+' item types' },
+        { label:'Low stock',        value: lowCount,             sub:'Below minimum'           },
+        { label:'Empty / Critical', value: criticalCount,        sub:'Needs restock'           },
+    ];
+    const finKpis = [
+        { label:'Total supplied',   value: money(totalSupplied), sub:'All stores combined'     },
+        { label:'Total paid',       value: money(totalPaid),     sub:'Received from stores'    },
+        { label:'Outstanding debt', value: money(totalRemaining),sub:'Still owed to warehouse' },
+        { label:'Transactions',     value: sales.length,         sub:'All supply records'      },
+        { label:'Gross profit',     value: money(grossProfit),   sub:'(Selling − Cost) × Qty'  },
+        { label:'Net profit',       value: money(netProfit),     sub:'Gross − outstanding debts'},
     ];
 
-    document.getElementById('kpiRow').innerHTML = kpis.map(k=>`
-        <div class="kpi-card ${k.cls}">
+    const cardHtml = k => `
+        <div class="kpi-card">
             <div class="k-label">${esc(k.label)}</div>
             <div class="k-value">${esc(String(k.value))}</div>
             <div class="k-sub">${esc(k.sub)}</div>
-        </div>
-    `).join('');
+        </div>`;
+
+    document.getElementById('kpiRow').innerHTML        = stockKpis.map(cardHtml).join('');
+    document.getElementById('kpiFinanceRow').innerHTML = finKpis.map(cardHtml).join('');
 }
 
 // ─── Stock table ──────────────────────────────────────────────────────────────
@@ -321,13 +356,13 @@ function renderStockTable(){
             <tr>
                 <td><span class="item-name-cell">${esc(item.name)}</span><span class="item-unit-tag">${esc(item.unit)}</span></td>
                 <td>${chipHtml}</td>
-                <td style="font-size:16px;font-weight:800;color:${overallStatus==='ok'?'#163329':overallStatus==='low'?'#b8860b':'#8b2222'};">
+                <td style="font-size:16px;font-weight:800;color:${overallStatus==='ok'?'#059669':overallStatus==='low'?'#d97706':'#ef4444'};">
                     ${totalQty.toLocaleString('en-US').replace(/,/g,'.')}
                 </td>
                 <td>
                     <div class="stock-bar-wrap">
                         <div class="stock-bar-bg"><div class="stock-bar-fill ${overallStatus}" style="width:${pct}%;"></div></div>
-                        <span style="font-size:10px;color:#aaa;min-width:28px;">${Math.round(pct)}%</span>
+                        <span style="font-size:10px;color:#94a3b8;min-width:28px;">${Math.round(pct)}%</span>
                     </div>
                 </td>
             </tr>
@@ -339,7 +374,6 @@ function renderStockTable(){
 
 function renderStoreBalances(){
     const allSales = getSales();
-    const grandTotal = allSales.reduce((s,x)=>s+Number(x.finalTotal||0),0) || 1;
 
     document.getElementById('storeBalanceRows').innerHTML = WH_STORES.map(store=>{
         const st = storeStats(store.id);
@@ -349,7 +383,7 @@ function renderStoreBalances(){
             <div class="store-row">
                 <div class="store-row-top">
                     <span class="store-row-name">${esc(store.name)}</span>
-                    <span style="font-size:11px;color:#888;">${st.count} tx</span>
+                    <span style="font-size:11px;color:#94a3b8;">${st.count} tx</span>
                 </div>
                 <div class="store-row-stats">
                     <div class="store-stat">
@@ -358,7 +392,7 @@ function renderStoreBalances(){
                     </div>
                     <div class="store-stat">
                         <label>Paid</label>
-                        <strong style="color:#2d7a44;">${hasData?money(st.paid):'—'}</strong>
+                        <strong style="color:#10b981;">${hasData?money(st.paid):'—'}</strong>
                     </div>
                     <div class="store-stat debt-col">
                         <label>Debt</label>
@@ -407,18 +441,17 @@ function renderRecentTx(){
     const el    = document.getElementById('recentTxList');
 
     if(!sales.length){
-        el.innerHTML = `<div style="padding:24px;text-align:center;color:#ccc;font-size:13px;">No supply transactions yet.</div>`;
+        el.innerHTML = `<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">No supply transactions yet.</div>`;
         return;
     }
 
     el.innerHTML = sales.map(s=>{
         const fmtDate = s.date ? new Date(s.date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-        const statusColor = s.status==='Paid'?'#2d7a44':s.status==='Partial'?'#b8860b':'#8b2222';
         return `
             <div class="tx-row">
                 <div>
                     <div class="tx-ref">${esc(s.reference)}</div>
-                    <div class="tx-store">${esc(s.storeName)} &nbsp;·&nbsp; <span style="color:${statusColor};font-weight:800;">${esc(s.status)}</span></div>
+                    <div class="tx-store">${esc(s.storeName)} &nbsp;·&nbsp; ${statusBadge(s.status)}</div>
                 </div>
                 <div style="text-align:right;">
                     <div class="tx-amount">${money(s.finalTotal)}</div>
@@ -448,7 +481,7 @@ window.addEventListener('load', async ()=>{
                 id:s.id, reference:s.reference, storeId:s.store_id,
                 date:(s.date||'').slice(0,10), finalTotal:parseFloat(s.total||0),
                 paid:parseFloat(s.paid||0), remaining:parseFloat(s.remaining||0),
-                status:s.status, items:s.items||[]
+                status:s.status, items:s.items||[], storeName: 'Store '+s.store_id
             })); }
         }catch(e){}
     }

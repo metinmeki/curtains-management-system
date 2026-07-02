@@ -4,364 +4,235 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Orders - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="rt-style.css?v=1">
     <style>
-        .orders-tabs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
+        /* ── Metric cards row ── */
+        .workspace-grid .metric-card { color:#fff !important; border-left:none !important; border-radius:10px; }
+        .workspace-grid .metric-card span { color:rgba(255,255,255,.82) !important; font-size:13px; }
+        .workspace-grid .metric-card strong { color:#fff !important; font-size:20px; }
+        .workspace-grid .metric-card small { color:rgba(255,255,255,.65) !important; font-size:11px; }
+        .workspace-grid .metric-card:nth-child(1) { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; }
+        .workspace-grid .metric-card:nth-child(2) { background:linear-gradient(135deg,#1f4a1f,#c4a24d) !important; }
+        .workspace-grid .metric-card:nth-child(3) { background:linear-gradient(135deg,#5c4a10,#c4a24d) !important; }
+        .workspace-grid .metric-card:nth-child(4) { background:linear-gradient(135deg,#1a3d2b,#3b7a52) !important; }
 
-        .orders-view {
-            display: none;
-        }
+        /* ── Order receipt head already green; keep ── */
 
-        .orders-view.active {
-            display: block;
-        }
+        /* ── Order meta form section ── */
+        .order-meta { background:#f0f7f2; border-bottom:1px solid rgba(27,61,46,.12); }
+        .order-meta label { color:#1a3d2b !important; font-weight:700; }
 
-        .order-receipt {
-            background: var(--surface-color);
-        }
+        /* ── Items table header ── */
+        .order-items-table th { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; color:#fff !important; border-bottom:2px solid #c4a24d !important; }
 
-        .order-receipt-head {
-            position: relative;
-            text-align: center;
-            background: linear-gradient(148deg, #163329 0%, #1f4a38 45%, #265c47 100%);
-            padding: 32px 24px 26px;
-            overflow: hidden;
-        }
+        /* ── Order bottom summary cards ── */
+        .order-bottom { background:#f0f7f2; border-top:2px solid #c4a24d; }
+        .order-bottom-item { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; border:none !important; }
+        .order-bottom-item span { color:rgba(255,255,255,.78) !important; }
+        .order-bottom-item strong { color:#c4a24d !important; }
 
-        .order-receipt-head::before {
-            content: "";
-            position: absolute;
-            top: -44px;
-            right: -44px;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 2px solid rgba(184, 154, 58, 0.15);
-            pointer-events: none;
-        }
+        /* ── "Order money split" card header ── */
+        .card-header { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; border-bottom:2px solid #c4a24d !important; }
+        .card-title { color:#fff !important; }
 
-        .order-receipt-head::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent 5%, #b89a3a 30%, #d4b84e 50%, #b89a3a 70%, transparent 95%);
-        }
+        /* ── Summary lines ── */
+        .summary-line { border-bottom-color:#d4e8db !important; }
+        .summary-line span { color:#1a3d2b !important; font-weight:600; }
+        .summary-line strong { color:#c4a24d !important; }
+        .summary-line:last-of-type span { color:#1a3d2b !important; }
+        .summary-line:last-of-type strong { color:#1a3d2b !important; }
 
-        .order-brand {
-            font-size: clamp(26px, 4.5vw, 44px);
-            letter-spacing: 8px;
-            font-weight: 900;
-            color: #fff;
-            line-height: 1.1;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        }
+        /* ── Form labels inside the aside card ── */
+        .card-body .form-group label { color:#1a3d2b !important; font-weight:700; }
 
-        .order-subbrand {
-            font-size: clamp(16px, 2.8vw, 27px);
-            font-weight: 700;
-            color: rgba(255,255,255,0.84);
-            margin-top: 9px;
-            letter-spacing: 2px;
-        }
+        /* ── Orders filter bar ── */
+        .orders-filter-grid { background:#f0f7f2 !important; border-bottom:1px solid #c4d9cc !important; }
+        .orders-filter-grid label { color:#1a3d2b !important; font-weight:700; }
 
-        .order-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 14px;
-            padding: 18px 20px 8px;
-        }
-
-        .order-items-table th,
-        .order-items-table td {
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .order-items-table th:first-child,
-        .order-items-table td:first-child {
-            width: 18%;
-            min-width: 130px;
-        }
-
-        .order-items-table .order-type {
-            min-width: 120px;
-        }
-
-        .order-items-table input,
-        .order-items-table select {
-            text-align: center;
-            padding: 8px;
-        }
-
-        .order-item-actions {
-            display: inline-flex;
-            gap: 6px;
-            justify-content: center;
-        }
-
-        .order-bottom {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 10px;
-            padding: 16px 20px 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .order-bottom-item {
-            background: #f7f3e8;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-        }
-
-        .order-bottom-item span {
-            display: block;
-            color: var(--text-gray);
-            font-size: 12px;
-        }
-
-        .order-bottom-item strong {
-            color: var(--text-dark);
-            font-size: 18px;
-        }
-
-        .orders-filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            background: #fbf8ef;
-        }
-
-        .orders-filter-grid .form-group {
-            margin-bottom: 0;
-        }
-
-        .order-detail-panel {
-            display: grid;
-            gap: 12px;
-            padding: 14px;
-            background: #f7f3e8;
-        }
-
-        .order-detail-card {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: #fffdf6;
-            padding: 12px;
-        }
-
-        .ledger-entry {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            background: #fffdf6;
-            margin-bottom: 10px;
-        }
-
-        .ledger-entry-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .print-order-receipt {
-            display: none;
-        }
-
-        @media print {
-            body.printing-order .layout {
-                display: none;
-            }
-
-            body.printing-order .print-order-receipt {
-                display: block;
-                padding: 18px;
-                direction: rtl;
-                font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-                color: #111827;
-            }
-
-            body.printing-order .print-order-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 16px;
-            }
-
-            body.printing-order .print-order-table th,
-            body.printing-order .print-order-table td {
-                border: 1px solid #1f315f;
-                padding: 8px;
-                text-align: center;
-            }
-        }
+        /* ── Table headers in order lists ── */
+        th { background:linear-gradient(135deg,#1a3d2b,#2d6a47) !important; color:#fff !important; border-bottom:2px solid #c4a24d !important; }
     </style>
 </head>
 <body class="ltr">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
-                <li class="menu-item"><a href="orders.html" class="active"><span class="menu-icon">O</span><span>Orders</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="expenses.html"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-                
-            </ul>
-            <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-            
-       </aside>
-        <div class="main-content">
-            <nav class="navbar"><div class="navbar-title">Retail Orders</div><div class="navbar-actions"><span class="scope-pill">external supplier orders</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
-            <main class="content">
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Orders</h1>
-                        <p class="page-subtitle">Special manual orders supplied by other companies, with buyer debt and supplier ledger tracking.</p>
-                    </div>
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link active"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Retail Orders</span>
+            <div class="rt-topbar-right">
+                <span class="scope-pill">external supplier orders</span>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Orders</h1>
+                    <p class="page-subtitle">Special manual orders supplied by other companies, with buyer debt and supplier ledger tracking.</p>
                 </div>
+            </div>
 
-                <div class="orders-tabs">
-                    <button class="filter-btn active" onclick="showOrdersView('create', this)">Create order</button>
-                    <button class="filter-btn" onclick="showOrdersView('list', this)">Orders list</button>
-                    <button class="filter-btn" onclick="showOrdersView('suppliers', this)">Company stats</button>
-                </div>
+            <div class="orders-tabs">
+                <button class="filter-btn active" onclick="showOrdersView('create', this)">Create order</button>
+                <button class="filter-btn" onclick="showOrdersView('list', this)">Orders list</button>
+                <button class="filter-btn" onclick="showOrdersView('suppliers', this)">Company stats</button>
+            </div>
 
-                <div class="workspace-grid">
-                    <div class="metric-card"><span>Total order sales</span><strong id="ordersTotalSales">0 IQD</strong><small>Final totals</small></div>
-                    <div class="metric-card"><span>Order profit</span><strong id="ordersProfit">0 IQD</strong><small>Our income</small></div>
-                    <div class="metric-card"><span>Supplier debt</span><strong id="ordersSupplierDebt">0 IQD</strong><small>We owe companies</small></div>
-                    <div class="metric-card"><span>Buyer debt</span><strong id="ordersBuyerDebt">0 IQD</strong><small>Customers owe us</small></div>
-                </div>
+            <div class="workspace-grid">
+                <div class="metric-card"><span>Total order sales</span><strong id="ordersTotalSales">0 IQD</strong><small>Final totals</small></div>
+                <div class="metric-card"><span>Order profit</span><strong id="ordersProfit">0 IQD</strong><small>Our income</small></div>
+                <div class="metric-card"><span>Supplier debt</span><strong id="ordersSupplierDebt">0 IQD</strong><small>We owe companies</small></div>
+                <div class="metric-card"><span>Buyer debt</span><strong id="ordersBuyerDebt">0 IQD</strong><small>Customers owe us</small></div>
+            </div>
 
-                <section id="createView" class="orders-view active">
-                    <div class="two-column">
-                        <section class="card order-receipt">
-                            <div class="order-receipt-head">
-                                <div class="order-brand">DLOVAN PARDA</div>
-                                <div class="order-subbrand">دلوفان للستائر</div>
-                            </div>
-                            <div class="order-meta">
-                                <div class="form-group"><label>Order date</label><input type="date" id="orderDate"></div>
-                                <div class="form-group"><label>Order time</label><input type="time" id="orderTime"></div>
-                                <div class="form-group"><label>Buyer name</label><input id="buyerName" list="orderClientNames" placeholder="Search saved client name" oninput="selectOrderClient('name')"><datalist id="orderClientNames"></datalist></div>
-                                <div class="form-group"><label>Buyer phone</label><input id="buyerPhone" list="orderClientPhones" placeholder="07xx xxx xxxx" oninput="selectOrderClient('phone')"><datalist id="orderClientPhones"></datalist></div>
-                                <div class="form-group"><label>Company / supplier</label><input id="supplierName" list="supplierSuggestions" placeholder="Supplier company name"><datalist id="supplierSuggestions"></datalist></div>
-                                <div class="form-group"><label>Notes</label><input id="orderNotes" placeholder="Optional order notes"></div>
-                            </div>
-
-                            <div class="card-body table-wrapper">
-                                <table class="order-items-table">
-                                    <thead><tr><th>Item type</th><th>Manual code</th><th>Quantity</th><th>Unit</th><th>Price</th><th>Line total</th><th>Add</th></tr></thead>
-                                    <tbody id="orderItemRows"></tbody>
-                                </table>
-                            </div>
-                            <div class="order-bottom">
-                                <div class="order-bottom-item"><span>Subtotal</span><strong id="orderSubtotalPreview">0 IQD</strong></div>
-                                <div class="order-bottom-item"><span>Delivery price</span><strong id="orderDeliveryPreview">0 IQD</strong></div>
-                                <div class="order-bottom-item"><span>Final total</span><strong id="orderFinalPreview">0 IQD</strong></div>
-                                <div class="order-bottom-item"><span>Buyer remaining debt</span><strong id="orderBuyerDebtPreview">0 IQD</strong></div>
-                            </div>
-                        </section>
-
-                        <aside class="card">
-                            <div class="card-header"><h2 class="card-title">Order money split</h2></div>
-                            <div class="card-body">
-                                <div class="form-grid">
-                                    <div class="form-group"><label>Delivery price</label><input id="deliveryPrice" type="number" min="0" value="0" oninput="calculateOrder()"></div>
-                                    <div class="form-group"><label>Buyer paid amount</label><input id="buyerPaid" type="number" min="0" value="0" oninput="calculateOrder()"></div>
-                                    <div class="form-group"><label>Our profit</label><input id="ourProfit" type="number" min="0" value="0" oninput="calculateOrder()"></div>
-                                    <div class="form-group"><label>Supplier share</label><input id="supplierShare" type="number" min="0" value="0" oninput="calculateOrder()"></div>
-                                    <div class="form-group"><label>Paid to supplier</label><input id="supplierPaid" type="number" min="0" value="0" oninput="calculateOrder()"></div>
-                                </div>
-                                <div class="summary-line"><span>Final total</span><strong id="summaryFinalTotal">0 IQD</strong></div>
-                                <div class="summary-line"><span>Split difference</span><strong id="summarySplitDifference">0 IQD</strong></div>
-                                <div class="summary-line"><span>Supplier remaining balance</span><strong id="summarySupplierDue">0 IQD</strong></div>
-                                <div class="summary-line"><span>Buyer remaining debt</span><strong id="summaryBuyerDue">0 IQD</strong></div>
-                                <div id="orderMessage" class="alert alert-info" style="display:none;margin-top:16px;"></div>
-                                <button class="btn btn-success btn-block" onclick="submitOrder()">Save order</button>
-                                <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printCurrentOrderReceipt()">Print current receipt</button>
-                            </div>
-                       </aside>
-                    </div>
-
-                    <div class="card" style="margin-top:20px;">
-                        <div class="card-header"><h2 class="card-title">Order sales history</h2></div>
-                        <div class="orders-filter-grid">
-                            <div class="form-group">
-                                <label>Search history</label>
-                                <input id="orderHistorySearch" placeholder="Search buyer, phone, supplier, order, code, notes" oninput="renderOrderHistory()">
-                            </div>
+            <section id="createView" class="orders-view active">
+                <div class="two-column">
+                    <section class="card order-receipt">
+                        <div class="order-receipt-head">
+                            <div class="order-brand">DLOVAN PARDA</div>
+                            <div class="order-subbrand">دلوفان للستائر</div>
                         </div>
+                        <div class="order-meta">
+                            <div class="form-group"><label>Order date</label><input type="date" id="orderDate"></div>
+                            <div class="form-group"><label>Order time</label><input type="time" id="orderTime"></div>
+                            <div class="form-group"><label>Buyer name</label><input id="buyerName" list="orderClientNames" placeholder="Search saved client name" oninput="selectOrderClient('name')"><datalist id="orderClientNames"></datalist></div>
+                            <div class="form-group"><label>Buyer phone</label><input id="buyerPhone" list="orderClientPhones" placeholder="07xx xxx xxxx" oninput="selectOrderClient('phone')"><datalist id="orderClientPhones"></datalist></div>
+                            <div class="form-group"><label>Company / supplier</label><input id="supplierName" list="supplierSuggestions" placeholder="Supplier company name"><datalist id="supplierSuggestions"></datalist></div>
+                            <div class="form-group"><label>Notes</label><input id="orderNotes" placeholder="Optional order notes"></div>
+                        </div>
+
                         <div class="card-body table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Items</th>
-                                        <th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th><th>Notes</th><th>Print</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="orderHistoryRows"></tbody>
+                            <table class="order-items-table">
+                                <thead><tr><th>Item type</th><th>Manual code</th><th>Quantity</th><th>Unit</th><th>Price</th><th>Line total</th><th>Add</th></tr></thead>
+                                <tbody id="orderItemRows"></tbody>
                             </table>
                         </div>
-                    </div>
-                </section>
+                        <div class="order-bottom">
+                            <div class="order-bottom-item"><span>Subtotal</span><strong id="orderSubtotalPreview">0 IQD</strong></div>
+                            <div class="order-bottom-item"><span>Delivery price</span><strong id="orderDeliveryPreview">0 IQD</strong></div>
+                            <div class="order-bottom-item"><span>Final total</span><strong id="orderFinalPreview">0 IQD</strong></div>
+                            <div class="order-bottom-item"><span>Buyer remaining debt</span><strong id="orderBuyerDebtPreview">0 IQD</strong></div>
+                        </div>
+                    </section>
 
-                <section id="listView" class="orders-view">
-                    <div class="card">
-                        <div class="card-header"><h2 class="card-title">Orders list</h2></div>
-                        <div class="orders-filter-grid">
-                            <div class="form-group"><label>Search</label><input id="orderSearch" placeholder="Order, buyer, phone, supplier, code" oninput="renderOrders()"></div>
-                            <div class="form-group"><label>Supplier</label><input id="supplierFilter" placeholder="Company" oninput="renderOrders()"></div>
-                            <div class="form-group"><label>Buyer</label><input id="buyerFilter" placeholder="Buyer name" oninput="renderOrders()"></div>
-                            <div class="form-group"><label>Start date</label><input id="orderStartDate" type="date" onchange="renderOrders()"></div>
-                            <div class="form-group"><label>End date</label><input id="orderEndDate" type="date" onchange="renderOrders()"></div>
-                            <div class="form-group"><label>Buyer status</label><select id="buyerStatusFilter" onchange="renderOrders()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Debt</option></select></div>
-                            <div class="form-group"><label>Supplier status</label><select id="supplierStatusFilter" onchange="renderOrders()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Debt</option></select></div>
+                    <aside class="card">
+                        <div class="card-header"><h2 class="card-title">Order money split</h2></div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group"><label>Delivery price</label><input id="deliveryPrice" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                <div class="form-group"><label>Buyer paid amount</label><input id="buyerPaid" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                <div class="form-group"><label>Our profit</label><input id="ourProfit" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                <div class="form-group"><label>Supplier share</label><input id="supplierShare" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                                <div class="form-group"><label>Paid to supplier</label><input id="supplierPaid" type="number" min="0" value="0" oninput="calculateOrder()"></div>
+                            </div>
+                            <div class="summary-line"><span>Final total</span><strong id="summaryFinalTotal">0 IQD</strong></div>
+                            <div class="summary-line"><span>Split difference</span><strong id="summarySplitDifference">0 IQD</strong></div>
+                            <div class="summary-line"><span>Supplier remaining balance</span><strong id="summarySupplierDue">0 IQD</strong></div>
+                            <div class="summary-line"><span>Buyer remaining debt</span><strong id="summaryBuyerDue">0 IQD</strong></div>
+                            <div id="orderMessage" class="alert alert-info" style="display:none;margin-top:16px;"></div>
+                            <button class="btn btn-success btn-block" style="margin-top:16px;" onclick="submitOrder()">Save order</button>
+                            <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printCurrentOrderReceipt()">Print current receipt</button>
                         </div>
-                        <div class="card-body table-wrapper">
-                            <table>
-                                <thead><tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th><th>Action</th></tr></thead>
-                                <tbody id="ordersRows"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
+                    </aside>
+                </div>
 
-                <section id="suppliersView" class="orders-view">
-                    <div class="card">
-                        <div class="card-header"><h2 class="card-title">Company / supplier stats</h2></div>
-                        <div class="orders-filter-grid">
-                            <div class="form-group"><label>Search companies</label><input id="companySearch" placeholder="Supplier name" oninput="renderSuppliers()"></div>
-                        </div>
-                        <div class="card-body table-wrapper">
-                            <table>
-                                <thead><tr><th>Company</th><th>Orders</th><th>Supplier share</th><th>Paid</th><th>Remaining</th><th>Action</th></tr></thead>
-                                <tbody id="supplierRows"></tbody>
-                            </table>
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header"><h2 class="card-title">Order sales history</h2></div>
+                    <div class="orders-filter-grid">
+                        <div class="form-group">
+                            <label>Search history</label>
+                            <input id="orderHistorySearch" placeholder="Search buyer, phone, supplier, order, code, notes" oninput="renderOrderHistory()">
                         </div>
                     </div>
-                    <div id="supplierLedger" style="margin-top:20px;"></div>
-                </section>
-            </main>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Items</th>
+                                    <th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th><th>Notes</th><th>Print</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderHistoryRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="listView" class="orders-view">
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Orders list</h2></div>
+                    <div class="orders-filter-grid">
+                        <div class="form-group"><label>Search</label><input id="orderSearch" placeholder="Order, buyer, phone, supplier, code" oninput="renderOrders()"></div>
+                        <div class="form-group"><label>Supplier</label><input id="supplierFilter" placeholder="Company" oninput="renderOrders()"></div>
+                        <div class="form-group"><label>Buyer</label><input id="buyerFilter" placeholder="Buyer name" oninput="renderOrders()"></div>
+                        <div class="form-group"><label>Start date</label><input id="orderStartDate" type="date" onchange="renderOrders()"></div>
+                        <div class="form-group"><label>End date</label><input id="orderEndDate" type="date" onchange="renderOrders()"></div>
+                        <div class="form-group"><label>Buyer status</label><select id="buyerStatusFilter" onchange="renderOrders()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Debt</option></select></div>
+                        <div class="form-group"><label>Supplier status</label><select id="supplierStatusFilter" onchange="renderOrders()"><option value="">All</option><option>Paid</option><option>Partial</option><option>Debt</option></select></div>
+                    </div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead><tr><th>Order</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Profit</th><th>Supplier due</th><th>Buyer due</th><th>Action</th></tr></thead>
+                            <tbody id="ordersRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="suppliersView" class="orders-view">
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Company / supplier stats</h2></div>
+                    <div class="orders-filter-grid">
+                        <div class="form-group"><label>Search companies</label><input id="companySearch" placeholder="Supplier name" oninput="renderSuppliers()"></div>
+                    </div>
+                    <div class="card-body table-wrapper">
+                        <table>
+                            <thead><tr><th>Company</th><th>Orders</th><th>Supplier share</th><th>Paid</th><th>Remaining</th><th>Action</th></tr></thead>
+                            <tbody id="supplierRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="supplierLedger" style="margin-top:20px;"></div>
+            </section>
+        </div>
         </div>
     </div>
+</div>
 
-    <div id="printOrderReceipt" class="print-order-receipt"></div>
+<div id="printOrderReceipt" class="print-order-receipt"></div>
 
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
@@ -537,9 +408,21 @@
             }
 
             saveStoreOrder(order);
-            localStorage.setItem('last_saved_order_id', String(order.id));
-            // Save to database
-            (function(o){ const t=getToken(); if(!t||t==='demo-frontend-token') return; fetch(API_BASE_URL+'/retail/orders',{method:'POST',headers:{'Authorization':'Bearer '+t,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(o)}).then(r=>r.ok?r.json():null).then(res=>{ if(res) console.log('Order saved to DB:', res); }).catch(err=>console.error('Order DB save failed:',err)); })(order);
+            const _tok = getToken();
+            if (_tok && _tok !== 'demo-frontend-token') {
+                fetch(API_BASE_URL+'/retail/orders', {method:'POST', headers:{'Authorization':'Bearer '+_tok,'Accept':'application/json','Content-Type':'application/json'}, body:JSON.stringify(order)})
+                    .then(r => {
+                        if (!r.ok) { if (typeof showSaveError === 'function') showSaveError('Order ' + order.reference); return null; }
+                        return r.json();
+                    })
+                    .then(res => {
+                        if (res && res.id) {
+                            const idx = _storeOrders.findIndex(o => o.id === order.id);
+                            if (idx >= 0) _storeOrders[idx].id = res.id;
+                            order.id = res.id;
+                        }
+                    }).catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order ' + order.reference, e); });
+            }
             message.textContent = `Order ${order.reference} saved.`;
             message.className = 'alert alert-success';
             message.style.display = 'block';
@@ -676,7 +559,7 @@
                     <tr>
                         <td>${order.reference}</td><td>${order.date}</td><td>${order.buyerName}<br>${order.buyerPhone}</td><td>${order.supplierName}</td>
                         <td>${money(order.finalTotal)}</td><td>${money(order.ourProfit)}</td><td>${money(order.supplierDue)}</td><td>${money(order.buyerDue)}</td>
-                        <td><button class="btn btn-small btn-primary" onclick="toggleOrderDetails(${order.id})">View</button><button class="btn btn-small btn-secondary" onclick="printOrderReceipt(${order.id})">Print</button></td>
+                        <td style="white-space:nowrap;"><button class="btn btn-small btn-primary" onclick="toggleOrderDetails(${order.id})">View</button><button class="btn btn-small btn-secondary" onclick="printOrderReceipt(${order.id})">Print</button><button class="btn btn-small btn-danger" onclick="deleteOrder(${order.id})">Delete</button></td>
                     </tr>
                     <tr id="orderDetail${order.id}" style="display:none;">${orderDetailHtml(order)}</tr>
                 `).join('')
@@ -886,11 +769,19 @@
         addOrderItemRow();
         calculateOrder();
         loadRetailDataFromDB(getStoreId()).then(() => renderAll());
+
+        async function deleteOrder(id) {
+            if (!confirm('Delete this order permanently?')) return;
+            try {
+                await apiCall('DELETE', '/retail/orders/' + id);
+                await loadRetailDataFromDB(getStoreId());
+                renderAll();
+            } catch(e) { alert('Error deleting order.'); }
+        }
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
 </body>
 </html>
-
-
-

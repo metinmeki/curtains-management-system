@@ -4,55 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Expenses - Curtains Management System</title>
-    <link rel="stylesheet" href="../css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="rt-style.css?v=1">
 </head>
 <body class="ltr">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-header"><div class="sidebar-title">Retail Store</div><div class="sidebar-store-name" id="sidebarStoreName">Store</div></div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="dashboard.html"><span class="menu-icon">D</span><span>Dashboard</span></a></li>
-                <li class="menu-item"><a href="pos.html"><span class="menu-icon">P</span><span>POS System</span></a></li>
-                <li class="menu-item"><a href="orders.html"><span class="menu-icon">O</span><span>Orders</span></a></li>
-                <li class="menu-item"><a href="debts.html"><span class="menu-icon">B</span><span>Debts</span></a></li>
-                <li class="menu-item"><a href="clients.html"><span class="menu-icon">C</span><span>Clients</span></a></li>
-                <li class="menu-item"><a href="expenses.html" class="active"><span class="menu-icon">E</span><span>Expenses</span></a></li>
-                
-                <li class="menu-item"><a href="inventory.html"><span class="menu-icon">I</span><span>Store Inventory</span></a></li>
-            </ul>
-            <div class="sidebar-footer" id="switchWorkspaceBtn"><a class="logout-btn" href="../landing.html" style="display:block;text-align:center;">Switch workspace</a></div>
-            
-       </aside>
-        <div class="main-content">
-            <nav class="navbar"><div class="navbar-title">Retail Expenses</div><div class="navbar-actions"><span class="scope-pill">store_id scoped</span><div class="user-info"><div class="user-avatar" id="userAvatar">A</div><span id="userName">Admin</span></div></div></nav>
-            <main class="content">
-                <div class="page-header">
-                    <div><h1 class="page-title">Expenses</h1><p class="page-subtitle">Store-specific expenses by category, amount, date, and note.</p></div>
-                </div>
-                <div class="two-column">
-                    <section class="card">
-                        <div class="card-header"><h2 class="card-title">Add expense</h2></div>
-                        <div class="card-body">
-                            <div class="form-grid">
-                                <div class="form-group"><label>Category</label><select id="categorySelect"></select></div>
-                                <div class="form-group"><label>Amount</label><input id="expenseAmount" type="number" min="0" placeholder="0"></div>
-                                <div class="form-group"><label>Date</label><input id="expenseDate" type="date"></div>
-                            </div>
-                            <div class="form-group"><label>Note</label><textarea id="expenseNote" placeholder="Reason or detail"></textarea></div>
-                            <button class="btn btn-primary" onclick="saveExpense()">Save expense</button>
-                            <div id="expenseMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link active"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Retail Expenses</span>
+            <div class="rt-topbar-right">
+                <span class="scope-pill">store_id scoped</span>
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <div class="rt-page">
+            <div class="page-header">
+                <div><h1 class="page-title">Expenses</h1><p class="page-subtitle">Store-specific expenses by category, amount, date, and note.</p></div>
+            </div>
+            <div class="two-column">
+                <section class="card">
+                    <div class="card-header"><h2 class="card-title">Add expense</h2></div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Category</label><select id="categorySelect"></select></div>
+                            <div class="form-group"><label>Amount</label><input id="expenseAmount" type="number" min="0" placeholder="0"></div>
+                            <div class="form-group"><label>Date</label><input id="expenseDate" type="date"></div>
                         </div>
-                    </section>
-                    <section class="card">
-                        <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
-                        <div class="card-body table-wrapper">
-                            <table><thead><tr><th>Category</th><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody id="expenseRows"></tbody></table>
-                        </div>
-                    </section>
-                </div>
-            </main>
+                        <div class="form-group"><label>Note</label><textarea id="expenseNote" placeholder="Reason or detail"></textarea></div>
+                        <button class="btn btn-primary" onclick="saveExpense()">Save expense</button>
+                        <div id="expenseMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
+                    </div>
+                </section>
+                <section class="card">
+                    <div class="card-header"><h2 class="card-title">Recent expenses</h2></div>
+                    <div class="card-body table-wrapper">
+                        <table><thead><tr><th>Category</th><th>Amount</th><th>Date</th><th>Note</th></tr></thead><tbody id="expenseRows"></tbody></table>
+                    </div>
+                </section>
+        </div>
         </div>
     </div>
+</div>
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
     <script>
@@ -70,28 +95,32 @@
         document.getElementById('expenseDate').value = todayInputValue();
 
         async function renderExpenses() {
-            let apiExpenses = [];
-            try {
-                const token = getToken();
-                if (token) {
+            const token = getToken();
+            let expenses = [];
+            if (token && token !== 'demo-frontend-token') {
+                try {
                     const response = await fetch(API_BASE_URL + '/retail/expenses/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                     if (response.ok) {
                         const result = await response.json();
-                        if (result && result.data) apiExpenses = result.data;
+                        if (result && result.data) expenses = result.data;
                     }
-                }
-            } catch(e) {}
-            const expenses = apiExpenses.length ? apiExpenses : getStoreExpenses().concat(retailDemo.expenses);
+                } catch(e) {}
+            }
             document.getElementById('expenseRows').innerHTML = expenses.length
                 ? expenses.map(expense => `
-                    <tr><td>${expense.category}</td><td>${money(expense.amount)}</td><td>${expense.date}</td><td>${expense.note || '-'}</td></tr>
+                    <tr>
+                        <td>${expense.category}</td><td>${money(expense.amount)}</td><td>${expense.date}</td><td>${expense.note || '-'}</td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn btn-small btn-secondary" onclick="openEditExpense(${expense.id},'${expense.category}',${expense.amount},'${expense.date}','${(expense.note||'').replace(/'/g,"\\'")}')">Edit</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteExpense(${expense.id})">Delete</button>
+                        </td>
+                    </tr>
                 `).join('')
-                : '<tr><td colspan="4">No expenses yet.</td></tr>';
-
+                : '<tr><td colspan="5">No expenses yet.</td></tr>';
             if (window.applyLanguage) applyLanguage();
         }
 
-        function saveExpense() {
+        async function saveExpense() {
             const amountInput = document.getElementById('expenseAmount');
             const amount = Number(amountInput.value || 0);
             const message = document.getElementById('expenseMessage');
@@ -114,8 +143,21 @@
                 note: document.getElementById('expenseNote').value
             };
 
-            saveStoreExpense(expense);
-            (function(){ const t=getToken(); if(!t) return; fetch(API_BASE_URL+'/retail/expenses',{method:'POST',headers:{'Authorization':'Bearer '+t,'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify(expense)}).then(r=>r.ok?r.json():null).then(res=>{ if(res) console.log('Expense saved to DB:',res); }).catch(err=>console.error('DB save failed:',err)); })();
+            const token = getToken();
+            let saved = true;
+            if (token && token !== 'demo-frontend-token') {
+                try {
+                    const res = await fetch(API_BASE_URL + '/retail/expenses', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(expense) });
+                    if (!res.ok) saved = false;
+                } catch(e) { saved = false; }
+            }
+            if (!saved) {
+                message.textContent = 'Expense was NOT saved — the server rejected it or is unreachable.';
+                message.className = 'alert alert-danger';
+                message.style.display = 'block';
+                if (typeof showSaveError === 'function') showSaveError('Expense');
+                return;
+            }
             amountInput.value = '';
             document.getElementById('expenseDate').value = todayInputValue();
             document.getElementById('expenseNote').value = '';
@@ -126,11 +168,52 @@
         }
 
         renderExpenses();
+
+        async function deleteExpense(id) {
+            if (!confirm('Delete this expense?')) return;
+            await apiCall('DELETE', '/retail/expenses/' + id);
+            renderExpenses();
+        }
+
+        let _editExpenseId = null;
+        function openEditExpense(id, category, amount, date, note) {
+            _editExpenseId = id;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editAmount').value = amount;
+            document.getElementById('editDate').value = date;
+            document.getElementById('editNote').value = note;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+        async function saveEditExpense() {
+            await apiCall('PUT', '/retail/expenses/' + _editExpenseId, {
+                category: document.getElementById('editCategory').value,
+                amount:   Number(document.getElementById('editAmount').value),
+                date:     document.getElementById('editDate').value,
+                note:     document.getElementById('editNote').value,
+            });
+            closeEditModal();
+            renderExpenses();
+        }
     </script>
+
+    <!-- Edit Modal -->
+    <div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;padding:24px;width:360px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+            <h3 style="margin:0 0 16px;color:#1a3d2b;">Edit Expense</h3>
+            <div class="form-group"><label>Category</label><select id="editCategory"></select></div>
+            <div class="form-group"><label>Amount</label><input id="editAmount" type="number" min="0"></div>
+            <div class="form-group"><label>Date</label><input id="editDate" type="date"></div>
+            <div class="form-group"><label>Note</label><textarea id="editNote"></textarea></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+                <button class="btn" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEditExpense()">Save</button>
+        </div>
+    </div>
+    <script>document.getElementById('editCategory').innerHTML = retailDemo.expenseCategories.map(c=>`<option>${c}</option>`).join('');</script>
     <script src="../js/i18n.js?v=orders-1"></script>
-<script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
 </body>
 </html>
-
-
-
