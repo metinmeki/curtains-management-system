@@ -763,7 +763,7 @@
 
     function saveCategory() {
         const name = document.getElementById('catName').value.trim();
-        if (!name) { alert('Category name is required.'); return; }
+        if (!name) { alert(ta('Category name is required.')); return; }
         const id = document.getElementById('catEditId').value;
         const cats = getInvCategories();
         if (id) {
@@ -825,8 +825,8 @@
     function saveItem() {
         const name = document.getElementById('itemName').value.trim();
         const catId = document.getElementById('itemCategorySelect').value;
-        if (!name) { alert('Item name is required.'); return; }
-        if (!catId) { alert('Please select a category.'); return; }
+        if (!name) { alert(ta('Item name is required.')); return; }
+        if (!catId) { alert(ta('Please select a category.')); return; }
         const id = document.getElementById('itemEditId').value;
         const items = getInvItems();
         if (id) {
@@ -930,14 +930,14 @@
         const name = document.getElementById('variantName').value.trim();
         const code = document.getElementById('variantCode').value.trim();
         const itemId = document.getElementById('variantItemSelect').value;
-        if (!name) { alert('Variant name is required.'); return; }
-        if (!code) { alert('Code / SKU is required.'); return; }
-        if (!itemId) { alert('Please select an item.'); return; }
+        if (!name) { alert(ta('Variant name is required.')); return; }
+        if (!code) { alert(ta('Code / SKU is required.')); return; }
+        if (!itemId) { alert(ta('Please select an item.')); return; }
 
         const editId = document.getElementById('variantEditId').value;
         const variants = getInvVariants();
         const dup = variants.find(v => v.code && v.code.toLowerCase() === code.toLowerCase() && String(v.id) !== editId);
-        if (dup) { alert('This code is already used by another variant.'); return; }
+        if (dup) { alert(ta('This code is already used by another variant.')); return; }
 
         const qty = Math.max(0, Number(document.getElementById('variantQty').value) || 0);
         const minQty = Math.max(0, Number(document.getElementById('variantMinQty').value) || 5);

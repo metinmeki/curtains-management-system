@@ -412,7 +412,7 @@
             if (_tok && _tok !== 'demo-frontend-token') {
                 fetch(API_BASE_URL+'/retail/orders', {method:'POST', headers:{'Authorization':'Bearer '+_tok,'Accept':'application/json','Content-Type':'application/json'}, body:JSON.stringify(order)})
                     .then(r => {
-                        if (!r.ok) { if (typeof showSaveError === 'function') showSaveError('Order ' + order.reference); return null; }
+                        if (!r.ok) { if (typeof showSaveError === 'function') showSaveError('Order', null, order.reference); return null; }
                         return r.json();
                     })
                     .then(res => {
@@ -421,7 +421,7 @@
                             if (idx >= 0) _storeOrders[idx].id = res.id;
                             order.id = res.id;
                         }
-                    }).catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order ' + order.reference, e); });
+                    }).catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order', e, order.reference); });
             }
             message.textContent = `Order ${order.reference} saved.`;
             message.className = 'alert alert-success';
@@ -771,12 +771,12 @@
         loadRetailDataFromDB(getStoreId()).then(() => renderAll());
 
         async function deleteOrder(id) {
-            if (!confirm('Delete this order permanently?')) return;
+            if (!confirm(ta('Delete this order permanently?'))) return;
             try {
                 await apiCall('DELETE', '/retail/orders/' + id);
                 await loadRetailDataFromDB(getStoreId());
                 renderAll();
-            } catch(e) { alert('Error deleting order.'); }
+            } catch(e) { alert(ta('Error deleting order.')); }
         }
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>

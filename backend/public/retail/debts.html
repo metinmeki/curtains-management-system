@@ -578,12 +578,12 @@
         loadDebtsFromAPI().then(() => renderDebtRows());
 
         async function deleteSale(id) {
-            if (!confirm('Delete this sale record permanently?')) return;
+            if (!confirm(ta('Delete this sale record permanently?'))) return;
             try {
                 await apiCall('DELETE', '/retail/sales/' + id);
                 await loadDebtsFromAPI();
                 renderDebtRows();
-            } catch(e) { alert('Error deleting sale.'); }
+            } catch(e) { alert(ta('Error deleting sale.')); }
         }
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>

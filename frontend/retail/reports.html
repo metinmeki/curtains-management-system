@@ -80,7 +80,7 @@
             <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
             <span class="rt-topbar-title">Reports</span>
             <div class="rt-topbar-right">
-                <button class="print-btn no-print" onclick="window.print()">🖨 Print Report</button>
+                <button class="print-btn no-print" onclick="window.print()">🖨 <span>Print Report</span></button>
                 <div class="rt-avatar" id="userAvatar">A</div>
                 <span class="rt-user-name" id="userName">Admin</span>
             </div>
@@ -133,7 +133,7 @@
 
             <!-- Sales table -->
             <div class="report-section">
-                <h2>Sales (<span id="salesCount">0</span>)</h2>
+                <h2><span>Sales</span> (<span id="salesCount">0</span>)</h2>
                 <div style="overflow-x:auto;">
                     <table class="rpt-table">
                         <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Details</th></tr></thead>
@@ -144,7 +144,7 @@
 
             <!-- Expenses table -->
             <div class="report-section">
-                <h2>Expenses (<span id="expensesCount">0</span>)</h2>
+                <h2><span>Expenses</span> (<span id="expensesCount">0</span>)</h2>
                 <div style="overflow-x:auto;">
                     <table class="rpt-table">
                         <thead><tr><th>#</th><th>Date</th><th>Category</th><th>Amount</th><th>Note</th></tr></thead>
@@ -155,7 +155,7 @@
 
             <!-- Orders table -->
             <div class="report-section">
-                <h2>Orders (<span id="ordersCount">0</span>)</h2>
+                <h2><span>Orders</span> (<span id="ordersCount">0</span>)</h2>
                 <div style="overflow-x:auto;">
                     <table class="rpt-table">
                         <thead><tr><th>Ref</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Our Profit</th><th>Buyer Due</th><th>Supplier Due</th></tr></thead>

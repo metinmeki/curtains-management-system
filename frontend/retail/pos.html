@@ -670,8 +670,8 @@
                     const t = getToken();
                     if (t && t !== 'demo-frontend-token') {
                         fetch(API_BASE_URL + '/retail/orders', { method: 'POST', headers: { 'Authorization': 'Bearer ' + t, 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(order) })
-                            .then(res => { if (!res.ok && typeof showSaveError === 'function') showSaveError('Order ' + order.reference); })
-                            .catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order ' + order.reference, e); });
+                            .then(res => { if (!res.ok && typeof showSaveError === 'function') showSaveError('Order', null, order.reference); })
+                            .catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order', e, order.reference); });
                     }
                 });
             }

@@ -129,11 +129,17 @@ function showToast(message, type = 'info', duration) {
     }, ms);
 }
 
-// Standard "your save did not persist" message. Pass a short context label.
-function showSaveError(context, detail) {
-    console.error('Save failed' + (context ? ' [' + context + ']' : ''), detail || '');
-    const what = context ? context + ' was not saved.' : 'Not saved.';
-    showToast(what + ' The server rejected it or is unreachable — your change was NOT stored.', 'error');
+// Standard "your save did not persist" message. `context` is a short
+// translatable label (e.g. "Order"); `ref` is an optional non-translatable
+// suffix (e.g. an order reference/code) appended as-is after translation.
+function showSaveError(context, detail, ref) {
+    console.error('Save failed' + (context ? ' [' + context + (ref ? ' ' + ref : '') + ']' : ''), detail || '');
+    const lang = typeof getLanguage === 'function' ? getLanguage() : 'en';
+    const label = context ? (typeof ta === 'function' ? ta(context) : context) + (ref ? ' ' + ref : '') : '';
+    const msg = lang === 'ar'
+        ? (label ? 'لم يتم حفظ ' + label + '. ' : 'لم يتم الحفظ. ') + 'تم رفض الطلب من الخادم أو تعذّر الاتصال — التغيير لم يُحفظ.'
+        : (label ? label + ' was not saved.' : 'Not saved.') + ' The server rejected it or is unreachable — your change was NOT stored.';
+    showToast(msg, 'error');
 }
 
 // ── API Call Helper ───────────────────────────────────────────────────────────

@@ -170,7 +170,7 @@
         renderExpenses();
 
         async function deleteExpense(id) {
-            if (!confirm('Delete this expense?')) return;
+            if (!confirm(ta('Delete this expense?'))) return;
             await apiCall('DELETE', '/retail/expenses/' + id);
             renderExpenses();
         }

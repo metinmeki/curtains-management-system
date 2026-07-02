@@ -68,6 +68,7 @@ const translations = {
     'This screen is visually scoped to the selected store. Other stores and inventory have separate workspaces.': 'هذه الشاشة خاصة بالمتجر المحدد. باقي المتاجر والمخزون لها وحدات منفصلة.',
     'Recent sales': 'آخر المبيعات',
     'Recent debt payments': 'آخر دفعات الديون',
+    'Recent debts': 'آخر الديون',
     'Recent expenses': 'آخر المصاريف',
     'Sale': 'البيع',
     'Client': 'العميل',
@@ -315,6 +316,7 @@ const translations = {
     'No discounts in this period.': 'لا توجد خصومات في هذه المدة.',
 
     // ── Inventory page ──────────────────────────────────────────────
+    '📋 Movement log': '📋 سجل الحركات',
     'Variant Inventory': 'مخزون الأنواع',
     'Category → Item → Variant structure. Each variant has its own code, quantity, and stock history per store.': 'هيكل الفئة ← المادة ← النوع. لكل نوع كوده وكميته وسجل حركاته الخاص بالمتجر.',
     'Total codes': 'إجمالي الأكواد',
@@ -382,6 +384,20 @@ const translations = {
     'Manual edit': 'تعديل يدوي',
     'This code is already in use.': 'هذا الكود مستخدم بالفعل.',
     'No movements yet.': 'لا توجد حركات بعد.',
+    'Category name is required.': 'اسم الفئة مطلوب.',
+    'Item name is required.': 'اسم المادة مطلوب.',
+    'Please select a category.': 'الرجاء اختيار فئة.',
+    'Variant name is required.': 'اسم النوع مطلوب.',
+    'Code / SKU is required.': 'الكود مطلوب.',
+    'Please select an item.': 'الرجاء اختيار مادة.',
+    'This code is already used by another variant.': 'هذا الكود مستخدم بالفعل من قبل نوع آخر.',
+    'Delete this sale record permanently?': 'هل تريد حذف سجل هذا البيع نهائيًا؟',
+    'Error deleting sale.': 'حدث خطأ أثناء حذف البيع.',
+    'Delete this expense?': 'هل تريد حذف هذا المصروف؟',
+    'Delete this order permanently?': 'هل تريد حذف هذا الطلب نهائيًا؟',
+    'Error deleting order.': 'حدث خطأ أثناء حذف الطلب.',
+    'PIN must be exactly 4 digits': 'الرمز يجب أن يتكون من 4 أرقام بالضبط',
+    'Remove this cashier?': 'هل تريد إزالة هذا الصندوق؟',
 
     // ── Login / Auth ────────────────────────────────────────────────────
     'Sign in to your account': 'تسجيل الدخول إلى حسابك',
@@ -410,6 +426,8 @@ const translations = {
 
     // ── Dashboard ───────────────────────────────────────────────────────
     'All time': 'كل الوقت',
+    '(Selling − Cost) × Qty sold': '(سعر البيع − التكلفة) × الكمية المباعة',
+    'Gross − Expenses − Discounts': 'الربح الإجمالي − المصاريف − الخصومات',
     'External supplier orders': 'طلبات موردين خارجيين',
     'Profit from orders': 'ربح الطلبات',
     'Paid to companies': 'المدفوع للشركات',
@@ -417,9 +435,16 @@ const translations = {
     'Collected from buyers': 'المحصّل من الزبائن',
     'Customers still owe': 'الزبائن ما زالوا مدينون',
     'Loading...': 'جار التحميل...',
+    'Loading…': 'جار التحميل...',
+    'Print Report': 'طباعة التقرير',
+    'Date-filtered summary of sales, expenses, and profit.': 'ملخص المبيعات والمصاريف والأرباح مفلتر حسب التاريخ.',
     'No outstanding debts.': 'لا توجد ديون متبقية.',
     'No sewing entries in this period.': 'لا توجد سجلات خياطة في هذه المدة.',
     'No installation entries in this period.': 'لا توجد سجلات تركيب في هذه المدة.',
+    'Sewing account': 'حساب الخياطة',
+    'Installation account': 'حساب التركيب',
+    'Mtrs': 'الأمتار',
+    'Win': 'النوافذ',
     'Reference': 'المرجع',
     'Buyer': 'الزبون',
     'Supplier': 'المورد',
@@ -492,7 +517,67 @@ const translations = {
     'View': 'عرض',
     'Total paid': 'إجمالي المدفوع',
     'Total debt': 'إجمالي الدين',
-    'Actions': 'الإجراءات'
+    'Actions': 'الإجراءات',
+
+    // ── Additional gaps found in i18n audit ───────────────────────────
+    'Finance': 'المالية',
+    'Store': 'المتجر',
+    'Discount': 'الخصم',
+    'Buyer due': 'دين الزبون',
+    'Supplier due': 'دين المورد',
+    'Supplier Due': 'دين المورد',
+    'Order': 'الطلب',
+    'Company': 'الشركة',
+    'Items': 'المواد',
+    'Search': 'بحث',
+    'Ledger': 'السجل',
+    'Buyer status': 'حالة الزبون',
+    'Supplier status': 'حالة المورد',
+    'Company / supplier stats': 'إحصائيات الشركة / المورد',
+    'Remaining supplier balance': 'رصيد المورد المتبقي',
+    'Order customer': 'زبون الطلب',
+    'Unknown supplier': 'مورد غير معروف',
+    'Qty': 'الكمية',
+    'One-time customer': 'زبون عابر',
+    'Debt customer': 'زبون دين',
+    'Debt sale': 'بيع دين',
+    'No sales yet.': 'لا توجد مبيعات بعد.',
+    'Payment': 'الدفعة',
+    'No expenses in this period.': 'لا توجد مصاريف في هذه المدة.',
+    'Expense was NOT saved — the server rejected it or is unreachable.': 'لم يتم حفظ المصروف — تم رفضه من الخادم أو تعذر الاتصال.',
+    'Expense': 'المصروف',
+    'Sale saved to history.': 'تم حفظ البيع في السجل.',
+    'Table': 'جدول',
+    '+ Category': '+ فئة',
+    '+ Item': '+ مادة',
+    '+ Variant': '+ نوع',
+    '+ Add type': '+ إضافة نوع',
+    'Stock added': 'إضافة مخزون',
+    'Stock removed': 'سحب من المخزون',
+    'Adjusted': 'تعديل',
+    'Set': 'تحديد',
+    'Damaged': 'تالف / مفقود',
+    'Stock': 'المخزون',
+    'Inventory': 'المخزون',
+    'Period': 'المدة',
+    'Period:': 'المدة:',
+    'This Week': 'هذا الأسبوع',
+    'This Month': 'هذا الشهر',
+    'All Time': 'كل الوقت',
+    'Custom': 'مخصص',
+    'Custom Range': 'مدة مخصصة',
+    'From': 'من',
+    'Total Sales': 'إجمالي المبيعات',
+    'Total Paid': 'إجمالي المدفوع',
+    'Total Debt': 'إجمالي الدين',
+    'Total Expenses': 'إجمالي المصاريف',
+    'Total Discounts': 'إجمالي الخصومات',
+    'Gross Profit': 'إجمالي الربح',
+    'Order Profit (ربحنا)': 'ربح الطلبات (ربحنا)',
+    'Net Profit': 'صافي الربح',
+    'Ref': 'المرجع',
+    'Our Profit': 'ربحنا',
+    'Print': 'طباعة'
   }
 };
 
@@ -505,6 +590,14 @@ function getLanguage() {
 function setLanguage(language) {
   if (typeof setCookie === 'function') setCookie('language', language, 365);
   applyLanguage();
+}
+
+// Translate a string for use in native dialogs (alert/confirm) which live
+// outside the DOM and can never be reached by the MutationObserver below.
+function ta(text) {
+  return (typeof translateText === 'function' && typeof getLanguage === 'function')
+    ? translateText(text, getLanguage())
+    : text;
 }
 
 function translateText(text, language) {

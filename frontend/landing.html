@@ -231,7 +231,7 @@
         }
 
         async function handleLogout() {
-            if (confirm('Logout from the system?')) {
+            if (confirm(ta('Logout from the system?'))) {
                 await logout();
                 window.location.href = 'index.html';
             }
@@ -267,7 +267,7 @@
             const pin     = document.getElementById('cashierPinInput').value.trim();
             const storeId = document.getElementById('cashierStoreInput').value;
             if (!name) { document.getElementById('cashierNameInput').focus(); return; }
-            if (pin && !/^\d{4}$/.test(pin)) { alert('PIN must be exactly 4 digits'); return; }
+            if (pin && !/^\d{4}$/.test(pin)) { alert(ta('PIN must be exactly 4 digits')); return; }
             const token = localStorage.getItem('auth_token');
             try {
                 const res = await fetch(API_BASE_URL + '/cashiers', {
@@ -285,7 +285,7 @@
         }
 
         async function deleteCashier(id) {
-            if (!confirm('Remove this cashier?')) return;
+            if (!confirm(ta('Remove this cashier?'))) return;
             const token = localStorage.getItem('auth_token');
             try {
                 await fetch(API_BASE_URL + '/cashiers/' + id, {
