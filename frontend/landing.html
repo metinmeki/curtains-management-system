@@ -37,7 +37,7 @@
                 <div class="user-avatar" id="userAvatar">A</div>
                 <span class="user-name" id="userName">Admin</span>
             </div>
-            <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            <a href="settings.html" class="btn btn-primary" style="margin-right:8px;">⚙ Settings</a><button class="btn btn-danger" onclick="handleLogout()">Logout</button>
         </div>
     </nav>
 
@@ -51,8 +51,8 @@
         <div id="storeCardsContainer" class="store-cards-grid"></div>
 
         <!-- ══════════ Cashier Management ══════════ -->
-        <section id="cashierSection" style="margin-top:36px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <section id="cashierSection" style="margin-top:36px;background:rgba(255,255,255,0.95);padding:20px;border-radius:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:rgba(255,255,255,0.95);padding:16px;border-radius:10px;">
                 <div>
                     <h2 style="font-size:20px;font-weight:800;color:var(--text-dark);margin:0;">👥 Cashiers</h2>
                     <p style="font-size:13px;color:var(--text-gray);margin:3px 0 0;">Cashiers can only access POS and Debts pages. Click Enter to open a store in cashier mode.</p>
@@ -121,6 +121,7 @@
             { id: 2, name: 'Store 2', description: 'Separate sales and client records for the second retail branch.', icon: 'S2', type: 'retail' },
             { id: 3, name: 'Store 3', description: 'Dedicated dashboard and transactions for the third retail branch.', icon: 'S3', type: 'retail' },
             { id: 4, name: 'Store 4', description: 'Standalone retail workspace for the fourth branch.', icon: 'S4', type: 'retail' },
+            { id: 5, name: 'Store 5', description: 'Standalone retail workspace for the fifth branch.', icon: 'S5', type: 'retail' },
             { id: 'wh', name: 'Inventory / Warehouse', description: 'Central warehouse: supply items to all 5 stores, track store accounts, balances, and debt records.', icon: 'WH', type: 'inventory' }
         ];
 
@@ -363,3 +364,7 @@
     <script src="js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>
+
+
+
+

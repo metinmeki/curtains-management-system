@@ -18,7 +18,7 @@ class RetailSaleController extends Controller
             'discount'=> 'sometimes|numeric|min:0',
         ]);
 
-        $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data["storeId"] ?? $user->store_id ?? 1);
+        $storeId = ($user->role === "cashier" && $user->store_id) ? (int)$user->store_id : (int)($data["storeId"] ?? $data["store_id"] ?? $user->store_id ?? 1);
 
         $clientName  = $data["clientName"] ?? "One-time customer";
         $clientPhone = $data["clientPhone"] ?? "-";
@@ -190,3 +190,6 @@ class RetailSaleController extends Controller
         return response()->json(["status" => "success", "data" => $sales]);
     }
 }
+
+
+

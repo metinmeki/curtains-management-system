@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+﻿const API_BASE_URL = 'http://192.168.1.2:8000/api';
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────
 function getCookie(name) {
@@ -276,3 +276,4 @@ function formatDateTime(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
 }
+

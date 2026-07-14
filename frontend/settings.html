@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Curtains Management System</title>
+    <link rel="stylesheet" href="css/style.css?v=mobile-1">
+</head>
+<body class="ltr">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span class="navbar-brand-logo">CMS</span>
+            <span class="navbar-brand-text">Curtains Management System</span>
+        </div>
+        <div class="user-section">
+            <a href="landing.html" class="btn">← Back</a>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <span class="user-name" id="userName">Admin</span>
+            </div>
+        </div>
+    </nav>
+    <main style="max-width:600px;margin:40px auto;padding:0 24px;">
+        <h1 style="font-size:24px;font-weight:800;margin-bottom:24px;">Settings</h1>
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Currency Exchange Rate</h2></div>
+            <div class="card-body">
+                <p style="color:var(--text-gray);font-size:14px;margin-bottom:20px;">Set the USD to IQD exchange rate. This will be used across the POS system.</p>
+                <div class="form-group">
+                    <label>1 USD = ? IQD</label>
+                    <input type="number" id="exchangeRate" min="1" placeholder="e.g. 1480" style="font-size:18px;font-weight:700;">
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                    <button class="btn btn-primary" onclick="saveRate()">Save rate</button>
+                    <span id="rateMessage" style="font-size:13px;color:#2f7d5b;display:none;">✓ Saved!</span>
+                </div>
+                <div style="margin-top:20px;padding:14px;background:#eef5e8;border-radius:8px;font-size:13px;color:#31533f;">
+                    <strong>Current rate:</strong> <span id="currentRate">Not set</span><br>
+                    <span style="margin-top:6px;display:block;">Example: $100 = <span id="exampleRate">-</span> IQD</span>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script>
+        if (!checkAuth()) window.location.href = "index.html";
+        const user = getUser();
+        if (user) { document.getElementById("userName").textContent = user.name; document.getElementById("userAvatar").textContent = user.name.charAt(0).toUpperCase(); }
+
+        function loadRate() {
+            const rate = localStorage.getItem("usd_to_iqd_rate");
+            if (rate) {
+                document.getElementById("exchangeRate").value = rate;
+                document.getElementById("currentRate").textContent = "1 USD = " + Number(rate).toLocaleString() + " IQD";
+                document.getElementById("exampleRate").textContent = (100 * Number(rate)).toLocaleString();
+            }
+        }
+
+        function saveRate() {
+            const rate = document.getElementById("exchangeRate").value;
+            if (!rate || rate <= 0) { alert("Please enter a valid rate."); return; }
+            localStorage.setItem("usd_to_iqd_rate", rate);
+            document.getElementById("currentRate").textContent = "1 USD = " + Number(rate).toLocaleString() + " IQD";
+            document.getElementById("exampleRate").textContent = (100 * Number(rate)).toLocaleString();
+            const msg = document.getElementById("rateMessage");
+            msg.style.display = "inline";
+            setTimeout(() => msg.style.display = "none", 2000);
+        }
+
+        loadRate();
+    </script>
+    <script src="js/i18n.js?v=arabic-en-2"></script>
+</body>
+</html>

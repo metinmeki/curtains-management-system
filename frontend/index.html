@@ -8,6 +8,12 @@
     <meta http-equiv="Expires" content="0">
     <title>Login - Curtains Management System</title>
     <link rel="stylesheet" href="css/style.css?v=mobile-1">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a3d2b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CMS">
     <style>
         .login-tabs { display:flex; gap:0; margin-bottom:24px; border:1px solid var(--border-color); border-radius:8px; overflow:hidden; }
         .login-tab  { flex:1; padding:10px; font-size:13px; font-weight:700; cursor:pointer; background:var(--surface-soft); color:var(--text-gray); border:none; transition:background 0.15s,color 0.15s; }
@@ -220,5 +226,8 @@
 
     </script>
     <script src="js/i18n.js?v=arabic-en-2"></script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(()=>console.log("SW registered")).catch(e=>console.log("SW error",e));}</script>
 </body>
 </html>
+
+
