@@ -2,7 +2,7 @@
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f8f7f4;color:#1a2e1f;min-height:100vh}
 a{text-decoration:none;color:inherit}
-.rt-layout{display:flex;min-height:100vh}
+.rt-layout{display:flex;height:100vh}
 
 /* ── Sidebar ── */
 .rt-sidebar{width:220px;flex-shrink:0;background:#1a3d2b;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
@@ -23,7 +23,7 @@ a{text-decoration:none;color:inherit}
 .rt-sidebar-foot a:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.7)}
 
 /* ── Main ── */
-.rt-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.rt-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .rt-topbar{background:#fff;border-bottom:1px solid #e8e4da;height:54px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
 .rt-topbar-title{font-size:14px;font-weight:700;color:#1a2e1f}
 .rt-topbar-right{display:flex;align-items:center;gap:10px}
@@ -292,8 +292,12 @@ tbody tr:hover td{background:#faf8f3}
 /* ── Print ── */
 @media print{
   .rt-sidebar,.rt-topbar,.no-print{display:none!important}
-  .rt-main{display:block!important}
+  .rt-layout{height:auto!important;overflow:visible!important}
+  .rt-main{display:block!important;overflow:visible!important;height:auto!important}
+  .rt-main>div{overflow:visible!important;height:auto!important}
   .rt-page{padding:0!important}
+  .two-column{grid-template-columns:1fr!important}
+  .receipt-card{box-shadow:none!important;border:none!important}
   .receipt-head,.receipt-table th,.receipt-bottom-item:last-child{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 /* orders.html print */

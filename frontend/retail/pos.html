@@ -49,9 +49,9 @@
                 <span class="rt-user-name" id="userName">Admin</span>
             </div>
         </div>
-        <div style="flex:1;overflow-y:auto;">
+        <div style="flex:1;overflow-y:auto;min-height:0;">
         <div class="rt-page">
-            <div class="page-header">
+            <div class="page-header no-print">
                 <div>
                     <h1 class="page-title">Dlovan Parda POS</h1>
                     <p class="page-subtitle">Select materials, enter meters or windows, calculate totals, and record paid/debt amounts.</p>
@@ -122,17 +122,17 @@
                             <strong id="receiptFinalTotal">0 IQD</strong>
                         </div>
                     </div>
-                    <div style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
+                    <div class="no-print" style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
                         <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
                         <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
                     </div>
 
                     <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
-                    <div style="padding:10px 18px;border-top:1px solid rgba(27,61,46,0.12);background:rgba(27,61,46,0.03);">
+                    <div class="no-print" style="padding:10px 18px;border-top:1px solid rgba(27,61,46,0.12);background:rgba(27,61,46,0.03);">
                         <button class="btn btn-secondary btn-small" onclick="togglePosOrder()" id="posOrderToggleBtn" style="font-size:11px;">+ Add Order Items (طلبية)</button>
                     </div>
 
-                    <div id="posOrderSection" style="display:none;">
+                    <div id="posOrderSection" class="no-print" style="display:none;">
                         <div id="posOrderCards"></div>
                         <div style="padding:8px 18px;border-top:1px solid rgba(27,61,46,0.08);background:rgba(27,61,46,0.02);">
                             <button class="btn btn-secondary btn-small" onclick="addPosOrderCard()" style="font-size:11px;">+ Add another order (طلبية إضافية)</button>
@@ -140,13 +140,13 @@
                     </div>
 
                     <!-- ── GRAND TOTAL banner (shown when order is active) ─── -->
-                    <div id="posGrandTotalBar" style="display:none;background:linear-gradient(135deg,#163329,#245f49);color:#fff;padding:14px 20px;justify-content:space-between;align-items:center;gap:12px;">
+                    <div id="posGrandTotalBar" class="no-print" style="display:none;background:linear-gradient(135deg,#163329,#245f49);color:#fff;padding:14px 20px;justify-content:space-between;align-items:center;gap:12px;">
                         <span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:0.75;">Grand Total — Sale + All Orders</span>
                         <strong id="posGrandTotalBanner" style="font-size:22px;">0 IQD</strong>
                     </div>
                 </section>
 
-                <aside class="card">
+                <aside class="card no-print">
                     <div class="card-header"><h2 class="card-title">Payment and accounts</h2></div>
                     <div class="card-body">
                         <div class="summary-line"><span>Customer sale subtotal</span><strong id="saleSubtotal">0 IQD</strong></div>
@@ -217,6 +217,8 @@
         </div>
     </div>
 </div>
+
+<div id="printPosReceipt" class="print-order-receipt"></div>
 
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
@@ -720,9 +722,39 @@
             renderClientSuggestions();
         }
 
+        function posReceiptHtml() {
+            const data = getInvoiceData();
+            const discount   = Math.min(Number(document.getElementById('discountAmount').value || 0), data.saleTotal);
+            const finalTotal = Math.max(data.saleTotal - discount, 0);
+            const date  = document.getElementById('saleDate').value || '';
+            const name  = document.getElementById('clientName').value || '-';
+            const phone = document.getElementById('clientPhone').value || '-';
+            const details = document.getElementById('saleDetails').value || '';
+
+            return `
+                <div style="text-align:center;color:#1f315f;">
+                    <h1 style="letter-spacing:2px;margin:0;">DLOVAN PARDA</h1>
+                    <h2 style="margin:4px 0 10px;">دلوفان للستائر</h2>
+                </div>
+                <p>Date: ${esc(date)}</p>
+                <p>Client: ${esc(name)} - ${esc(phone)}</p>
+                <table class="print-order-table">
+                    <thead><tr><th>المواد</th><th>كود</th><th>متر / نافذة</th><th>سعر المتر</th><th>المجموع</th><th>ملاحظات</th></tr></thead>
+                    <tbody>${data.items.map(item => `<tr><td>${esc(item.material)}</td><td>${esc(item.code || '-')}</td><td>${esc(item.quantity)}</td><td>${money(item.price)}</td><td>${money(item.saleTotal)}</td><td>${esc(item.note || '')}</td></tr>`).join('')}</tbody>
+                </table>
+                <p>Subtotal: ${money(data.saleTotal)}</p>
+                <p>Discount: ${money(discount)}</p>
+                <p>Total: ${money(finalTotal)}</p>
+                ${details ? `<p>تفاصيل / Measurements: ${esc(details)}</p>` : ''}
+            `;
+        }
+
         function printReceipt() {
             calculateInvoice();
+            document.getElementById('printPosReceipt').innerHTML = posReceiptHtml();
+            document.body.classList.add('printing-order');
             window.print();
+            setTimeout(() => document.body.classList.remove('printing-order'), 200);
         }
 
         // ─── ORDER SECTION (multi-card) ──────────────────────────────────────────

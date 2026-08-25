@@ -46,6 +46,7 @@ class RetailOrderController extends Controller
             'supplier_paid'     => $data['supplierPaid'] ?? 0,
             'supplier_due'      => $data['supplierDue'] ?? 0,
             'supplier_status'   => $data['supplierStatus'] ?? 'debt',
+            'approval_status'   => $data['approvalStatus'] ?? 'accepted',
             'items'             => json_encode($data['items'] ?? []),
             'supplier_payments' => json_encode($data['supplierPayments'] ?? []),
             'buyer_payments'    => json_encode($data['buyerPayments'] ?? []),
@@ -94,6 +95,20 @@ class RetailOrderController extends Controller
                 'updated_at'     => now(),
             ]);
         }
+
+        $updated = DB::table('retail_orders')->find($orderId);
+        return response()->json(['status' => 'success', 'data' => $updated]);
+    }
+
+    public function accept(Request $request, $orderId)
+    {
+        $order = DB::table('retail_orders')->find($orderId);
+        if (!$order) return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+
+        DB::table('retail_orders')->where('id', $orderId)->update([
+            'approval_status' => 'accepted',
+            'updated_at'      => now(),
+        ]);
 
         $updated = DB::table('retail_orders')->find($orderId);
         return response()->json(['status' => 'success', 'data' => $updated]);

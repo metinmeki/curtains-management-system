@@ -23,14 +23,14 @@ Route::post("/auth/register", [AuthController::class, "register"]);
 Route::post("/auth/logout", [AuthController::class, "logout"])->middleware("auth:sanctum");
 Route::get("/auth/user", [AuthController::class, "user"])->middleware("auth:sanctum");
 
-// Public — needed on login page before any token exists
+// Public ï¿½ needed on login page before any token exists
 Route::get("/stores",   [StoreController::class,   "index"]);
 Route::get("/cashiers", [CashierController::class, "index"]);
 
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/user", function (Request $request) { return $request->user(); });
 
-    // Item types — global catalog with cost & selling prices
+    // Item types ï¿½ global catalog with cost & selling prices
     Route::get("/item-types", [ItemTypeController::class, "index"]);
     Route::post("/item-types", [ItemTypeController::class, "store"]);
     Route::put("/item-types/{id}", [ItemTypeController::class, "update"]);
@@ -51,10 +51,11 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/retail/clients/{storeId}", [RetailClientController::class, "index"]);
     Route::post("/retail/orders", [RetailOrderController::class, "store"]);
     Route::post("/retail/orders/{orderId}/pay", [RetailOrderController::class, "pay"]);
+    Route::post("/retail/orders/{orderId}/accept", [RetailOrderController::class, "accept"]);
     Route::delete("/retail/orders/{orderId}", [RetailOrderController::class, "destroy"]);
     Route::get("/retail/orders/{storeId}", [RetailOrderController::class, "index"]);
 
-    // Warehouse — isolated from retail stores
+    // Warehouse ï¿½ isolated from retail stores
     Route::post("/warehouse/supplies", [WarehouseSupplyController::class, "store"]);
     Route::get("/warehouse/supplies", [WarehouseSupplyController::class, "index"]);
     Route::post("/warehouse/supplies/{supplyId}/pay", [WarehouseSupplyController::class, "pay"]);
@@ -67,7 +68,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/warehouse/kv/{key}", [WarehouseKvController::class, "get"]);
     Route::post("/warehouse/kv/{key}", [WarehouseKvController::class, "set"]);
 
-    // Retail KV store — variants, items, stock per store
+    // Retail KV store ï¿½ variants, items, stock per store
     Route::get("/retail/kv/{storeId}/{key}", [RetailKvController::class, "get"]);
     Route::post("/retail/kv/{storeId}/{key}", [RetailKvController::class, "set"]);
 
