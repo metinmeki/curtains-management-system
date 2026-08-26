@@ -857,6 +857,23 @@ textarea {
 }
 
 /* Loading Page */
+.login-side-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+.login-side-panel img {
+    max-width: 260px;
+    width: 100%;
+    height: auto;
+    opacity: 0.88;
+    filter: drop-shadow(0 4px 24px rgba(0,0,0,0.35));
+}
+@media (max-width: 900px) {
+    .login-side-panel { display: none; }
+}
 .login-container {
     display: flex;
     justify-content: center;
