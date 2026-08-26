@@ -13,21 +13,19 @@ class RetailClientController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
         }
         $clients = DB::table("retail_clients")
-            ->where("store_id", $storeId)
-            ->orderBy("name")
+            ->where("retail_clients.store_id", $storeId)
+            ->leftJoin(
+                DB::raw('(SELECT client_id, SUM(total_amount) as total_sales, SUM(remaining_amount) as total_debt, COUNT(*) as sales_count FROM retail_sales GROUP BY client_id) as agg'),
+                'retail_clients.id', '=', 'agg.client_id'
+            )
+            ->select([
+                'retail_clients.*',
+                DB::raw('COALESCE(agg.total_sales, 0) as total_sales'),
+                DB::raw('COALESCE(agg.total_debt, 0) as total_debt'),
+                DB::raw('COALESCE(agg.sales_count, 0) as sales_count'),
+            ])
+            ->orderBy("retail_clients.name")
             ->get();
-
-        foreach ($clients as $client) {
-            $client->total_sales = DB::table("retail_sales")
-                ->where("client_id", $client->id)
-                ->sum("total_amount");
-            $client->total_debt = DB::table("retail_sales")
-                ->where("client_id", $client->id)
-                ->sum("remaining_amount");
-            $client->sales_count = DB::table("retail_sales")
-                ->where("client_id", $client->id)
-                ->count();
-        }
 
         return response()->json(["status" => "success", "data" => $clients]);
     }

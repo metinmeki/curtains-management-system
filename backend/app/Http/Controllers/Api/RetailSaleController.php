@@ -13,9 +13,10 @@ class RetailSaleController extends Controller
 
         // Cashiers: always use their assigned store. Admins: use the storeId from request.
         $request->validate([
-            'total'   => 'sometimes|numeric|min:0',
-            'paid'    => 'sometimes|numeric|min:0',
-            'discount'=> 'sometimes|numeric|min:0',
+            'total'       => 'sometimes|numeric|min:0',
+            'paid'        => 'sometimes|numeric|min:0',
+            'discount'    => 'sometimes|numeric|min:0',
+            'saleDetails' => 'sometimes|nullable|string|max:5000',
         ]);
 
         $storeId = ($user->role === "cashier" && $user->store_id) ? (int)$user->store_id : (int)($data["storeId"] ?? $data["store_id"] ?? $user->store_id ?? 1);

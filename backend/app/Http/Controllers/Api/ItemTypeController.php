@@ -73,12 +73,4 @@ class ItemTypeController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    /** Returns cost_price for a given item name — used by POS when building sale */
-    public function costByName(Request $request)
-    {
-        $name = $request->input('name', '');
-        $item = DB::table('item_types')->where('name', $name)->first();
-        if (!$item) return response()->json(['status' => 'error', 'message' => 'Not found'], 404);
-        return response()->json(['status' => 'success', 'cost_price' => (float)$item->cost_price, 'selling_price' => (float)$item->selling_price]);
-    }
 }

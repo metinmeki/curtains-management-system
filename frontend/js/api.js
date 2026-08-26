@@ -1,4 +1,8 @@
-﻿const API_BASE_URL = 'http://192.168.1.2:8000/api';
+﻿const API_BASE_URL = (() => {
+    const h = window.location.hostname;
+    const isLocal = h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.') || h.startsWith('10.');
+    return isLocal ? `http://${h}:8000/api` : `${window.location.origin}/api`;
+})();
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────
 function getCookie(name) {

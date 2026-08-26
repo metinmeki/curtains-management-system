@@ -28,7 +28,15 @@ class WarehouseStockController extends Controller
 
         $stock = DB::table('warehouse_stock')->where('item_name', $name)->first();
         $currentQty = $stock ? (float)$stock->quantity : 0;
-        $newQty = max(0, $currentQty + $delta);
+
+        if ($currentQty + $delta < 0) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Insufficient stock. Available: ' . $currentQty,
+            ], 422);
+        }
+
+        $newQty = $currentQty + $delta;
 
         $log = $stock ? (json_decode($stock->movement_log ?? '[]', true) ?: []) : [];
         $log[] = [

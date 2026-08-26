@@ -21,12 +21,14 @@ class RetailOrderController extends Controller
 
         $storeId = ($user->role === 'cashier') ? ($user->store_id ?? 1) : ($data['storeId'] ?? $user->store_id ?? 1);
 
-        // Avoid duplicate saves
-        if (!empty($data['reference']) && DB::table('retail_orders')->where('reference', $data['reference'])->exists()) {
-            $order = DB::table('retail_orders')->where('reference', $data['reference'])->first();
-            return response()->json(['status' => 'success', 'id' => $order->id]);
+        // Avoid duplicate saves (try-catch handles the race condition where two
+        // requests pass the exists() check before either inserts)
+        if (!empty($data['reference'])) {
+            $existing = DB::table('retail_orders')->where('reference', $data['reference'])->first();
+            if ($existing) return response()->json(['status' => 'success', 'id' => $existing->id]);
         }
 
+        try {
         $id = DB::table('retail_orders')->insertGetId([
             'store_id'          => $storeId,
             'reference'         => $data['reference'] ?? ('ORD-' . time()),
@@ -54,6 +56,10 @@ class RetailOrderController extends Controller
             'created_at'        => now(),
             'updated_at'        => now(),
         ]);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            $order = DB::table('retail_orders')->where('reference', $data['reference'] ?? '')->first();
+            return response()->json(['status' => 'success', 'id' => $order ? $order->id : null]);
+        }
 
         return response()->json(['status' => 'success', 'id' => $id]);
     }
