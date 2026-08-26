@@ -26,6 +26,7 @@
         .cashier-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
         @media(max-width:640px) { .cashier-form-grid { grid-template-columns:1fr; } }
         @media(pointer:coarse) { .cashier-form-grid input, .cashier-form-grid select { min-height:44px; font-size:16px; } }
+        @media(max-width:600px) { #landingMain { padding: 16px 12px !important; } }
     </style>
 </head>
 <body class="ltr">
@@ -44,7 +45,7 @@
         </div>
     </nav>
 
-    <main style="max-width: 1180px; margin: 0 auto; padding: 34px 24px;">
+    <main style="max-width: 1180px; margin: 0 auto; padding: 34px 24px;" id="landingMain">
         <div class="page-header">
             <div>
                 <h1 class="page-title">Choose a store or inventory workspace</h1>
@@ -89,8 +90,8 @@
             </div>
 
             <!-- Table -->
-            <div id="cashierTableWrap">
-                <table style="width:100%;border-collapse:collapse;background:var(--surface-color);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div id="cashierTableWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+                <table style="width:100%;min-width:400px;border-collapse:collapse;background:var(--surface-color);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <thead>
                         <tr style="background:var(--surface-soft);">
                             <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-gray);border-bottom:1px solid var(--border-color);">Name</th>

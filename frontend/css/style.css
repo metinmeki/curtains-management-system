@@ -56,8 +56,8 @@
 
 
 html {
-    direction: rtl;
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
@@ -67,6 +67,7 @@ body {
         var(--bg-light);
     color: var(--text-dark);
     line-height: 1.6;
+    overflow-x: hidden;
 }
 
 body.ltr {
@@ -813,7 +814,7 @@ textarea {
         -webkit-overflow-scrolling: touch;
         border-radius: 4px;
     }
-    table { min-width: 480px; font-size: 12px; }
+    table { font-size: 12px; }
     th, td { padding: 8px 10px; }
 
     /* Forms */
