@@ -23,12 +23,15 @@
         .navbar-brand-logo { background: #c4a24d !important; color: #1a3d2b !important; }
         .page-title { color: #e8e4da !important; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
         main > .page-header { padding-bottom: 8px; }
+        .cashier-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
+        @media(max-width:640px) { .cashier-form-grid { grid-template-columns:1fr; } }
+        @media(pointer:coarse) { .cashier-form-grid input, .cashier-form-grid select { min-height:44px; font-size:16px; } }
     </style>
 </head>
 <body class="ltr">
     <nav class="navbar">
         <div class="navbar-brand">
-            <span class="navbar-brand-logo">CMS</span>
+            <img src="icons/logo.png" alt="Dlovan Curtain" style="height:38px;width:auto;object-fit:contain;border-radius:4px;">
             <span class="navbar-brand-text">Curtains Management System</span>
         </div>
         <div class="user-section">
@@ -37,7 +40,7 @@
                 <div class="user-avatar" id="userAvatar">A</div>
                 <span class="user-name" id="userName">Admin</span>
             </div>
-            <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            <a href="settings.html" class="btn btn-primary" style="margin-right:8px;">⚙ Settings</a><button class="btn btn-danger" onclick="handleLogout()">Logout</button>
         </div>
     </nav>
 
@@ -51,8 +54,8 @@
         <div id="storeCardsContainer" class="store-cards-grid"></div>
 
         <!-- ══════════ Cashier Management ══════════ -->
-        <section id="cashierSection" style="margin-top:36px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <section id="cashierSection" style="margin-top:36px;background:rgba(255,255,255,0.95);padding:20px;border-radius:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:rgba(255,255,255,0.95);padding:16px;border-radius:10px;">
                 <div>
                     <h2 style="font-size:20px;font-weight:800;color:var(--text-dark);margin:0;">👥 Cashiers</h2>
                     <p style="font-size:13px;color:var(--text-gray);margin:3px 0 0;">Cashiers can only access POS and Debts pages. Click Enter to open a store in cashier mode.</p>
@@ -63,7 +66,7 @@
             <!-- Add form -->
             <div id="addCashierForm" style="display:none;background:var(--surface-soft);border:1px solid var(--border-color);border-radius:10px;padding:18px;margin-bottom:16px;">
                 <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">New Cashier</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+                <div class="cashier-form-grid">
                     <div>
                         <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Name <span style="color:#b4534a;">*</span></label>
                         <input id="cashierNameInput" type="text" placeholder="e.g. Ahmed" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
@@ -121,6 +124,7 @@
             { id: 2, name: 'Store 2', description: 'Separate sales and client records for the second retail branch.', icon: 'S2', type: 'retail' },
             { id: 3, name: 'Store 3', description: 'Dedicated dashboard and transactions for the third retail branch.', icon: 'S3', type: 'retail' },
             { id: 4, name: 'Store 4', description: 'Standalone retail workspace for the fourth branch.', icon: 'S4', type: 'retail' },
+            { id: 5, name: 'Store 5', description: 'Standalone retail workspace for the fifth branch.', icon: 'S5', type: 'retail' },
             { id: 'wh', name: 'Inventory / Warehouse', description: 'Central warehouse: supply items to all 5 stores, track store accounts, balances, and debt records.', icon: 'WH', type: 'inventory' }
         ];
 
@@ -363,3 +367,7 @@
     <script src="js/i18n.js?v=arabic-en-2"></script>
 </body>
 </html>
+
+
+
+

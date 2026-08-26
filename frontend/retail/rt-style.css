@@ -402,13 +402,29 @@ html,body{overflow-x:hidden;max-width:100%}
 
 /* ── Small mobile ── */
 @media(max-width:480px){
-  .workspace-grid,.dashboard-metrics{grid-template-columns:repeat(2,1fr)}
+  .workspace-grid,.dashboard-metrics{grid-template-columns:1fr}
   .metric-card strong{font-size:13px}
-  .receipt-table{min-width:360px}
+  .receipt-table{min-width:320px}
   .receipt-brand{letter-spacing:3px}
   .form-grid{grid-template-columns:1fr}
   .inv-variant-grid{grid-template-columns:1fr}
   .order-bottom{grid-template-columns:1fr}
   .filter-controls{gap:4px}
   .filter-btn{padding:5px 10px;font-size:11px}
+  .card-body{padding:12px}
+  .card-header{padding:10px 12px}
+  .rt-page{padding:10px 8px 40px}
+  .page-title{font-size:16px}
+  .receipt-meta{grid-template-columns:1fr}
+  .two-column{grid-template-columns:1fr}
+}
+
+/* ── Touch devices — larger tap targets ── */
+@media(pointer:coarse){
+  .btn{min-height:44px;padding:10px 16px}
+  .btn-sm,.btn-small{min-height:38px;padding:7px 12px}
+  input:not([type="file"]),select,textarea{min-height:44px;font-size:16px!important}
+  .receipt-row-input{min-height:38px;font-size:14px}
+  .filter-btn{min-height:38px}
+  .tab-btn{min-height:38px}
 }

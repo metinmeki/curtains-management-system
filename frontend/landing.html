@@ -23,6 +23,9 @@
         .navbar-brand-logo { background: #c4a24d !important; color: #1a3d2b !important; }
         .page-title { color: #e8e4da !important; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
         main > .page-header { padding-bottom: 8px; }
+        .cashier-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
+        @media(max-width:640px) { .cashier-form-grid { grid-template-columns:1fr; } }
+        @media(pointer:coarse) { .cashier-form-grid input, .cashier-form-grid select { min-height:44px; font-size:16px; } }
     </style>
 </head>
 <body class="ltr">
@@ -63,7 +66,7 @@
             <!-- Add form -->
             <div id="addCashierForm" style="display:none;background:var(--surface-soft);border:1px solid var(--border-color);border-radius:10px;padding:18px;margin-bottom:16px;">
                 <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">New Cashier</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+                <div class="cashier-form-grid">
                     <div>
                         <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Name <span style="color:#b4534a;">*</span></label>
                         <input id="cashierNameInput" type="text" placeholder="e.g. Ahmed" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
