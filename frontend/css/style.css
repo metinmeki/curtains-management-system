@@ -879,11 +879,7 @@ textarea {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background:
-        linear-gradient(rgba(44, 26, 14, 0.72), rgba(44, 26, 14, 0.72)),
-        url('../icons/logo.png');
-    background-size: cover;
-    background-position: center;
+    background: linear-gradient(135deg, #2c1a0e 0%, #3d2412 50%, #2c1a0e 100%);
     padding: 24px;
 }
 
