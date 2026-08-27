@@ -102,7 +102,13 @@
                                     <th>المواد</th>
                                     <th>كود / Code</th>
                                     <th>متر / نافذة</th>
-                                    <th>سعر المتر</th>
+                                    <th style="white-space:nowrap;">
+                                        <span id="priceColLabel">سعر المتر</span>
+                                        <div style="display:inline-flex;gap:1px;background:rgba(27,61,46,0.12);border-radius:4px;padding:1px;margin-right:4px;vertical-align:middle;">
+                                            <button class="cur-btn active" id="priceBtnIQD" onclick="setPriceCurrency('IQD')" style="padding:2px 6px;font-size:9px;border-radius:3px;">IQD</button>
+                                            <button class="cur-btn" id="priceBtnUSD" onclick="setPriceCurrency('USD')" style="padding:2px 6px;font-size:9px;border-radius:3px;">$</button>
+                                        </div>
+                                    </th>
                                     <th>المجموع</th>
                                     <th>الحساب</th>
                                     <th>ملاحظات</th>
@@ -484,6 +490,9 @@
             const items = [];
             const workerAccounts = [];
 
+            const _priceCur = localStorage.getItem('price_currency') || 'IQD';
+            const _priceRate = parseFloat(localStorage.getItem('usd_to_iqd_rate') || 1480);
+
             document.querySelectorAll('.invoice-row').forEach(row => {
                 const select = row.querySelector('.material-select');
                 const option = select.selectedOptions[0];
@@ -491,10 +500,12 @@
                 const code = (row.querySelector('.row-code') || {}).value || '';
                 const quantity = Number(row.querySelector('.row-qty').value || 0);
                 const price = Number(row.querySelector('.row-price').value || 0);
-                const lineTotal = quantity * price;
                 const rowNote = row.querySelector('.row-note').value;
                 const workerAccount = option.dataset.worker;
                 const unit = option.dataset.unit;
+                // Worker accounts (sewing/installation) always use IQD; regular items convert if USD mode
+                const effectivePrice = (!workerAccount && _priceCur === 'USD') ? price * _priceRate : price;
+                const lineTotal = quantity * effectivePrice;
                 const workerTotal = workerAccount === 'sewing' ? quantity * 1000 : lineTotal;
                 const variant = code ? findVariantByCode(code) : null;
 
@@ -509,7 +520,7 @@
                 }
 
                 const costPrice = Number(row.dataset.costPrice || 0);
-                items.push({ material, code: code || '', variantId: variant ? variant.id : null, variantCode: variant ? variant.code : '', variantName: variant ? variant.name : '', quantity, unit, price, costPrice, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
+                items.push({ material, code: code || '', variantId: variant ? variant.id : null, variantCode: variant ? variant.code : '', variantName: variant ? variant.name : '', quantity, unit, price: effectivePrice, costPrice, note: rowNote, saleTotal: lineTotal, accountTotal: workerAccount ? workerTotal : 0, storeShare: workerAccount ? lineTotal - workerTotal : lineTotal });
             });
 
             return { saleTotal, sewingTotal, installationTotal, items, workerAccounts };
@@ -966,7 +977,7 @@
             loadRetailDataFromDB(getStoreId())
         ]).then(() => renderClientSuggestions());
 
-        // ── Currency toggle ───────────────────────────────────────────────────
+        // ── Display currency toggle (topbar) ─────────────────────────────────
         function setCurrency(cur) {
             localStorage.setItem('display_currency', cur);
             document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
@@ -977,6 +988,27 @@
             const cur = localStorage.getItem('display_currency') || 'IQD';
             document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
             document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
+        })();
+
+        // ── Price input currency toggle (column header) ───────────────────────
+        function setPriceCurrency(cur) {
+            localStorage.setItem('price_currency', cur);
+            document.getElementById('priceBtnIQD').classList.toggle('active', cur === 'IQD');
+            document.getElementById('priceBtnUSD').classList.toggle('active', cur === 'USD');
+            document.getElementById('priceColLabel').textContent = cur === 'USD' ? 'سعر المتر ($)' : 'سعر المتر';
+            document.querySelectorAll('.row-price').forEach(function(inp) {
+                inp.placeholder = cur === 'USD' ? '$' : '0';
+            });
+            calculateInvoice();
+        }
+        (function() {
+            const cur = localStorage.getItem('price_currency') || 'IQD';
+            document.getElementById('priceBtnIQD').classList.toggle('active', cur === 'IQD');
+            document.getElementById('priceBtnUSD').classList.toggle('active', cur === 'USD');
+            if (cur === 'USD') {
+                document.getElementById('priceColLabel').textContent = 'سعر المتر ($)';
+                document.querySelectorAll('.row-price').forEach(function(inp) { inp.placeholder = '$'; });
+            }
         })();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
