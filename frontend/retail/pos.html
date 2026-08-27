@@ -44,6 +44,10 @@
             <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
             <span class="rt-topbar-title">Retail POS</span>
             <div class="rt-topbar-right">
+                <div class="currency-toggle no-print" id="currencyToggle">
+                    <button class="cur-btn" id="btnIQD" onclick="setCurrency('IQD')">IQD</button>
+                    <button class="cur-btn" id="btnUSD" onclick="setCurrency('USD')">$ USD</button>
+                </div>
                 <span class="scope-pill">invoice sale</span>
                 <div class="rt-avatar" id="userAvatar">A</div>
                 <span class="rt-user-name" id="userName">Admin</span>
@@ -961,6 +965,19 @@
             loadInvFromDB(getStoreId()),
             loadRetailDataFromDB(getStoreId())
         ]).then(() => renderClientSuggestions());
+
+        // ── Currency toggle ───────────────────────────────────────────────────
+        function setCurrency(cur) {
+            localStorage.setItem('display_currency', cur);
+            document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
+            document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
+            calculateInvoice();
+        }
+        (function() {
+            const cur = localStorage.getItem('display_currency') || 'IQD';
+            document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
+            document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
+        })();
     </script>
     <script src="../js/i18n.js?v=orders-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>

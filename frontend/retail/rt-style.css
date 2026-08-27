@@ -27,6 +27,9 @@ a{text-decoration:none;color:inherit}
 .rt-topbar{background:#fff;border-bottom:1px solid #e8e4da;height:54px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
 .rt-topbar-title{font-size:14px;font-weight:700;color:#2c1a0e}
 .rt-topbar-right{display:flex;align-items:center;gap:10px}
+.currency-toggle{display:flex;gap:2px;background:#e8e4da;border-radius:6px;padding:2px;}
+.cur-btn{border:none;background:transparent;color:#6b5a4a;padding:4px 9px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.12s;letter-spacing:.3px;}
+.cur-btn.active{background:#3d2412;color:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.18);}
 .rt-avatar{width:30px;height:30px;background:#c4a24d;border-radius:50%;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .rt-user-name{font-size:12px;font-weight:600;color:#374151}
 .scope-pill{font-size:10px;font-weight:700;background:#f0ebe0;color:#7a6340;border:1px solid #e4d8bf;padding:3px 9px;border-radius:10px;letter-spacing:.3px}

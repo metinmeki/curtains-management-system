@@ -262,11 +262,14 @@ function removeStoreSelection() {
 
 // ── Format Helpers ────────────────────────────────────────────────────────────
 function formatCurrency(value) {
-    if (!value) return '0 IQD';
-    return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value) + ' IQD';
+    const num = Math.round(Number(value || 0));
+    const cur = localStorage.getItem('display_currency') || 'IQD';
+    if (cur === 'USD') {
+        const rate = parseFloat(localStorage.getItem('usd_to_iqd_rate') || 1480);
+        const usd = rate > 0 ? num / rate : 0;
+        return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usd);
+    }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num) + ' IQD';
 }
 
 function formatDate(dateString) {

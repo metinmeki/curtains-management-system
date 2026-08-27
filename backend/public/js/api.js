@@ -1,4 +1,8 @@
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+﻿const API_BASE_URL = (() => {
+    const h = window.location.hostname;
+    const isLocal = h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.') || h.startsWith('10.');
+    return isLocal ? `http://${h}:8000/api` : `${window.location.origin}/api`;
+})();
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────
 function getCookie(name) {
@@ -258,11 +262,14 @@ function removeStoreSelection() {
 
 // ── Format Helpers ────────────────────────────────────────────────────────────
 function formatCurrency(value) {
-    if (!value) return '0 IQD';
-    return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value) + ' IQD';
+    const num = Math.round(Number(value || 0));
+    const cur = localStorage.getItem('display_currency') || 'IQD';
+    if (cur === 'USD') {
+        const rate = parseFloat(localStorage.getItem('usd_to_iqd_rate') || 1480);
+        const usd = rate > 0 ? num / rate : 0;
+        return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usd);
+    }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num) + ' IQD';
 }
 
 function formatDate(dateString) {
@@ -276,3 +283,4 @@ function formatDateTime(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
 }
+

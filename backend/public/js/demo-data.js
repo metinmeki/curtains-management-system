@@ -1,4 +1,11 @@
 const DEMO_CURRENCY = 'IQD';
+
+function _getCurrencyRate() {
+    return parseFloat(localStorage.getItem('usd_to_iqd_rate') || 1480);
+}
+function _getDisplayCurrency() {
+    return localStorage.getItem('display_currency') || 'IQD';
+}
 const RETAIL_SALES_STORAGE_VERSION = 'v2';
 const RETAIL_EXPENSES_STORAGE_VERSION = 'v1';
 const RETAIL_ORDERS_STORAGE_VERSION = 'v1';
@@ -120,7 +127,13 @@ function esc(v) {
 }
 
 function money(value) {
-  return `${Math.round(Number(value || 0)).toLocaleString('en-US').replace(/,/g, '.')} ${DEMO_CURRENCY}`;
+  const num = Math.round(Number(value || 0));
+  if (_getDisplayCurrency() === 'USD') {
+    const rate = _getCurrencyRate();
+    const usd = rate > 0 ? num / rate : 0;
+    return '$' + usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  return num.toLocaleString('en-US').replace(/,/g, '.') + ' IQD';
 }
 
 function statusBadge(status) {

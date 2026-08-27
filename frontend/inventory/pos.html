@@ -48,6 +48,10 @@
     <div class="wh-topbar">
         <span class="wh-topbar-title">POS Supply</span>
         <div class="wh-topbar-right">
+            <div class="currency-toggle no-print" id="currencyToggle">
+                <button class="cur-btn" id="btnIQD" onclick="setCurrency('IQD')">IQD</button>
+                <button class="cur-btn" id="btnUSD" onclick="setCurrency('USD')">$ USD</button>
+            </div>
             <button class="wh-btn wh-btn-outline wh-btn-sm no-print" onclick="window.print()">🖨 Print</button>
             <div class="wh-avatar" id="userAvatar">A</div>
             <span class="wh-user-name" id="userName">Admin</span>
@@ -201,6 +205,7 @@ let _whItemCosts = {};
 let _whInvState  = {};
 let _dbSupplies  = [];
 let _whVariants  = {};
+let _whSubtotalRaw = 0;
 
 function _whTok() { const t = getToken(); return t && t !== 'demo-frontend-token' ? t : null; }
 function _whPost(key, data) {
@@ -318,6 +323,7 @@ function calcTotals() {
         row.querySelector('.row-total').textContent = lineTotal > 0 ? money(lineTotal) : '—';
         subtotal += lineTotal;
     });
+    _whSubtotalRaw = subtotal;
     document.getElementById('subtotalDisplay').textContent = money(subtotal);
     document.getElementById('totalDisplay').textContent = money(subtotal);
     document.getElementById('sumTotal').textContent = money(subtotal);
@@ -325,7 +331,7 @@ function calcTotals() {
 }
 
 function updatePaySummary() {
-    const total = parseFloat(document.getElementById('subtotalDisplay').textContent.replace(/[^0-9.]/g,'')) || 0;
+    const total = _whSubtotalRaw;
     const paid  = parseFloat(document.getElementById('paidAmount').value) || 0;
     const capped = Math.min(paid, total);
     const remaining = Math.max(total - capped, 0);
@@ -478,6 +484,20 @@ async function loadAllWarehouseData() {
     renderHistory();
 }
 loadAllWarehouseData();
+
+// ── Currency toggle ───────────────────────────────────────────────────────────
+function setCurrency(cur) {
+    localStorage.setItem('display_currency', cur);
+    document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
+    document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
+    calcTotals();
+    onStoreChange();
+}
+(function() {
+    const cur = localStorage.getItem('display_currency') || 'IQD';
+    document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
+    document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
+})();
 </script>
 <script src="../js/i18n.js?v=wh-1"></script>
 </body>
