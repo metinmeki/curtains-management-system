@@ -27,6 +27,12 @@
         @media(max-width:640px) { .cashier-form-grid { grid-template-columns:1fr; } }
         @media(pointer:coarse) { .cashier-form-grid input, .cashier-form-grid select { min-height:44px; font-size:16px; } }
         @media(max-width:600px) { #landingMain { padding: 16px 12px !important; } }
+        @media(max-width:768px) {
+            .scope-pill { display: none !important; }
+            .nav-btn-label { display: none; }
+            .nav-btn-icon { display: inline !important; }
+            .nav-icon-btn { padding: 7px 10px; font-size: 16px; margin-right: 4px !important; }
+        }
     </style>
 </head>
 <body class="ltr">
@@ -47,7 +53,7 @@
                 <div class="user-avatar" id="userAvatar">A</div>
                 <span class="user-name" id="userName">Admin</span>
             </div>
-            <a href="settings.html" class="btn btn-primary" style="margin-right:8px;">⚙ Settings</a><button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            <a href="settings.html" class="btn btn-primary nav-icon-btn" style="margin-right:8px;">⚙<span class="nav-btn-label"> Settings</span></a><button class="btn btn-danger nav-icon-btn" onclick="handleLogout()"><span class="nav-btn-label">Logout</span><span class="nav-btn-icon" style="display:none;">✕</span></button>
         </div>
     </nav>
 
