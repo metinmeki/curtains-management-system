@@ -76,6 +76,7 @@
                 <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
                 <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
                 <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+                <a href="transfer.html" class="rt-nav-link"><span class="rt-nav-icon">🔄</span>Transfer Stock</a>
             </div>
             <div class="rt-nav-group">
                 <div class="rt-nav-label">Reports</div>
@@ -96,7 +97,7 @@
                 <span class="rt-user-name" id="userName">Admin</span>
             </div>
         </div>
-        <div style="flex:1;overflow-y:auto;">
+        <div style="flex:1;overflow-y:auto;min-height:0;">
         <div class="rt-page">
             <div class="page-header">
                 <div>
@@ -163,7 +164,8 @@
                             <div class="summary-line"><span>Supplier remaining balance</span><strong id="summarySupplierDue">0 IQD</strong></div>
                             <div class="summary-line"><span>Buyer remaining debt</span><strong id="summaryBuyerDue">0 IQD</strong></div>
                             <div id="orderMessage" class="alert alert-info" style="display:none;margin-top:16px;"></div>
-                            <button class="btn btn-success btn-block" style="margin-top:16px;" onclick="submitOrder()">Save order</button>
+                            <button class="btn btn-success btn-block" style="margin-top:16px;" onclick="submitOrder('accepted')">Save order</button>
+                            <button class="btn btn-gold btn-block" style="margin-top:10px;" onclick="submitOrder('pending')">⏳ Save as pending (awaiting supplier call)</button>
                             <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printCurrentOrderReceipt()">Print current receipt</button>
                         </div>
                     </aside>
@@ -357,7 +359,7 @@
             return { items, subtotal, deliveryPrice, finalTotal, buyerPaid, buyerDue, ourProfit, supplierShare, supplierPaid, supplierDue, splitDifference };
         }
 
-        function getOrderDraft() {
+        function getOrderDraft(approvalStatus = 'accepted') {
             const data = calculateOrder();
             const id = Date.now();
             return {
@@ -384,6 +386,7 @@
                 supplierDue: data.supplierDue,
                 supplierStatus: orderStatus(data.supplierPaid, data.supplierShare),
                 splitDifference: data.splitDifference,
+                approvalStatus,
                 supplierPayments: data.supplierPaid > 0 ? [{ date: todayInputValue(), amount: data.supplierPaid, note: 'Initial supplier payment' }] : [],
                 buyerPayments: data.buyerPaid > 0 ? [{ date: todayInputValue(), amount: data.buyerPaid, note: 'Initial buyer payment' }] : []
             };
@@ -396,8 +399,8 @@
             return '';
         }
 
-        function submitOrder() {
-            const order = getOrderDraft();
+        function submitOrder(approvalStatus = 'accepted') {
+            const order = getOrderDraft(approvalStatus);
             const error = validateOrder(order);
             const message = document.getElementById('orderMessage');
             if (error) {
@@ -423,7 +426,9 @@
                         }
                     }).catch((e) => { if (typeof showSaveError === 'function') showSaveError('Order', e, order.reference); });
             }
-            message.textContent = `Order ${order.reference} saved.`;
+            message.textContent = approvalStatus === 'pending'
+                ? `Order ${order.reference} saved as pending — waiting for the supplier's call.`
+                : `Order ${order.reference} saved.`;
             message.className = 'alert alert-success';
             message.style.display = 'block';
             renderAll();
@@ -552,19 +557,42 @@
             `;
         }
 
+        function isOrderPending(order) {
+            return (order.approvalStatus || order.approval_status) === 'pending';
+        }
+
         function renderOrders() {
             const orders = filteredOrders();
             document.getElementById('ordersRows').innerHTML = orders.length
                 ? orders.map(order => `
                     <tr>
-                        <td>${order.reference}</td><td>${order.date}</td><td>${order.buyerName}<br>${order.buyerPhone}</td><td>${order.supplierName}</td>
+                        <td>${order.reference}${isOrderPending(order) ? ' <span class="badge badge-warning">⏳ Pending</span>' : ''}</td><td>${order.date}</td><td>${order.buyerName}<br>${order.buyerPhone}</td><td>${order.supplierName}</td>
                         <td>${money(order.finalTotal)}</td><td>${money(order.ourProfit)}</td><td>${money(order.supplierDue)}</td><td>${money(order.buyerDue)}</td>
-                        <td style="white-space:nowrap;"><button class="btn btn-small btn-primary" onclick="toggleOrderDetails(${order.id})">View</button><button class="btn btn-small btn-secondary" onclick="printOrderReceipt(${order.id})">Print</button><button class="btn btn-small btn-danger" onclick="deleteOrder(${order.id})">Delete</button></td>
+                        <td style="white-space:nowrap;">${isOrderPending(order)
+                            ? `<button class="btn btn-small btn-primary" onclick="toggleOrderDetails(${order.id})">View</button><button class="btn btn-small btn-success" onclick="acceptOrder(${order.id})">✓ Accept</button><button class="btn btn-small btn-danger" onclick="declineOrder(${order.id})">✕ Decline</button>`
+                            : `<button class="btn btn-small btn-primary" onclick="toggleOrderDetails(${order.id})">View</button><button class="btn btn-small btn-secondary" onclick="printOrderReceipt(${order.id})">Print</button><button class="btn btn-small btn-danger" onclick="deleteOrder(${order.id})">Delete</button>`}</td>
                     </tr>
                     <tr id="orderDetail${order.id}" style="display:none;">${orderDetailHtml(order)}</tr>
                 `).join('')
                 : '<tr><td colspan="9">No orders yet.</td></tr>';
             if (window.applyLanguage) applyLanguage();
+        }
+
+        async function acceptOrder(orderId) {
+            const order = getStoreOrders().find(item => Number(item.id) === Number(orderId));
+            if (order) { order.approvalStatus = 'accepted'; order.approval_status = 'accepted'; updateStoreOrder(order); renderAll(); }
+            try {
+                await apiCall('POST', '/retail/orders/' + orderId + '/accept');
+            } catch(e) { alert(ta('Error accepting order.')); }
+        }
+
+        async function declineOrder(orderId) {
+            if (!confirm(ta('Decline this order? It will be removed permanently.'))) return;
+            try {
+                await apiCall('DELETE', '/retail/orders/' + orderId);
+                await loadRetailDataFromDB(getStoreId());
+                renderAll();
+            } catch(e) { alert(ta('Error declining order.')); }
         }
 
         function toggleOrderDetails(orderId) {
@@ -783,5 +811,6 @@
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
+<script src="calculator.js"></script>
 </body>
 </html>

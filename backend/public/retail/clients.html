@@ -29,6 +29,7 @@
                 <a href="clients.html" class="rt-nav-link active"><span class="rt-nav-icon">👥</span>Clients</a>
                 <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
                 <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+                <a href="transfer.html" class="rt-nav-link"><span class="rt-nav-icon">🔄</span>Transfer Stock</a>
             </div>
             <div class="rt-nav-group">
                 <div class="rt-nav-label">Reports</div>
@@ -49,7 +50,7 @@
                 <span class="rt-user-name" id="userName">Admin</span>
             </div>
         </div>
-        <div style="flex:1;overflow-y:auto;">
+        <div style="flex:1;overflow-y:auto;min-height:0;">
         <div class="rt-page">
             <div class="page-header">
                 <div><h1 class="page-title">Clients</h1><p class="page-subtitle">Repeat customers and debt tracking for this store.</p></div>
@@ -257,5 +258,6 @@
     <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
+<script src="calculator.js"></script>
 </body>
 </html>

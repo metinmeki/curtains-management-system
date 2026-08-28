@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ItemTypeController;
 use App\Http\Controllers\Api\RetailKvController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\CashierController;
+use App\Http\Controllers\Api\StoreTransferController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
@@ -81,6 +82,10 @@ Route::middleware("auth:sanctum")->group(function () {
     // Cashiers
     Route::post("/cashiers", [CashierController::class, "store"]);
     Route::delete("/cashiers/{id}", [CashierController::class, "destroy"]);
+
+    // Store-to-store stock transfers
+    Route::get("/transfers",  [StoreTransferController::class, "index"]);
+    Route::post("/transfers", [StoreTransferController::class, "store"]);
 });
 
 

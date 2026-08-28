@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Stock - Curtains Management System</title>
+    <link rel="stylesheet" href="rt-style.css?v=1">
+    <style>
+        .trf-card { background:#fff; border:1px solid #e8e4da; border-radius:12px; padding:20px; margin-bottom:18px; }
+        .trf-card-head { font-size:14px; font-weight:800; color:#2c1a0e; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #e8e4da; display:flex; align-items:center; gap:8px; }
+        .trf-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+        .store-badge { display:inline-flex; align-items:center; gap:6px; background:#f0e8d0; border:1px solid #ddd0b5; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:700; color:#2c1a0e; }
+        .trf-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .trf-table th { background:#f5f0d5; padding:9px 12px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#6b5a4a; border-bottom:2px solid #e8e4da; text-align:left; }
+        .trf-table td { padding:10px 12px; border-bottom:1px solid #f0ede3; vertical-align:middle; }
+        .trf-table tr:last-child td { border-bottom:0; }
+        .trf-table tr.selected td { background:rgba(61,36,18,0.04); }
+        .trf-table tr:hover td { background:#faf7f0; }
+        .qty-badge { display:inline-block; background:#f0e8d0; color:#3d2412; font-weight:800; font-size:12px; padding:2px 8px; border-radius:20px; }
+        .qty-badge.low { background:#fef3c7; color:#d97706; }
+        .qty-badge.out { background:#fee2e2; color:#dc2626; }
+        .code-tag { font-family:monospace; font-size:11px; background:#f0e8d0; padding:2px 7px; border-radius:4px; color:#3d2412; }
+        .trf-input { width:90px; padding:6px 8px; border:1.5px solid #ddd0b5; border-radius:6px; font-size:13px; text-align:center; background:#fff; }
+        .trf-input:disabled { background:#f5f0d5; color:#b8b0a0; }
+        .trf-input:focus { outline:none; border-color:#3d2412; }
+        .history-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+        .history-badge.sent { background:#fef3c7; color:#d97706; }
+        .history-badge.received { background:#dcfce7; color:#15803d; }
+        .no-data-row { text-align:center; padding:32px; color:#9a8870; font-size:13px; }
+        .trf-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:16px; }
+        @media(max-width:768px) { .trf-form-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body class="ltr">
+<div class="rt-layout">
+    <aside class="rt-sidebar">
+        <div class="rt-brand">
+            <div class="rt-brand-row">
+                <div class="rt-brand-icon">🏪</div>
+                <span class="rt-brand-name">Retail Store</span>
+            </div>
+            <div class="rt-brand-sub" id="sidebarStoreName">Store</div>
+        </div>
+        <nav class="rt-nav">
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Sales</div>
+                <a href="dashboard.html" class="rt-nav-link"><span class="rt-nav-icon">📊</span>Dashboard</a>
+                <a href="pos.html" class="rt-nav-link"><span class="rt-nav-icon">🛒</span>POS System</a>
+                <a href="orders.html" class="rt-nav-link"><span class="rt-nav-icon">📋</span>Orders</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Finance</div>
+                <a href="debts.html" class="rt-nav-link"><span class="rt-nav-icon">💸</span>Debts</a>
+                <a href="clients.html" class="rt-nav-link"><span class="rt-nav-icon">👥</span>Clients</a>
+                <a href="expenses.html" class="rt-nav-link"><span class="rt-nav-icon">🧾</span>Expenses</a>
+                <a href="inventory.html" class="rt-nav-link"><span class="rt-nav-icon">🗃️</span>Store Inventory</a>
+                <a href="transfer.html" class="rt-nav-link active"><span class="rt-nav-icon">🔄</span>Transfer Stock</a>
+            </div>
+            <div class="rt-nav-group">
+                <div class="rt-nav-label">Reports</div>
+                <a href="reports.html" class="rt-nav-link"><span class="rt-nav-icon">📈</span>Reports</a>
+            </div>
+        </nav>
+        <div class="rt-sidebar-foot" id="switchWorkspaceBtn">
+            <a href="../landing.html">← Switch workspace</a>
+        </div>
+    </aside>
+
+    <div class="rt-main">
+        <div class="rt-topbar">
+            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <span class="rt-topbar-title">Transfer Stock</span>
+            <div class="rt-topbar-right">
+                <div class="rt-avatar" id="userAvatar">A</div>
+                <span class="rt-user-name" id="userName">Admin</span>
+            </div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;min-height:0;">
+        <div class="rt-page">
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Transfer Stock</h1>
+                    <p class="page-subtitle">Move inventory items from this store to another store.</p>
+                </div>
+            </div>
+
+            <!-- ── Transfer Form ── -->
+            <div class="trf-card">
+                <div class="trf-card-head">🔄 New Transfer</div>
+                <div class="trf-form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="transferDate">
+                    </div>
+                    <div class="form-group">
+                        <label>From Store</label>
+                        <div class="store-badge">🏪 <span id="fromStoreName">—</span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>To Store <span style="color:#b4534a">*</span></label>
+                        <select id="toStoreSelect" onchange="onDestChange()" style="width:100%;">
+                            <option value="">— Select destination —</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:4px;margin-bottom:0;">
+                    <label>Notes / ملاحظات</label>
+                    <input type="text" id="transferNotes" placeholder="Optional notes about this transfer">
+                </div>
+            </div>
+
+            <!-- ── Item Selection ── -->
+            <div class="trf-card" id="itemsCard">
+                <div class="trf-card-head">
+                    📦 Select Items to Transfer
+                    <div style="margin-right:auto;display:flex;gap:6px;">
+                        <button class="btn btn-secondary btn-small" onclick="selectAll()">Select All</button>
+                        <button class="btn btn-small" onclick="clearAll()">Clear</button>
+                    </div>
+                </div>
+
+                <div id="loadingItems" style="text-align:center;padding:24px;color:#9a8870;font-size:13px;">
+                    Loading inventory…
+                </div>
+
+                <div class="table-wrapper" id="itemsTableWrap" style="display:none;">
+                    <table class="trf-table">
+                        <thead>
+                            <tr>
+                                <th style="width:36px;"></th>
+                                <th>Item / الصنف</th>
+                                <th>Code / كود</th>
+                                <th>Category</th>
+                                <th>Available / المتاح</th>
+                                <th>Transfer Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTableBody"></tbody>
+                    </table>
+                    <div id="noItemsMsg" style="display:none;" class="no-data-row">
+                        No items with stock in this store. Add stock from Inventory page first.
+                    </div>
+                </div>
+
+                <div id="transferMsg" class="alert" style="display:none;margin-top:14px;"></div>
+
+                <div class="trf-actions">
+                    <button class="btn btn-success" id="submitBtn" onclick="submitTransfer()" style="min-width:160px;">
+                        ✓ Save Transfer
+                    </button>
+                    <span id="selectedCount" style="font-size:13px;color:#6b5a4a;"></span>
+                </div>
+            </div>
+
+            <!-- ── History ── -->
+            <div class="trf-card">
+                <div class="trf-card-head">📋 Transfer History</div>
+                <div class="table-wrapper">
+                    <table class="trf-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Reference</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Items</th>
+                                <th>Notes</th>
+                                <th>Direction</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                    <div id="noHistoryMsg" style="display:none;" class="no-data-row">
+                        No transfers recorded yet.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/demo-data.js?v=transfer-1"></script>
+<script>
+if (!checkAuth()) throw new Error('Not authenticated');
+if (!getStoreId()) window.location.href = '../landing.html';
+loadShell(getStoreName());
+
+const CURRENT_STORE_ID   = getStoreId();
+const CURRENT_STORE_NAME = getStoreName() || ('Store ' + getStoreId());
+
+let _fromVariants   = [];
+let _fromItems      = [];
+let _fromCategories = [];
+let _fromStock      = {};
+let _allStores      = [];
+let _inventoryLoaded = false;
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+function todayVal() {
+    const n = new Date();
+    return new Date(n - n.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+document.getElementById('transferDate').value = todayVal();
+document.getElementById('fromStoreName').textContent = CURRENT_STORE_NAME;
+
+// ── Load stores for destination dropdown ─────────────────────────────────────
+
+async function loadStores() {
+    const tok = getToken();
+    try {
+        const res = await fetch(API_BASE_URL + '/stores', {
+            headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+            const r = await res.json();
+            if (Array.isArray(r.data)) {
+                _allStores = r.data;
+                const sel = document.getElementById('toStoreSelect');
+                r.data
+                    .filter(s => String(s.id) !== String(CURRENT_STORE_ID))
+                    .forEach(s => {
+                        sel.insertAdjacentHTML('beforeend',
+                            `<option value="${esc(String(s.id))}">${esc(s.name)}</option>`);
+                    });
+                return;
+            }
+        }
+    } catch(e) {}
+    // Fallback: hardcoded 5 stores
+    const sel = document.getElementById('toStoreSelect');
+    [1,2,3,4,5].forEach(id => {
+        if (String(id) !== String(CURRENT_STORE_ID)) {
+            sel.insertAdjacentHTML('beforeend', `<option value="${id}">Store ${id}</option>`);
+        }
+    });
+}
+
+function storeLabel(storeId) {
+    const s = _allStores.find(s => String(s.id) === String(storeId));
+    return s ? s.name : ('Store ' + storeId);
+}
+
+// ── Load source store inventory ───────────────────────────────────────────────
+
+async function loadSourceInventory() {
+    const tok  = getToken();
+    const sid  = CURRENT_STORE_ID;
+    document.getElementById('loadingItems').style.display = 'block';
+    document.getElementById('itemsTableWrap').style.display = 'none';
+    try {
+        const [catRes, itemRes, varRes, stockRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/retail/kv/${sid}/categories`, { headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' } }),
+            fetch(`${API_BASE_URL}/retail/kv/${sid}/items`,      { headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' } }),
+            fetch(`${API_BASE_URL}/retail/kv/${sid}/variants`,   { headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' } }),
+            fetch(`${API_BASE_URL}/retail/kv/${sid}/stock`,      { headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' } }),
+        ]);
+        if (catRes.ok)   { const r = await catRes.json();   if (Array.isArray(r.data)) _fromCategories = r.data; }
+        if (itemRes.ok)  { const r = await itemRes.json();  if (Array.isArray(r.data)) _fromItems      = r.data; }
+        if (varRes.ok)   { const r = await varRes.json();   if (Array.isArray(r.data)) _fromVariants   = r.data; }
+        if (stockRes.ok) { const r = await stockRes.json(); if (r.data && typeof r.data === 'object') _fromStock = r.data; }
+    } catch(e) {}
+    _inventoryLoaded = true;
+    document.getElementById('loadingItems').style.display = 'none';
+    document.getElementById('itemsTableWrap').style.display = 'block';
+    renderItemsTable();
+}
+
+function variantStock(variantId) {
+    return parseFloat(_fromStock[String(variantId)] || 0);
+}
+function itemName(itemId) {
+    const i = _fromItems.find(x => x.id === itemId);
+    return i ? i.name : '';
+}
+function categoryName(categoryId) {
+    const c = _fromCategories.find(x => x.id === categoryId);
+    return c ? c.name : '';
+}
+function variantCategory(v) {
+    const i = _fromItems.find(x => x.id === v.itemId);
+    return i ? categoryName(i.categoryId) : '';
+}
+
+// ── Render items table ────────────────────────────────────────────────────────
+
+function renderItemsTable() {
+    const tbody    = document.getElementById('itemsTableBody');
+    const noItems  = document.getElementById('noItemsMsg');
+    const withStock = _fromVariants.filter(v => variantStock(v.id) > 0);
+    if (!withStock.length) {
+        tbody.innerHTML = '';
+        noItems.style.display = 'block';
+        return;
+    }
+    noItems.style.display = 'none';
+    tbody.innerHTML = withStock.map(v => {
+        const qty    = variantStock(v.id);
+        const iName  = itemName(v.itemId);
+        const cName  = variantCategory(v);
+        const qClass = qty <= 0 ? 'out' : (qty <= (v.minQty || 5) ? 'low' : '');
+        return `<tr data-variant-id="${esc(String(v.id))}">
+            <td><input type="checkbox" class="item-check" data-vid="${esc(String(v.id))}" onchange="onCheckChange(this)"></td>
+            <td>
+                <strong style="font-size:13px;">${esc(v.name || '—')}</strong>
+                ${iName ? `<div style="font-size:11px;color:#9a8870;margin-top:1px;">${esc(iName)}</div>` : ''}
+            </td>
+            <td><span class="code-tag">${esc(v.code || '—')}</span></td>
+            <td style="font-size:12px;color:#6b5a4a;">${esc(cName)}</td>
+            <td><span class="qty-badge ${qClass}">${qty}</span></td>
+            <td>
+                <input type="number" class="trf-input" data-vid="${esc(String(v.id))}"
+                    min="0.01" max="${qty}" step="0.01" placeholder="0"
+                    disabled oninput="validateQty(this,${qty}); updateCount();">
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function onCheckChange(cb) {
+    const row = cb.closest('tr');
+    const inp = row.querySelector('.trf-input');
+    if (cb.checked) {
+        inp.disabled = false;
+        row.classList.add('selected');
+        inp.focus();
+    } else {
+        inp.disabled = true;
+        inp.value = '';
+        row.classList.remove('selected');
+    }
+    updateCount();
+}
+
+function validateQty(input, max) {
+    const v = parseFloat(input.value);
+    if (v > max) input.value = max;
+    if (v < 0)   input.value = '';
+}
+
+function updateCount() {
+    const checked = document.querySelectorAll('.item-check:checked').length;
+    document.getElementById('selectedCount').textContent =
+        checked > 0 ? `${checked} item(s) selected` : '';
+}
+
+function selectAll() {
+    document.querySelectorAll('.item-check').forEach(cb => {
+        if (!cb.checked) { cb.checked = true; onCheckChange(cb); }
+    });
+}
+function clearAll() {
+    document.querySelectorAll('.item-check:checked').forEach(cb => {
+        cb.checked = false; onCheckChange(cb);
+    });
+}
+
+// ── Destination store selected ────────────────────────────────────────────────
+
+function onDestChange() {
+    const card = document.getElementById('itemsCard');
+    card.style.display = 'block';
+    if (!_inventoryLoaded) {
+        loadSourceInventory();
+    }
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+
+async function submitTransfer() {
+    const toStoreId = document.getElementById('toStoreSelect').value;
+    if (!toStoreId) { showMsg('error', 'Please select a destination store.'); return; }
+
+    const items = [];
+    document.querySelectorAll('.item-check:checked').forEach(cb => {
+        const vid  = cb.dataset.vid;
+        const row  = cb.closest('tr');
+        const qty  = parseFloat(row.querySelector('.trf-input').value) || 0;
+        if (qty <= 0) return;
+        const v    = _fromVariants.find(x => String(x.id) === String(vid));
+        if (!v)    return;
+        const itm  = _fromItems.find(x => x.id === v.itemId) || null;
+        const cat  = itm ? (_fromCategories.find(x => x.id === itm.categoryId) || null) : null;
+        items.push({ variantId: v.id, variantCode: v.code || '', variantName: v.name || '',
+                     quantity: qty, unit: itm ? (itm.unit || 'قطعة') : 'قطعة',
+                     _v: v, _i: itm, _c: cat });
+    });
+
+    if (!items.length) { showMsg('error', 'Select at least one item with a quantity.'); return; }
+
+    const patch = {
+        variants:   items.map(x => x._v),
+        items:      [...new Map(items.filter(x=>x._i).map(x=>[x._i.id, x._i])).values()],
+        categories: [...new Map(items.filter(x=>x._c).map(x=>[x._c.id, x._c])).values()],
+    };
+    const cleanItems = items.map(({ _v, _i, _c, ...rest }) => rest);
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    try {
+        const tok = getToken();
+        const res = await fetch(API_BASE_URL + '/transfers', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                from_store_id:      CURRENT_STORE_ID,
+                to_store_id:        toStoreId,
+                date:               document.getElementById('transferDate').value,
+                notes:              document.getElementById('transferNotes').value || null,
+                items:              cleanItems,
+                dest_variants_patch: patch,
+            }),
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            showMsg('success', `✓ Transfer saved! Reference: ${data.reference}`);
+            // Update local stock
+            cleanItems.forEach(item => {
+                _fromStock[item.variantId] = Math.max(0, parseFloat(_fromStock[item.variantId] || 0) - item.quantity);
+            });
+            clearAll();
+            renderItemsTable();
+            document.getElementById('transferNotes').value = '';
+            loadHistory();
+        } else {
+            showMsg('error', data.message || 'Transfer failed. Please try again.');
+        }
+    } catch(e) {
+        showMsg('error', 'Connection error. Check server connection.');
+    }
+    btn.disabled = false; btn.textContent = '✓ Save Transfer';
+}
+
+function showMsg(type, text) {
+    const el = document.getElementById('transferMsg');
+    el.textContent = text;
+    el.className   = 'alert alert-' + (type === 'success' ? 'success' : 'danger');
+    el.style.display = 'block';
+    if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+
+async function loadHistory() {
+    const tok = getToken();
+    try {
+        const res = await fetch(`${API_BASE_URL}/transfers?store_id=${CURRENT_STORE_ID}`, {
+            headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+            const r = await res.json();
+            renderHistory(Array.isArray(r.data) ? r.data : []);
+        }
+    } catch(e) {}
+}
+
+function renderHistory(transfers) {
+    const tbody    = document.getElementById('historyBody');
+    const noHist   = document.getElementById('noHistoryMsg');
+    if (!transfers.length) { tbody.innerHTML = ''; noHist.style.display = 'block'; return; }
+    noHist.style.display = 'none';
+    tbody.innerHTML = transfers.map(t => {
+        const isFrom  = String(t.from_store_id) === String(CURRENT_STORE_ID);
+        const items   = Array.isArray(t.items) ? t.items : [];
+        const itemStr = items.map(i => `<div>${esc(i.variantCode || i.variantName || '?')}: <strong>${i.quantity}</strong></div>`).join('');
+        return `<tr>
+            <td style="font-size:12px;">${esc(t.date || '')}</td>
+            <td><span class="code-tag">${esc(t.reference || '')}</span></td>
+            <td style="font-size:12px;">${esc(storeLabel(t.from_store_id))}</td>
+            <td style="font-size:12px;">${esc(storeLabel(t.to_store_id))}</td>
+            <td style="font-size:12px;">${itemStr}</td>
+            <td style="font-size:12px;color:#6b5a4a;">${esc(t.notes || '—')}</td>
+            <td><span class="history-badge ${isFrom ? 'sent' : 'received'}">${isFrom ? '↗ Sent' : '↙ Received'}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Sidebar toggle ────────────────────────────────────────────────────────────
+function toggleSidebar() {
+    document.querySelector('.rt-sidebar').classList.toggle('open');
+    const ov = document.getElementById('sidebarOverlay');
+    if (ov) ov.classList.toggle('open');
+}
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+document.getElementById('itemsCard').style.display = 'none';
+Promise.all([loadStores()]).then(() => loadHistory());
+</script>
+<script src="../js/i18n.js?v=transfer-1"></script>
+<script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
+<div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
+</body>
+</html>
