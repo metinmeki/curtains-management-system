@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\RetailKvController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\CashierController;
 use App\Http\Controllers\Api\StoreTransferController;
+use App\Http\Controllers\Api\AppSettingController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
@@ -30,6 +31,10 @@ Route::get("/cashiers", [CashierController::class, "index"]);
 
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/user", function (Request $request) { return $request->user(); });
+
+    // System settings (exchange rate). Read by all, written by admin only.
+    Route::get("/settings/app", [AppSettingController::class, "index"]);
+    Route::put("/settings/app", [AppSettingController::class, "update"]);
 
     // Item types � global catalog with cost & selling prices
     Route::get("/item-types", [ItemTypeController::class, "index"]);

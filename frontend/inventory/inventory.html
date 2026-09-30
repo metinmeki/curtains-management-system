@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ux-9">
 </head>
 <body>
 <div class="wh-layout">
@@ -64,17 +64,17 @@
         <div class="wh-section">Stock Movements / سجل الحركة</div>
         <div class="mov-table-wrap">
             <div class="mov-filter">
-                <select id="movFilterItem" onchange="renderMovHistory()">
+                <select id="movFilterItem" aria-label="Filter by item" onchange="renderMovHistory()">
                     <option value="">All items</option>
                 </select>
-                <select id="movFilterType" onchange="renderMovHistory()">
+                <select id="movFilterType" aria-label="Filter by movement type" onchange="renderMovHistory()">
                     <option value="">All types</option>
                     <option value="add">Add</option>
                     <option value="deduct">Deduct</option>
                     <option value="set">Set quantity</option>
                     <option value="supply">Supply to store</option>
                 </select>
-                <input type="date" id="movFilterDate" oninput="renderMovHistory()">
+                <input type="date" id="movFilterDate" aria-label="Filter by date" oninput="renderMovHistory()">
                 <button class="wh-btn wh-btn-sm wh-btn-outline" onclick="clearMovFilters()">Clear</button>
             </div>
             <table class="mov-table">
@@ -94,8 +94,8 @@
 
 </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=wh-2"></script>
+<script src="../js/api.js?v=ux-9"></script>
+<script src="../js/demo-data.js?v=ux-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -234,7 +234,7 @@ function saveNewVariant(itemName) {
 
     if (variants[itemName].some(v => v.code === code)) {
         if (codeEl) { codeEl.style.borderColor='#ef4444'; codeEl.focus(); }
-        alert('A variant with this code already exists for ' + itemName);
+        showToast('A variant with this code already exists for ' + itemName, 'error');
         return;
     }
 
@@ -258,8 +258,8 @@ function saveNewVariant(itemName) {
 
 // ─── Delete variant ───────────────────────────────────────────────────────────
 
-function deleteVariant(itemName, variantId) {
-    if (!confirm('Delete this variant? Stock data will be lost.')) return;
+async function deleteVariant(itemName, variantId) {
+    if (!await cmsConfirm('Delete this variant? Stock data will be lost.', { okText: 'Delete', danger: true })) return;
     const variants = getVariants();
     if (variants[itemName]) {
         variants[itemName] = variants[itemName].filter(v => v.id !== variantId);
@@ -332,7 +332,7 @@ function saveEdit(itemName, variantId) {
     if (!v) return;
 
     if (list.some(x => x.id !== variantId && x.code === newCode)) {
-        alert('Another variant already uses this code.'); return;
+        showToast('Another variant already uses this code.', 'error'); return;
     }
 
     v.code  = newCode;
@@ -372,7 +372,7 @@ function renderVariantCard(itemName, v, unit, step) {
             <div class="variant-photo" title="Click to change photo">
                 ${photoHtml}
                 <div class="variant-photo-overlay">📷 Change photo</div>
-                <input type="file" accept="image/*" onchange="onVariantPhotoChange('${esc(v.id)}', this)">
+                <input type="file" accept="image/*" aria-label="Upload photo" onchange="onVariantPhotoChange('${esc(v.id)}', this)">
             </div>
             <div class="variant-body">
                 ${v.code
@@ -395,7 +395,7 @@ function renderVariantCard(itemName, v, unit, step) {
             <div class="variant-panel ${isAdjOpen?'open':''}">
                 <div class="form-group">
                     <label>Action</label>
-                    <select id="adjType_${esc(v.id)}">
+                    <select id="adjType_${esc(v.id)}" aria-label="Adjustment type">
                         <option value="add">Add to stock</option>
                         <option value="deduct">Deduct from stock</option>
                         <option value="set">Set exact quantity</option>
@@ -426,7 +426,7 @@ function renderVariantCard(itemName, v, unit, step) {
                     <div class="photo-upload-box" style="height:70px;">
                         <span class="pu-icon">📷</span>
                         <span class="pu-label">Click to upload new photo</span>
-                        <input type="file" accept="image/*" onchange="saveEditPhoto('${esc(v.id)}', this)">
+                        <input type="file" accept="image/*" aria-label="Replace photo" onchange="saveEditPhoto('${esc(v.id)}', this)">
                     </div>
                 </div>
                 <div class="form-group">
@@ -509,7 +509,7 @@ function renderItemGroup(item) {
                     ${addPhotoPreview}
                     <span class="pu-icon">📷</span>
                     <span class="pu-label">Click to upload photo<br>(optional)</span>
-                    <input type="file" accept="image/*" onchange="onAddPhoto('${esc(item.name)}', this)">
+                    <input type="file" accept="image/*" aria-label="Add photo" onchange="onAddPhoto('${esc(item.name)}', this)">
                 </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:12px;">
@@ -650,13 +650,14 @@ window.addEventListener('load', async () => {
             ]);
             if (vRes.ok) { const r = await vRes.json(); if (r.data && typeof r.data === 'object') _whVariants = r.data; }
             if (mRes.ok) { const r = await mRes.json(); if (Array.isArray(r.data)) _whMov = r.data; }
-        } catch(e) {}
+        } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     }
     populateItemFilter();
     renderAll();
     renderMovHistory();
 });
 </script>
-<script src="../js/i18n.js?v=arabic-en-2"></script>
+<script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 </body>
 </html>

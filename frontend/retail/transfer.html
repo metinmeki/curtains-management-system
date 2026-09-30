@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer Stock - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=ux-9">
     <style>
         .trf-card { background:#fff; border:1px solid #e8e4da; border-radius:12px; padding:20px; margin-bottom:18px; }
         .trf-card-head { font-size:14px; font-weight:800; color:#2c1a0e; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #e8e4da; display:flex; align-items:center; gap:8px; }
@@ -185,8 +185,8 @@
     </div>
 </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=transfer-1"></script>
+<script src="../js/api.js?v=ux-9"></script>
+<script src="../js/demo-data.js?v=ux-9"></script>
 <script>
 if (!checkAuth()) throw new Error('Not authenticated');
 if (!getStoreId()) window.location.href = '../landing.html';
@@ -222,7 +222,7 @@ async function loadStores() {
             const r = await res.json();
             if (Array.isArray(r.data)) stores = r.data;
         }
-    } catch(e) {}
+    } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 
     if (!stores.length) {
         stores = [1,2,3,4,5].map(id => ({ id, name: 'Store ' + id }));
@@ -310,7 +310,7 @@ async function loadSourceInventory(fromId) {
         if (itemRes.ok)  { const r = await itemRes.json();  if (Array.isArray(r.data)) _fromItems      = r.data; }
         if (varRes.ok)   { const r = await varRes.json();   if (Array.isArray(r.data)) _fromVariants   = r.data; }
         if (stockRes.ok) { const r = await stockRes.json(); if (r.data && typeof r.data === 'object') _fromStock = r.data; }
-    } catch(e) {}
+    } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     document.getElementById('loadingItems').style.display = 'none';
     document.getElementById('itemsTableWrap').style.display = 'block';
     renderItemsTable();
@@ -483,7 +483,7 @@ async function loadHistory() {
             const r = await res.json();
             renderHistory(Array.isArray(r.data) ? r.data : []);
         }
-    } catch(e) {}
+    } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 }
 
 function renderHistory(transfers) {
@@ -516,7 +516,8 @@ function toggleSidebar() {
 document.getElementById('itemsCard').style.display = 'none';
 loadStores().then(() => loadHistory());
 </script>
-<script src="../js/i18n.js?v=transfer-1"></script>
+<script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 </body>

@@ -632,22 +632,46 @@ function translateNode(node, language) {
   Array.from(node.childNodes).forEach(child => translateNode(child, language));
 }
 
+/* The switcher styles live in css/style.css, which the retail and warehouse
+   shells don't load — so ship a self-contained copy. */
+function ensureLanguageSwitcherStyles() {
+  if (document.getElementById('cms-lang-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'cms-lang-styles';
+  style.textContent = `
+#languageSwitcher{display:inline-flex;align-items:center;gap:4px;padding:3px;background:rgba(0,0,0,.06);border-radius:999px;flex-shrink:0}
+#languageSwitcher button{min-height:32px;min-width:44px;padding:6px 12px;border:none;border-radius:999px;background:transparent;color:inherit;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;opacity:.7}
+#languageSwitcher button.active{background:#fffdf6;color:#1a3d2b;opacity:1}
+#languageSwitcher button:focus-visible{outline:2px solid #c4a24d;outline-offset:2px}
+@media(pointer:coarse){#languageSwitcher button{min-height:44px}}
+@media print{#languageSwitcher{display:none!important}}`;
+  document.head.appendChild(style);
+}
+
 function addLanguageSwitcher() {
   if (document.getElementById('languageSwitcher')) return;
+  ensureLanguageSwitcherStyles();
 
   const switcher = document.createElement('div');
   switcher.id = 'languageSwitcher';
-  switcher.className = 'language-switcher';
+  switcher.className = 'language-switcher no-print';
+  switcher.setAttribute('role', 'group');
+  switcher.setAttribute('aria-label', 'Language');
   switcher.innerHTML = `
-    <button type="button" data-lang="en">EN</button>
-    <button type="button" data-lang="ar">عربي</button>
+    <button type="button" data-lang="en" lang="en">EN</button>
+    <button type="button" data-lang="ar" lang="ar">عربي</button>
   `;
 
   switcher.querySelectorAll('button').forEach(button => {
     button.addEventListener('click', () => setLanguage(button.dataset.lang));
   });
 
-  const navTarget = document.querySelector('.user-section') || document.querySelector('.navbar-actions');
+  // The retail and warehouse shells use their own topbars, so without these
+  // two selectors the switcher never mounted on any working page.
+  const navTarget = document.querySelector('.rt-topbar-right')
+    || document.querySelector('.wh-topbar-right')
+    || document.querySelector('.user-section')
+    || document.querySelector('.navbar-actions');
   const loginCard = document.querySelector('.login-card');
 
   if (navTarget) {
@@ -667,7 +691,9 @@ function applyLanguage() {
   addLanguageSwitcher();
 
   document.querySelectorAll('#languageSwitcher button').forEach(button => {
-    button.classList.toggle('active', button.dataset.lang === language);
+    const isActive = button.dataset.lang === language;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
   });
 
   translateNode(document.body, language);

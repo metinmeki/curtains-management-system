@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warehouse Overview — Curtains Management System</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ux-9">
     <style>
         /* ── Page background ────────────────────────────────────────── */
         .wh-page { background: transparent; }
@@ -81,7 +81,7 @@
         .store-row-name { color:#1a3d2b; font-size:14px; }
         .store-debt-bar  { background:#f0ede8; border-radius:4px; height:5px; overflow:hidden; margin-top:8px; }
         .store-debt-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#c0392b,#e74c3c); }
-        .store-stat label { color:#475569; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+        .store-stat label, .store-stat .stat-caption { color:#475569; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
         .store-stat strong { font-size:13px; font-weight:800; color:#1a3d2b; display:block; margin-top:2px; }
         .debt-col strong { color:#c0392b !important; }
 
@@ -224,8 +224,8 @@
 
 </div><!-- /.wh-layout -->
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=wh-2"></script>
+<script src="../js/api.js?v=ux-9"></script>
+<script src="../js/demo-data.js?v=ux-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -387,15 +387,15 @@ function renderStoreBalances(){
                 </div>
                 <div class="store-row-stats">
                     <div class="store-stat">
-                        <label>Supplied</label>
+                        <span class="stat-caption">Supplied</span>
                         <strong>${hasData?money(st.total):'—'}</strong>
                     </div>
                     <div class="store-stat">
-                        <label>Paid</label>
+                        <span class="stat-caption">Paid</span>
                         <strong style="color:#10b981;">${hasData?money(st.paid):'—'}</strong>
                     </div>
                     <div class="store-stat debt-col">
-                        <label>Debt</label>
+                        <span class="stat-caption">Debt</span>
                         <strong>${hasData?money(st.remaining):'—'}</strong>
                     </div>
                 </div>
@@ -483,7 +483,7 @@ window.addEventListener('load', async ()=>{
                 paid:parseFloat(s.paid||0), remaining:parseFloat(s.remaining||0),
                 status:s.status, items:s.items||[], storeName: 'Store '+s.store_id
             })); }
-        }catch(e){}
+        }catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     }
     renderKPI();
     renderStockTable();
@@ -492,6 +492,7 @@ window.addEventListener('load', async ()=>{
     renderRecentTx();
 });
 </script>
-<script src="../js/i18n.js?v=arabic-en-2"></script>
+<script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 </body>
 </html>

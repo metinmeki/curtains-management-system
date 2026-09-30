@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Supply — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ux-9">
     <style>
         @media print {
             .wh-sidebar,.wh-topbar,.page-header,.two-column > aside,.receipt-action-cell,.receipt-actions-head,.no-print { display:none !important; }
@@ -48,11 +48,7 @@
     <div class="wh-topbar">
         <span class="wh-topbar-title">POS Supply</span>
         <div class="wh-topbar-right">
-            <div class="currency-toggle no-print" id="currencyToggle">
-                <button class="cur-btn" id="btnIQD" onclick="setCurrency('IQD')">IQD</button>
-                <button class="cur-btn" id="btnUSD" onclick="setCurrency('USD')">$ USD</button>
-            </div>
-            <button class="wh-btn wh-btn-outline wh-btn-sm no-print" onclick="window.print()">🖨 Print</button>
+            <button class="wh-btn wh-btn-outline wh-btn-sm no-print" onclick="window.print()"><span aria-hidden="true">🖨</span> Print</button>
             <div class="wh-avatar" id="userAvatar">A</div>
             <span class="wh-user-name" id="userName">Admin</span>
         </div>
@@ -81,7 +77,7 @@
                     </div>
                     <div class="form-group">
                         <label>Store / المتجر</label>
-                        <select id="storeSelect" onchange="onStoreChange()">
+                        <select id="storeSelect" aria-label="Store" onchange="onStoreChange()">
                             <option value="">— Select store —</option>
                         </select>
                     </div>
@@ -154,7 +150,7 @@
         <div class="wh-card" style="margin-top:20px;">
             <div class="wh-card-head">
                 <h3>Recent warehouse supplies</h3>
-                <select id="historyFilter" onchange="renderHistory()" style="width:auto;padding:6px 12px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:700;color:#0f172a;background:#fff;">
+                <select id="historyFilter" aria-label="Filter history" onchange="renderHistory()" style="width:auto;padding:6px 12px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:700;color:#0f172a;background:#fff;">
                     <option value="">All stores</option>
                 </select>
             </div>
@@ -172,8 +168,8 @@
 
 </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=wh-1"></script>
+<script src="../js/api.js?v=ux-9"></script>
+<script src="../js/demo-data.js?v=ux-9"></script>
 <script>
 if (!checkAuth()) throw new Error('Not authenticated');
 loadShell('Warehouse');
@@ -281,9 +277,9 @@ function itemOptions(selectedName) {
 function addRow() {
     document.getElementById('supplyRows').insertAdjacentHTML('beforeend', `
         <tr>
-            <td><select class="row-item" onchange="syncRow(this)">${itemOptions('')}</select></td>
-            <td><input class="row-qty" type="number" min="0" step="1" value="1" oninput="calcTotals()"></td>
-            <td><input class="row-unit" type="text" readonly tabindex="-1" style="color:#94a3b8;font-size:11px;background:transparent;border:0;box-shadow:none;"></td>
+            <td><select class="row-item" aria-label="Item" onchange="syncRow(this)">${itemOptions('')}</select></td>
+            <td><input class="row-qty" aria-label="Quantity" type="number" min="0" step="1" value="1" oninput="calcTotals()"></td>
+            <td><input class="row-unit" aria-label="Unit" type="text" readonly tabindex="-1" style="color:#94a3b8;font-size:11px;background:transparent;border:0;box-shadow:none;"></td>
             <td><input class="row-cost" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
             <td><input class="row-price" type="number" min="0" step="500" placeholder="0" oninput="calcTotals()"></td>
             <td class="row-total" style="font-weight:800;">—</td>
@@ -433,7 +429,7 @@ async function loadSuppliesFromDB() {
         const url = API_BASE_URL + '/warehouse/supplies' + (filterStore ? '?store_id=' + filterStore : '');
         const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
         if (res.ok) { const r = await res.json(); if (r.data) _dbSupplies = r.data; }
-    } catch(e) {}
+    } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 }
 
 function renderHistory() {
@@ -478,27 +474,21 @@ async function loadAllWarehouseData() {
                 paid: parseFloat(s.paid||0), remaining: parseFloat(s.remaining||0),
                 status: s.status, notes: s.notes||'', items: s.items||[], payments: s.payments||[]
             })); }
-        } catch(e) {}
+        } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     }
     initPage();
     renderHistory();
 }
 loadAllWarehouseData();
 
-// ── Currency toggle ───────────────────────────────────────────────────────────
-function setCurrency(cur) {
-    localStorage.setItem('display_currency', cur);
-    document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
-    document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
+// Display currency lives in the shared topbar toggle (js/ui.js). This page can
+// redraw in place, so no reload is needed.
+window.cmsRedraw = function() {
     calcTotals();
     onStoreChange();
-}
-(function() {
-    const cur = localStorage.getItem('display_currency') || 'IQD';
-    document.getElementById('btnIQD').classList.toggle('active', cur === 'IQD');
-    document.getElementById('btnUSD').classList.toggle('active', cur === 'USD');
-})();
+};
 </script>
-<script src="../js/i18n.js?v=wh-1"></script>
+<script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 </body>
 </html>

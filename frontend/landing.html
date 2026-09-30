@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dilovan Curtains Management System</title>
-    <link rel="stylesheet" href="css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="css/style.css?v=ux-9">
     <style>
         body {
             background-color: #0f2d1e !important;
@@ -53,7 +53,7 @@
                 <div class="user-avatar" id="userAvatar">A</div>
                 <span class="user-name" id="userName">Admin</span>
             </div>
-            <a href="settings.html" class="btn btn-primary nav-icon-btn" style="margin-right:8px;">⚙<span class="nav-btn-label"> Settings</span></a><button class="btn btn-danger nav-icon-btn" onclick="handleLogout()"><span class="nav-btn-label">Logout</span><span class="nav-btn-icon" style="display:none;">✕</span></button>
+            <a href="settings.html" class="btn btn-primary nav-icon-btn" aria-label="Settings" style="margin-right:8px;"><span aria-hidden="true">⚙</span><span class="nav-btn-label"> Settings</span></a><button class="btn btn-danger nav-icon-btn" aria-label="Logout" onclick="handleLogout()"><span class="nav-btn-label">Logout</span><span class="nav-btn-icon" aria-hidden="true" style="display:none;">✕</span></button>
         </div>
     </nav>
 
@@ -98,24 +98,25 @@
                 <div style="font-size:13px;font-weight:800;color:var(--text-dark);margin-bottom:12px;">New Cashier</div>
                 <div class="cashier-form-grid">
                     <div>
-                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Name <span style="color:#b4534a;">*</span></label>
-                        <input id="cashierNameInput" type="text" placeholder="e.g. Ahmed" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
+                        <label for="cashierNameInput" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Name <span style="color:#b4534a;">*</span></label>
+                        <input id="cashierNameInput" type="text" required placeholder="e.g. Ahmed" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
                     </div>
                     <div>
-                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">PIN (4 digits)</label>
-                        <input id="cashierPinInput" type="text" inputmode="numeric" maxlength="4" placeholder="e.g. 1234" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
+                        <label for="cashierPinInput" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">PIN (4 digits)</label>
+                        <input id="cashierPinInput" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="e.g. 1234" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
                     </div>
                     <div>
-                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Assigned Store</label>
+                        <label for="cashierStoreInput" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-gray);display:block;margin-bottom:4px;">Assigned Store</label>
                         <select id="cashierStoreInput" style="width:100%;padding:8px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--surface-color);color:var(--text-dark);">
                             <option value="">Any store</option>
                         </select>
                     </div>
                     <div style="display:flex;gap:8px;">
-                        <button class="btn btn-success" onclick="saveCashier()" style="padding:8px 14px;font-size:13px;">Save</button>
+                        <button class="btn btn-success" id="saveCashierBtn" onclick="saveCashier()" style="padding:8px 14px;font-size:13px;">Save</button>
                         <button class="btn" onclick="closeAddCashier()" style="padding:8px 14px;font-size:13px;">Cancel</button>
                     </div>
                 </div>
+                <div id="cashierFormError" class="alert alert-danger" role="alert" style="display:none;margin:12px 0 0;font-size:13px;"></div>
             </div>
 
             <!-- Table -->
@@ -137,7 +138,7 @@
 
     </main>
 
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=ux-9"></script>
     <script>
         if (!checkAuth()) {
             window.location.href = 'index.html';
@@ -161,18 +162,38 @@
         // DB-backed store names
         let _dbStoreNames = {}; // { storeId: name }
 
+        // Rolls back if the server rejects the rename, so a name can never look
+        // saved on screen and then vanish on the next reload.
         async function saveCustomName(storeKey, name) {
             const trimmed = name.trim();
-            _dbStoreNames[String(storeKey)] = trimmed;
+            const previous = _dbStoreNames[String(storeKey)];
             const token = localStorage.getItem('auth_token');
-            if (token && !isNaN(storeKey)) {
-                try {
-                    await fetch(API_BASE_URL + '/stores/' + storeKey, {
-                        method: 'PUT',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify({ name: trimmed })
-                    });
-                } catch(e) {}
+
+            // The warehouse card has no numeric store row to update.
+            if (isNaN(storeKey)) {
+                showToast('The warehouse name cannot be changed here.', 'info');
+                return false;
+            }
+            if (!token) {
+                showSaveError('Store name');
+                return false;
+            }
+
+            _dbStoreNames[String(storeKey)] = trimmed;
+            try {
+                const res = await fetch(API_BASE_URL + '/stores/' + storeKey, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name: trimmed })
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                showToast('Store renamed.', 'success');
+                return true;
+            } catch(e) {
+                if (previous === undefined) delete _dbStoreNames[String(storeKey)];
+                else _dbStoreNames[String(storeKey)] = previous;
+                showSaveError('Store name', e);
+                return false;
             }
         }
 
@@ -196,7 +217,12 @@
                         r.data.forEach(s => { _dbStoreNames[String(s.id)] = s.name; });
                     }
                 }
-            } catch(e) {}
+            } catch(e) {
+                // Falls back to the built-in names; say so rather than showing
+                // stale defaults as though they were the configured names.
+                console.error('Could not load store names', e);
+                showToast('Could not load store names — showing defaults.', 'error');
+            }
         }
 
         function loadUserInfo() {
@@ -220,7 +246,7 @@
                             <div class="store-card-footer">Enter workspace</div>
                         </div>
                     </a>
-                    <button class="store-rename-btn" title="Rename" onclick="startRename('${store.id}', event)">✎</button>
+                    <button class="store-rename-btn" title="Rename ${store.name}" aria-label="Rename ${store.name}" onclick="startRename('${store.id}', event)"><span aria-hidden="true">✎</span></button>
                 </div>
             `).join('');
         }
@@ -265,7 +291,7 @@
         }
 
         async function handleLogout() {
-            if (confirm(ta('Logout from the system?'))) {
+            if (await cmsConfirm('Logout from the system?', { okText: 'Logout' })) {
                 await logout();
                 window.location.href = 'index.html';
             }
@@ -275,10 +301,12 @@
         let _cashiers = [];
 
         function getStoreOptions() {
-            return getStoresList()
+            const retail = getStoresList()
                 .filter(s => s.type === 'retail')
                 .map(s => `<option value="${s.id}">${s.name}</option>`)
                 .join('');
+            const warehouse = getStoresList().find(s => s.type === 'inventory');
+            return retail + (warehouse ? `<option value="0">${warehouse.name}</option>` : '');
         }
 
         function openAddCashier() {
@@ -297,49 +325,93 @@
         }
 
         async function saveCashier() {
-            const name    = document.getElementById('cashierNameInput').value.trim();
-            const pin     = document.getElementById('cashierPinInput').value.trim();
+            const nameEl  = document.getElementById('cashierNameInput');
+            const pinEl   = document.getElementById('cashierPinInput');
+            const errEl   = document.getElementById('cashierFormError');
+            const btn     = document.getElementById('saveCashierBtn');
+            const name    = nameEl.value.trim();
+            const pin     = pinEl.value.trim();
             const storeId = document.getElementById('cashierStoreInput').value;
-            if (!name) { document.getElementById('cashierNameInput').focus(); return; }
-            if (pin && !/^\d{4}$/.test(pin)) { alert(ta('PIN must be exactly 4 digits')); return; }
+
+            const fail = (msg, focusEl) => {
+                errEl.textContent = ta(msg);
+                errEl.style.display = 'block';
+                if (focusEl) focusEl.focus();
+            };
+            errEl.style.display = 'none';
+
+            if (!name) return fail('Name is required.', nameEl);
+            if (pin && !/^\d{4}$/.test(pin)) return fail('PIN must be exactly 4 digits', pinEl);
+
             const token = localStorage.getItem('auth_token');
+            btn.disabled = true;
+            btn.textContent = ta('Saving…');
             try {
                 const res = await fetch(API_BASE_URL + '/cashiers', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({ name, pin: pin || '0000', store_id: storeId ? Number(storeId) : null })
                 });
-                if (res.ok) {
-                    const r = await res.json();
-                    _cashiers.push({ id: r.data.id, name: r.data.name, store_id: r.data.store_id });
-                }
-            } catch(e) {}
-            closeAddCashier();
-            renderCashierTable();
+                const body = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(body.message || 'HTTP ' + res.status);
+                _cashiers.push({ id: body.data.id, name: body.data.name, store_id: body.data.store_id });
+                // Only close once the cashier actually exists on the server.
+                closeAddCashier();
+                renderCashierTable();
+                showToast('Cashier "' + name + '" added.', 'success');
+            } catch(e) {
+                // Keep the form open with the typed values intact.
+                fail(e.message || 'The cashier was not saved.', nameEl);
+                showSaveError('Cashier', e);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = ta('Save');
+            }
         }
 
         async function deleteCashier(id) {
-            if (!confirm(ta('Remove this cashier?'))) return;
+            const cashier = _cashiers.find(c => String(c.id) === String(id));
+            const ok = await cmsConfirm(
+                'Remove ' + (cashier ? cashier.name : 'this cashier') + '? They will no longer be able to sign in.',
+                { okText: 'Remove', danger: true }
+            );
+            if (!ok) return;
+
             const token = localStorage.getItem('auth_token');
             try {
-                await fetch(API_BASE_URL + '/cashiers/' + id, {
+                const res = await fetch(API_BASE_URL + '/cashiers/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
                 });
-            } catch(e) {}
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+            } catch(e) {
+                // Don't drop the row locally if the server still has the cashier.
+                showSaveError('Cashier removal', e);
+                return;
+            }
             _cashiers = _cashiers.filter(c => String(c.id) !== String(id));
             renderCashierTable();
+            showToast('Cashier removed.', 'success');
         }
+
+        let _cashierLoadFailed = false;
 
         async function loadCashiers() {
             const token = localStorage.getItem('auth_token');
             if (!token) return;
+            _cashierLoadFailed = false;
             try {
                 const res = await fetch(API_BASE_URL + '/cashiers', {
                     headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
                 });
-                if (res.ok) { const r = await res.json(); if (Array.isArray(r.data)) _cashiers = r.data; }
-            } catch(e) {}
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const r = await res.json();
+                if (Array.isArray(r.data)) _cashiers = r.data;
+            } catch(e) {
+                // "No cashiers yet" must not stand in for "couldn't load".
+                console.error('Could not load cashiers', e);
+                _cashierLoadFailed = true;
+            }
         }
 
         function renderCashierTable() {
@@ -348,15 +420,20 @@
             const table = document.querySelector('#cashierTableWrap table');
             if (!_cashiers.length) {
                 if (table) table.style.display = 'none';
+                empty.textContent = _cashierLoadFailed
+                    ? 'Could not load the cashier list — check the server connection.'
+                    : 'No cashiers yet. Click + Add Cashier to get started.';
                 empty.style.display = 'block';
                 return;
             }
             if (table) table.style.display = '';
             empty.style.display = 'none';
             tbody.innerHTML = _cashiers.map(c => {
-                const storeLabel = c.store_id
-                    ? (getStoresList().find(s => String(s.id) === String(c.store_id))?.name || 'Store ' + c.store_id)
-                    : 'Any store';
+                const storeLabel = c.store_id === 0
+                    ? (getStoresList().find(s => s.type === 'inventory')?.name || 'Warehouse')
+                    : c.store_id
+                        ? (getStoresList().find(s => String(s.id) === String(c.store_id))?.name || 'Store ' + c.store_id)
+                        : 'Any store';
                 return `
                 <tr style="border-bottom:1px solid var(--border-color);">
                     <td style="padding:12px 16px;">
@@ -394,7 +471,8 @@
             if (window.applyLanguage) applyLanguage();
         });
     </script>
-    <script src="js/i18n.js?v=arabic-en-2"></script>
+    <script src="js/i18n.js?v=ux-9"></script>
+<script src="js/ui.js?v=ux-9"></script>
 </body>
 </html>
 

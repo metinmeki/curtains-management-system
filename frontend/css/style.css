@@ -110,12 +110,14 @@ button {
 .layout {
     display: flex;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
 .layout.full-page {
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 /* Sidebar */
@@ -736,6 +738,17 @@ textarea {
    RESPONSIVE — Tablet & Mobile
 ═══════════════════════════════════════════════════════════════ */
 
+/* Respect users who have asked for less animation. */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .store-card:hover { transform: none; }
+}
+
 /* Touch devices — bigger tap targets & prevent iOS zoom on inputs */
 @media (pointer: coarse) {
     .btn { min-height: 42px; }
@@ -887,6 +900,7 @@ textarea {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    min-height: 100dvh;
     background: linear-gradient(135deg, #2c1a0e 0%, #3d2412 50%, #2c1a0e 100%);
     padding: 24px;
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Curtains Management System</title>
-    <link rel="stylesheet" href="css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="css/style.css?v=ux-9">
 </head>
 <body class="ltr">
     <nav class="navbar">
@@ -27,12 +27,13 @@
             <div class="card-body">
                 <p style="color:var(--text-gray);font-size:14px;margin-bottom:20px;">Set the USD to IQD exchange rate. This will be used across the POS system.</p>
                 <div class="form-group">
-                    <label>1 USD = ? IQD</label>
-                    <input type="number" id="exchangeRate" min="1" placeholder="e.g. 1480" style="font-size:18px;font-weight:700;">
+                    <label for="exchangeRate">1 USD = ? IQD</label>
+                    <input type="number" id="exchangeRate" min="1" placeholder="e.g. 1480" style="font-size:18px;font-weight:700;" aria-describedby="rateHelp">
+                    <p id="rateHelp" style="font-size:12px;color:var(--text-gray);margin-top:6px;">Stored on the server, so every till and phone uses the same rate.</p>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
-                    <button class="btn btn-primary" onclick="saveRate()">Save rate</button>
-                    <span id="rateMessage" style="font-size:13px;color:#2f7d5b;display:none;">✓ Saved!</span>
+                    <button class="btn btn-primary" onclick="saveRate()" id="saveRateBtn">Save rate</button>
+                    <span id="rateMessage" role="status" style="font-size:13px;color:#2f7d5b;display:none;">✓ Saved for all devices</span>
                 </div>
                 <div style="margin-top:20px;padding:14px;background:#eef5e8;border-radius:8px;font-size:13px;color:#31533f;">
                     <strong>Current rate:</strong> <span id="currentRate">Not set</span><br>
@@ -41,34 +42,60 @@
             </div>
         </div>
     </main>
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=ux-9"></script>
     <script>
         if (!checkAuth()) window.location.href = "index.html";
         const user = getUser();
         if (user) { document.getElementById("userName").textContent = user.name; document.getElementById("userAvatar").textContent = user.name.charAt(0).toUpperCase(); }
 
-        function loadRate() {
-            const rate = localStorage.getItem("usd_to_iqd_rate");
-            if (rate) {
-                document.getElementById("exchangeRate").value = rate;
-                document.getElementById("currentRate").textContent = "1 USD = " + Number(rate).toLocaleString() + " IQD";
-                document.getElementById("exampleRate").textContent = (100 * Number(rate)).toLocaleString();
-            }
+        // Same separator convention as every amount elsewhere in the app.
+        function fmtRate(n) {
+            return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 }).format(Number(n));
         }
 
-        function saveRate() {
-            const rate = document.getElementById("exchangeRate").value;
-            if (!rate || rate <= 0) { alert("Please enter a valid rate."); return; }
-            localStorage.setItem("usd_to_iqd_rate", rate);
-            document.getElementById("currentRate").textContent = "1 USD = " + Number(rate).toLocaleString() + " IQD";
-            document.getElementById("exampleRate").textContent = (100 * Number(rate)).toLocaleString();
-            const msg = document.getElementById("rateMessage");
-            msg.style.display = "inline";
-            setTimeout(() => msg.style.display = "none", 2000);
+        function paintRate(rate) {
+            document.getElementById("currentRate").textContent = rate
+                ? "1 USD = " + fmtRate(rate) + " IQD"
+                : "Not set";
+            document.getElementById("exampleRate").textContent = rate ? fmtRate(100 * Number(rate)) : "-";
+        }
+
+        async function loadRate() {
+            const rate = await loadExchangeRate();
+            if (rate) document.getElementById("exchangeRate").value = rate;
+            paintRate(rate);
+        }
+
+        async function saveRate() {
+            const input = document.getElementById("exchangeRate");
+            const btn   = document.getElementById("saveRateBtn");
+            const rate  = Number(input.value);
+            if (!rate || rate <= 0) {
+                await cmsAlert("Please enter a valid rate.");
+                input.focus();
+                return;
+            }
+            btn.disabled = true;
+            const original = btn.textContent;
+            btn.textContent = "Saving…";
+            try {
+                await saveExchangeRate(rate);
+                paintRate(rate);
+                const msg = document.getElementById("rateMessage");
+                msg.style.display = "inline";
+                setTimeout(() => msg.style.display = "none", 2500);
+            } catch (e) {
+                // Never leave the admin believing a rejected rate was stored.
+                showToast(e.message || "The rate was not saved.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = original;
+            }
         }
 
         loadRate();
     </script>
-    <script src="js/i18n.js?v=arabic-en-2"></script>
+    <script src="js/i18n.js?v=ux-9"></script>
+<script src="js/ui.js?v=ux-9"></script>
 </body>
 </html>

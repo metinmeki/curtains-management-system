@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supply History — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ux-9">
 </head>
 <body>
 <div class="wh-layout">
@@ -103,8 +103,8 @@
 
 </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=arabic-en-1"></script>
+<script src="../js/api.js?v=ux-9"></script>
+<script src="../js/demo-data.js?v=ux-9"></script>
 <script>
     if (!checkAuth()) throw new Error('Not authenticated');
     loadShell('Inventory / Warehouse');
@@ -127,13 +127,14 @@
                         : '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:32px;">No supply history yet.</td></tr>';
                     return;
                 }
-            } catch(e) {}
+            } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
         }
         document.getElementById('categoryRows').innerHTML = inventoryDemo.categories.map(item=>`<tr><td>${item.category}</td><td>${item.type}</td><td>${item.quantity}</td><td>${money(item.unitPrice)}</td><td>—</td><td>—</td></tr>`).join('');
     }
     calcInventorySale();
     loadPage();
 </script>
-<script src="../js/i18n.js?v=arabic-en-2"></script>
+<script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 </body>
 </html>

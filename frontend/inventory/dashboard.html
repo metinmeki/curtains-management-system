@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Supply — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ux-9">
     <style>
         /* ── Section labels ─────────────────────────────────────────── */
         .wh-section { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
@@ -212,32 +212,6 @@
             </div>
         </div>
 
-        <!-- Transaction History -->
-        <div class="wh-section" id="historySection">Transaction History</div>
-        <div class="wh-tabs" id="storeTabs"></div>
-        <div class="history-panel" style="margin-top:12px;">
-            <div class="history-panel-header">
-                <div>
-                    <div class="history-panel-title" id="historyTitle">All stores — full history</div>
-                    <div class="history-panel-sub" id="historySub">Showing all supply transactions</div>
-                </div>
-            </div>
-            <div class="history-pay-strip hidden" id="historyPayStrip">
-                <div class="form-group">
-                    <label id="historyPayLabel">Record payment</label>
-                    <input id="historyPayAmt" type="number" min="0" step="1000" placeholder="Amount">
-                </div>
-                <div class="form-group">
-                    <label>Note</label>
-                    <input id="historyPayNote" placeholder="Optional">
-                </div>
-                <button class="wh-btn wh-btn-success" onclick="recordHistoryPayment()">Pay</button>
-            </div>
-            <div class="history-tx-list" id="historyTxList">
-                <div class="history-empty">Select a store tab above to view its history.</div>
-            </div>
-        </div>
-
         <!-- Supply Form -->
         <div class="wh-section">New Supply</div>
         <div class="supply-layout">
@@ -323,14 +297,40 @@
         <div class="wh-section store-accounts-section">Store Accounts</div>
         <div class="store-accounts-grid" id="storeAccountsGrid"></div>
 
+        <!-- Transaction History -->
+        <div class="wh-section" id="historySection">Transaction History</div>
+        <div class="wh-tabs" id="storeTabs"></div>
+        <div class="history-panel" style="margin-top:12px;">
+            <div class="history-panel-header">
+                <div>
+                    <div class="history-panel-title" id="historyTitle">All stores — full history</div>
+                    <div class="history-panel-sub" id="historySub">Showing all supply transactions</div>
+                </div>
+            </div>
+            <div class="history-pay-strip hidden" id="historyPayStrip">
+                <div class="form-group">
+                    <label id="historyPayLabel">Record payment</label>
+                    <input id="historyPayAmt" type="number" min="0" step="1000" placeholder="Amount">
+                </div>
+                <div class="form-group">
+                    <label>Note</label>
+                    <input id="historyPayNote" placeholder="Optional">
+                </div>
+                <button class="wh-btn wh-btn-success" onclick="recordHistoryPayment()">Pay</button>
+            </div>
+            <div class="history-tx-list" id="historyTxList">
+                <div class="history-empty">Select a store tab above to view its history.</div>
+            </div>
+        </div>
+
     </div><!-- /.wh-page -->
     </div>
 </div><!-- /.wh-main -->
 
 </div><!-- /.wh-layout -->
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=wh-2"></script>
+<script src="../js/api.js?v=ux-9"></script>
+<script src="../js/demo-data.js?v=ux-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -360,7 +360,7 @@ async function loadStoresFromDB() {
                 WH_STORES = r.data.map(s => ({ id: s.id, name: s.name, icon: s.name.substring(0,2).toUpperCase() }));
             }
         }
-    } catch(e) {}
+    } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 }
 
 function toggleStoresMgmt() {
@@ -421,15 +421,21 @@ async function addStore() {
 }
 
 async function deleteStore(id) {
-    if (!confirm('Remove this store? This will not delete its supply history.')) return;
+    if (!await cmsConfirm('Remove this store? This will not delete its supply history.', { okText: 'Remove', danger: true })) return;
     const tok = _whTok();
     if (tok) {
         try {
-            await fetch(API_BASE_URL + '/stores/' + id, {
+            const res = await fetch(API_BASE_URL + '/stores/' + id, {
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/json' }
             });
-        } catch(e) {}
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+        } catch(e) {
+            // Removing it locally while the server still has it would make the
+            // store reappear on the next reload.
+            showSaveError('Store removal', e);
+            return;
+        }
     }
     WH_STORES = WH_STORES.filter(s => s.id !== id);
     renderStoresMgmt();
@@ -680,7 +686,7 @@ function makeRow(item) {
             <td>
                 <div class="qty-stepper">
                     <button class="qty-btn" onclick="stepQty(this, -${item.step})">−</button>
-                    <input class="qty-input" type="number" min="0" step="${item.step}" value="0" oninput="calcTotals()">
+                    <input class="qty-input" aria-label="Quantity for ${esc(item.name)}" type="number" min="0" step="${item.step}" value="0" oninput="calcTotals()">
                     <button class="qty-btn" onclick="stepQty(this, ${item.step})">+</button>
                 </div>
             </td>
@@ -1037,9 +1043,9 @@ function renderStoreAccounts() {
                     <div class="store-account-badge ${hasDebt ? 'owed' : 'clear'}">${hasDebt ? 'Has debt' : 'Clear'}</div>
                 </div>
                 <div class="store-account-stats">
-                    <div class="store-account-stat"><label>Supplied</label><strong>${money(stats.total)}</strong></div>
-                    <div class="store-account-stat"><label>Paid</label><strong>${money(stats.paid)}</strong></div>
-                    <div class="store-account-stat ${hasDebt ? 'debt-stat' : ''}"><label>Remaining</label><strong>${money(stats.remaining)}</strong></div>
+                    <div class="store-account-stat"><span class="stat-caption">Supplied</span><strong>${money(stats.total)}</strong></div>
+                    <div class="store-account-stat"><span class="stat-caption">Paid</span><strong>${money(stats.paid)}</strong></div>
+                    <div class="store-account-stat ${hasDebt ? 'debt-stat' : ''}"><span class="stat-caption">Remaining</span><strong>${money(stats.remaining)}</strong></div>
                 </div>
                 <div class="store-account-toggle">
                     <span>${stats.count} transaction${stats.count !== 1 ? 's' : ''}</span>
@@ -1083,7 +1089,7 @@ async function loadAllWarehouseData() {
             if (invRes.ok)   { const r = await invRes.json();   if (r.data && typeof r.data === 'object') _whInvState = r.data; }
             if (codesRes.ok) { const r = await codesRes.json(); if (r.data && typeof r.data === 'object') _whItemCodes = r.data; }
             if (costsRes.ok) { const r = await costsRes.json(); if (r.data && typeof r.data === 'object') _whItemCosts = r.data; }
-        } catch(e) {}
+        } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     }
     await loadSuppliesFromDB();
     renderItemCodesGrid();
@@ -1094,6 +1100,7 @@ async function loadAllWarehouseData() {
 }
 loadAllWarehouseData();
 </script>
-<script src="../js/i18n.js?v=wh-2"></script>
+<script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 </body>
 </html>

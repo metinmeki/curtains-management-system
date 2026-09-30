@@ -1,10 +1,10 @@
 /* ─── Warehouse Design System ─────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh;min-height:100dvh}
 a{text-decoration:none;color:inherit}
-.wh-layout{display:flex;height:100vh}
+.wh-layout{display:flex;height:100vh;height:100dvh}
 /* ── Sidebar ── */
-.wh-sidebar{width:220px;flex-shrink:0;background:#1a3d2b;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.wh-sidebar{width:220px;flex-shrink:0;background:#1a3d2b;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto}
 .wh-brand{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.07)}
 .wh-brand-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
 .wh-brand-icon{width:28px;height:28px;background:#c4a24d;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
@@ -192,7 +192,7 @@ input:not([type="file"]):focus,select:focus,textarea:focus{outline:none;border-c
 .store-account-stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #f1f5f9}
 .store-account-stat{padding:10px 14px;border-right:1px solid #f1f5f9}
 .store-account-stat:last-child{border-right:0}
-.store-account-stat label{display:block;font-size:8px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:2px;letter-spacing:.5px}
+.store-account-stat label,.store-account-stat .stat-caption{display:block;font-size:8px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:2px;letter-spacing:.5px}
 .store-account-stat strong{display:block;font-size:13px;font-weight:800;color:#0f172a}
 .store-account-stat.debt-stat strong{color:#ef4444}
 .store-account-toggle{padding:9px 16px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748b;font-weight:600;border-top:1px solid #f1f5f9}
@@ -253,7 +253,7 @@ input:not([type="file"]):focus,select:focus,textarea:focus{outline:none;border-c
 .store-row-name{font-size:13px;font-weight:700;color:#0f172a}
 .store-row-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .store-stat{text-align:center}
-.store-stat label{display:block;font-size:8px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:2px}
+.store-stat label,.store-stat .stat-caption{display:block;font-size:8px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:2px}
 .store-stat strong{display:block;font-size:12px;font-weight:800;color:#0f172a}
 .store-stat.debt-col strong{color:#ef4444}
 .store-debt-bar{margin-top:8px;background:#f1f5f9;border-radius:4px;height:3px;overflow:hidden}
@@ -384,7 +384,30 @@ a.dash-link:hover{text-decoration:underline}
 /* ── Responsive ── */
 @media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:960px){.supply-layout,.two-column,.wh-two-col,.dash-grid{grid-template-columns:1fr}.receipt-bottom{grid-template-columns:1fr}.inv-kpi{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){.wh-sidebar{display:none}.wh-page{padding:16px}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+  /* Sidebar becomes a slide-over drawer. It must never be display:none —
+     doing so leaves the workspace with no navigation at all. */
+  .wh-sidebar{position:fixed;top:0;left:-260px;width:260px;height:100vh;height:100dvh;z-index:1001;transition:left .25s ease;box-shadow:2px 0 16px rgba(0,0,0,.25)}
+  .wh-sidebar.open{left:0}
+  .wh-page{padding:16px}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .wh-topbar{padding:0 12px;gap:8px}
+  /* Tap targets keyed on width as well as pointer type, since a narrow window
+     deserves the same treatment as a phone. */
+  .btn,.wh-btn{min-height:44px}
+  .btn-sm,.btn-small,.wh-btn-sm{min-height:38px}
+  .v-btn,.receipt-action-btn{min-height:38px!important;min-width:38px!important}
+  .cur-btn{min-height:36px!important;min-width:40px!important;padding:7px 10px!important;font-size:12px!important}
+  input:not([type="file"]),select,textarea{min-height:40px;font-size:16px}
+}
+/* Hamburger + drawer backdrop (injected by js/ui.js) */
+.cms-menu-btn{display:none;background:none;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:18px;line-height:1;color:#0f172a;cursor:pointer;flex-shrink:0;min-height:40px;min-width:40px}
+.cms-menu-btn:hover{background:#f1f5f9}
+.cms-menu-btn:focus-visible{outline:3px solid #c4a24d;outline-offset:2px}
+.cms-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000}
+.cms-sidebar-overlay.open{display:block}
+@media(max-width:768px){.cms-menu-btn{display:inline-flex;align-items:center;justify-content:center}}
+@media(pointer:coarse){.cms-menu-btn{min-height:44px;min-width:44px}}
 @media(max-width:480px){
   .inv-kpi{grid-template-columns:1fr}
   .kpi-row{grid-template-columns:1fr}
@@ -400,4 +423,11 @@ a.dash-link:hover{text-decoration:underline}
   .btn,.filter-btn,.v-btn{min-height:44px}
   input:not([type="file"]),select,textarea{min-height:44px;font-size:16px!important}
   .v-btn{min-height:38px;font-size:11px}
+  /* Icon-only row actions still need a real tap target even when the visual
+     glyph is small — padding does the work, not font-size. */
+  .receipt-action-btn,.btn-small,.btn-sm{min-height:40px;min-width:40px}
+}
+/* Respect users who have asked for less animation. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }

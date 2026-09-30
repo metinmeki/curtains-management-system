@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Dashboard - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=ux-9">
     <style>
         .dashboard-metrics .metric-card { color:#fff !important; border-left:none !important; border-radius:10px; }
         .dashboard-metrics .metric-card span { color:rgba(255,255,255,0.82) !important; font-size:13px; }
@@ -188,8 +188,8 @@
         </div>
     </div>
 </div>
-    <script src="../js/api.js"></script>
-    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script src="../js/api.js?v=ux-9"></script>
+    <script src="../js/demo-data.js?v=ux-9"></script>
     <script>
         if (!checkAuth()) throw new Error("Not authenticated");
         if (!getStoreId()) window.location.href = "../landing.html";
@@ -244,13 +244,13 @@
                 const token = getToken();
                 const res = await fetch(API_BASE_URL + '/retail/expenses/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                 if (res.ok) { const r = await res.json(); if (r.data) allDbExpenses = r.data; }
-            } catch(e) {}
+            } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 
             try {
                 const token = getToken();
                 const res = await fetch(API_BASE_URL + '/retail/orders/' + getStoreId(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                 if (res.ok) { const r = await res.json(); if (r.data) allDbOrders = r.data; }
-            } catch(e) {}
+            } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 
             renderDashboard();
         }
@@ -353,10 +353,11 @@
         loadSalesFromAPI();
         setInterval(loadSalesFromAPI, 30000);
     </script>
-    <script src="../js/i18n.js?v=orders-1"></script>
+    <script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js"></script>
+<script src="calculator.js?v=ux-9"></script>
 </body>
 </html>

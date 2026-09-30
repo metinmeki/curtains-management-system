@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Orders - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=ux-9">
     <style>
         /* ── Metric cards row ── */
         .workspace-grid .metric-card { color:#fff !important; border-left:none !important; border-radius:10px; }
@@ -236,8 +236,8 @@
 
 <div id="printOrderReceipt" class="print-order-receipt"></div>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script src="../js/api.js?v=ux-9"></script>
+    <script src="../js/demo-data.js?v=ux-9"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -283,12 +283,12 @@
             const row = document.createElement('tr');
             row.className = afterRow ? 'order-item-row is-added-row' : 'order-item-row';
             row.innerHTML = `
-                <td><select class="order-type" onchange="syncOrderItemUnit(this); calculateOrder()">${orderTypeOptions()}</select></td>
+                <td><select class="order-type" aria-label="Item type" onchange="syncOrderItemUnit(this); calculateOrder()">${orderTypeOptions()}</select></td>
                 <td><input class="order-code" placeholder="Manual code"></td>
-                <td><input class="order-qty" type="number" min="0" step="0.01" oninput="calculateOrder()"></td>
-                <td><input class="order-unit" readonly></td>
-                <td><input class="order-price" type="number" min="0" oninput="calculateOrder()"></td>
-                <td><input class="order-line-total" readonly></td>
+                <td><input class="order-qty" aria-label="Quantity" type="number" min="0" step="0.01" oninput="calculateOrder()"></td>
+                <td><input class="order-unit" aria-label="Unit" readonly tabindex="-1"></td>
+                <td><input class="order-price" aria-label="Unit price" type="number" min="0" oninput="calculateOrder()"></td>
+                <td><input class="order-line-total" aria-label="Line total" readonly tabindex="-1"></td>
                 <td><div class="order-item-actions"><button class="btn btn-primary btn-small" onclick="addOrderItemRow(this.closest('tr'))">+</button><button class="btn btn-danger btn-small delete-order-row" onclick="deleteOrderItemRow(this)">x</button></div></td>
             `;
             if (afterRow) {
@@ -583,16 +583,16 @@
             if (order) { order.approvalStatus = 'accepted'; order.approval_status = 'accepted'; updateStoreOrder(order); renderAll(); }
             try {
                 await apiCall('POST', '/retail/orders/' + orderId + '/accept');
-            } catch(e) { alert(ta('Error accepting order.')); }
+            } catch(e) { showSaveError('Order acceptance', e); }
         }
 
         async function declineOrder(orderId) {
-            if (!confirm(ta('Decline this order? It will be removed permanently.'))) return;
+            if (!await cmsConfirm('Decline this order? It will be removed permanently.', { okText: 'Decline', danger: true })) return;
             try {
                 await apiCall('DELETE', '/retail/orders/' + orderId);
                 await loadRetailDataFromDB(getStoreId());
                 renderAll();
-            } catch(e) { alert(ta('Error declining order.')); }
+            } catch(e) { showSaveError('Order decline', e); }
         }
 
         function toggleOrderDetails(orderId) {
@@ -799,18 +799,19 @@
         loadRetailDataFromDB(getStoreId()).then(() => renderAll());
 
         async function deleteOrder(id) {
-            if (!confirm(ta('Delete this order permanently?'))) return;
+            if (!await cmsConfirm('Delete this order permanently?', { okText: 'Delete', danger: true })) return;
             try {
                 await apiCall('DELETE', '/retail/orders/' + id);
                 await loadRetailDataFromDB(getStoreId());
                 renderAll();
-            } catch(e) { alert(ta('Error deleting order.')); }
+            } catch(e) { showSaveError('Order deletion', e); }
         }
     </script>
-    <script src="../js/i18n.js?v=orders-1"></script>
+    <script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js"></script>
+<script src="calculator.js?v=ux-9"></script>
 </body>
 </html>

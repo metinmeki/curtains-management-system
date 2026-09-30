@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Debts - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=ux-9">
     <style>
         @media print {
             body { background: #fff; }
@@ -150,7 +150,7 @@
                         </div>
                         <div class="form-group">
                             <label>Remaining debt</label>
-                            <input id="debtRemainingAmount" readonly value="0 IQD">
+                            <input id="debtRemainingAmount" aria-label="Remaining debt" readonly tabindex="-1" value="0 IQD">
                         </div>
                         <div class="form-group">
                             <label>Debt note</label>
@@ -183,11 +183,11 @@
         <p style="margin:0 0 12px;color:#6b7c73;font-size:13px;">Remaining: <strong id="debtPayMax"></strong></p>
         <div style="margin-bottom:12px;">
             <label style="display:block;margin-bottom:4px;font-size:13px;">Payment amount</label>
-            <input id="debtPayAmount" type="number" min="0" step="any" style="width:100%;padding:8px 10px;border:1px solid #d8d2c8;border-radius:8px;background:#f8f7f4;color:#374151;">
+            <input id="debtPayAmount" aria-label="Payment amount" type="number" min="0" step="any" style="width:100%;padding:8px 10px;border:1px solid #d8d2c8;border-radius:8px;background:#f8f7f4;color:#374151;">
         </div>
         <div style="margin-bottom:16px;">
             <label style="display:block;margin-bottom:4px;font-size:13px;">Note (optional)</label>
-            <input id="debtPayNote" type="text" style="width:100%;padding:8px 10px;border:1px solid #d8d2c8;border-radius:8px;background:#f8f7f4;color:#374151;">
+            <input id="debtPayNote" aria-label="Payment note" type="text" style="width:100%;padding:8px 10px;border:1px solid #d8d2c8;border-radius:8px;background:#f8f7f4;color:#374151;">
         </div>
         <p id="debtPayMsg" style="margin:0 0 12px;font-size:13px;min-height:18px;"></p>
         <div style="display:flex;gap:10px;">
@@ -197,8 +197,8 @@
     </div>
 </div>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script src="../js/api.js?v=ux-9"></script>
+    <script src="../js/demo-data.js?v=ux-9"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -228,16 +228,16 @@
             const wrapper = document.createElement('tr');
             wrapper.className = afterRow ? 'invoice-row is-added-row' : 'invoice-row';
             wrapper.innerHTML = `
-                <td><select class="material-select" onchange="syncRow(this); calculateDebtReceipt()">${materialOptions()}</select></td>
+                <td><select class="material-select" aria-label="Material" onchange="syncRow(this); calculateDebtReceipt()">${materialOptions()}</select></td>
                 <td style="position:relative;">
                     <input class="row-code" placeholder="optional" oninput="lookupCode(this)" style="width:100%;height:100%;padding:8px 5px;border:0;box-shadow:none;border-radius:0;background:transparent;color:var(--receipt-ink);text-align:center;font-family:monospace;font-size:12px;">
                     <div class="row-stock-tip" style="font-size:10px;text-align:center;position:absolute;bottom:3px;left:0;right:0;pointer-events:none;"></div>
                 </td>
-                <td><input class="row-qty quick-number" type="number" min="0" step="0.1" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()"></td>
-                <td><input class="row-price quick-number" type="number" min="0" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()"></td>
-                <td><input class="row-sale-total" readonly></td>
-                <td><input class="row-account-total" readonly></td>
-                <td><input class="row-note"></td>
+                <td><input class="row-qty quick-number" aria-label="Quantity" type="number" min="0" step="0.1" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()"></td>
+                <td><input class="row-price quick-number" aria-label="Unit price" type="number" min="0" onfocus="selectNumber(this)" oninput="calculateDebtReceipt()"></td>
+                <td><input class="row-sale-total" aria-label="Line total" readonly tabindex="-1"></td>
+                <td><input class="row-account-total" aria-label="Worker account total" readonly tabindex="-1"></td>
+                <td><input class="row-note" aria-label="Line note"></td>
                 <td class="receipt-action-cell">
                     <div class="receipt-row-actions">
                         <button class="btn btn-primary btn-small receipt-action-btn" title="Add another line below" onclick="duplicateInvoiceRow(this)">+</button>
@@ -579,18 +579,19 @@
         loadDebtsFromAPI().then(() => renderDebtRows());
 
         async function deleteSale(id) {
-            if (!confirm(ta('Delete this sale record permanently?'))) return;
+            if (!await cmsConfirm('Delete this sale record permanently?', { okText: 'Delete', danger: true })) return;
             try {
                 await apiCall('DELETE', '/retail/sales/' + id);
                 await loadDebtsFromAPI();
                 renderDebtRows();
-            } catch(e) { alert(ta('Error deleting sale.')); }
+            } catch(e) { showSaveError('Sale deletion', e); }
         }
     </script>
-    <script src="../js/i18n.js?v=orders-1"></script>
+    <script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js"></script>
+<script src="calculator.js?v=ux-9"></script>
 </body>
 </html>

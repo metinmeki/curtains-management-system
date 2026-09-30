@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Expenses - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=ux-9">
 </head>
 <body class="ltr">
 <div class="rt-layout">
@@ -79,8 +79,8 @@
         </div>
     </div>
 </div>
-    <script src="../js/api.js"></script>
-    <script src="../js/demo-data.js?v=orders-1"></script>
+    <script src="../js/api.js?v=ux-9"></script>
+    <script src="../js/demo-data.js?v=ux-9"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -105,7 +105,7 @@
                         const result = await response.json();
                         if (result && result.data) expenses = result.data;
                     }
-                } catch(e) {}
+                } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
             }
             document.getElementById('expenseRows').innerHTML = expenses.length
                 ? expenses.map(expense => `
@@ -171,7 +171,7 @@
         renderExpenses();
 
         async function deleteExpense(id) {
-            if (!confirm(ta('Delete this expense?'))) return;
+            if (!await cmsConfirm('Delete this expense?', { okText: 'Delete', danger: true })) return;
             await apiCall('DELETE', '/retail/expenses/' + id);
             renderExpenses();
         }
@@ -212,10 +212,11 @@
         </div>
     </div>
     <script>document.getElementById('editCategory').innerHTML = retailDemo.expenseCategories.map(c=>`<option>${c}</option>`).join('');</script>
-    <script src="../js/i18n.js?v=orders-1"></script>
+    <script src="../js/i18n.js?v=ux-9"></script>
+<script src="../js/ui.js?v=ux-9"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js"></script>
+<script src="calculator.js?v=ux-9"></script>
 </body>
 </html>

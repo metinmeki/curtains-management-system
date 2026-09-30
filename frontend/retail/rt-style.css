@@ -1,11 +1,11 @@
 /* ─── Retail Design System ──────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f5f0d5;color:#2c1a0e;min-height:100vh}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f5f0d5;color:#2c1a0e;min-height:100vh;min-height:100dvh}
 a{text-decoration:none;color:inherit}
-.rt-layout{display:flex;height:100vh}
+.rt-layout{display:flex;height:100vh;height:100dvh}
 
 /* ── Sidebar ── */
-.rt-sidebar{width:220px;flex-shrink:0;background:#3d2412;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.rt-sidebar{width:220px;flex-shrink:0;background:#3d2412;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto}
 .rt-brand{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
 .rt-brand-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
 .rt-brand-icon{width:28px;height:28px;background:#c4a24d;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
@@ -60,7 +60,7 @@ a{text-decoration:none;color:inherit}
 /* ── Forms ── */
 .form-group{margin-bottom:14px}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151;margin-bottom:5px}
+label,.group-caption{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151;margin-bottom:5px}
 input:not([type="file"]),select,textarea{width:100%;padding:8px 11px;border:1.5px solid #d8d2c8;border-radius:7px;font-size:13px;color:#2c1a0e;background:#fff;transition:border-color .12s;font-family:inherit}
 input:not([type="file"]):focus,select:focus,textarea:focus{outline:none;border-color:#c4a24d;box-shadow:0 0 0 3px rgba(196,162,77,.1)}
 textarea{resize:vertical;min-height:80px}
@@ -408,6 +408,13 @@ html,body{overflow-x:hidden;max-width:100%}
   .workspace-grid,.dashboard-metrics{grid-template-columns:1fr}
   .metric-card strong{font-size:13px}
   .receipt-table{min-width:320px}
+  /* 8 columns of number entry can't fit a phone, so the wrapper scrolls.
+     Pin the material column so you can still tell which line you're editing. */
+  .receipt-table th:first-child,
+  .receipt-table td:first-child{position:sticky;inset-inline-start:0;z-index:2;background:#fffdf6;box-shadow:1px 0 0 rgba(27,61,46,.12)}
+  .receipt-table th:first-child{background:#f8f5ec;z-index:3}
+  .receipt-table tbody tr:nth-child(even) td:first-child{background:#fbf8f0}
+  .table-wrapper{scrollbar-width:thin}
   .receipt-brand{letter-spacing:3px}
   .form-grid{grid-template-columns:1fr}
   .inv-variant-grid{grid-template-columns:1fr}
@@ -430,4 +437,32 @@ html,body{overflow-x:hidden;max-width:100%}
   .receipt-row-input{min-height:38px;font-size:14px}
   .filter-btn{min-height:38px}
   .tab-btn{min-height:38px}
+  /* These carry inline padding/font-size, so size them explicitly rather
+     than relying on the generic .btn rule. */
+  .receipt-action-btn{min-height:40px!important;min-width:40px!important}
+  .cur-btn{min-height:40px!important;min-width:44px!important;padding:8px 12px!important;font-size:12px!important}
+}
+
+/* Tap targets on small screens. Keyed on width as well as pointer type, since
+   a narrow window deserves the same treatment as a phone. */
+@media(max-width:768px){
+  .btn{min-height:44px}
+  .btn-sm,.btn-small{min-height:38px}
+  .receipt-action-btn{min-height:38px!important;min-width:38px!important;padding:6px!important}
+  .cur-btn{min-height:36px!important;min-width:40px!important;padding:7px 10px!important;font-size:12px!important}
+  .calc-topbar-btn{min-height:40px!important;min-width:40px!important}
+  input:not([type="file"]),select,textarea{min-height:40px;font-size:16px}
+}
+
+/* Hamburger + drawer backdrop (injected by js/ui.js) */
+.cms-menu-btn{display:none;background:none;border:1px solid rgba(0,0,0,.15);border-radius:8px;padding:6px 10px;font-size:18px;line-height:1;color:inherit;cursor:pointer;flex-shrink:0;min-height:40px;min-width:40px}
+.cms-menu-btn:focus-visible{outline:3px solid #c4a24d;outline-offset:2px}
+.cms-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199}
+.cms-sidebar-overlay.open{display:block}
+@media(max-width:768px){.cms-menu-btn{display:inline-flex;align-items:center;justify-content:center}}
+@media(pointer:coarse){.cms-menu-btn{min-height:44px;min-width:44px}}
+
+/* Respect users who have asked for less animation. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
