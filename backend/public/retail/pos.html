@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail POS - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=measure-1">
 </head>
 <body class="ltr">
 <div class="rt-layout">
@@ -135,7 +135,32 @@
                     </div>
                     <div class="no-print" style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
                         <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
-                        <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
+                        <div class="table-wrapper">
+                            <table class="measure-sheet">
+                                <colgroup>
+                                    <col style="width:36px;">
+                                    <col style="width:24%;">
+                                    <col style="width:14%;">
+                                    <col style="width:14%;">
+                                    <col style="width:10%;">
+                                    <col>
+                                    <col style="width:44px;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>المكان / Room</th>
+                                        <th>العرض / Width</th>
+                                        <th>الارتفاع / Height</th>
+                                        <th>العدد / Qty</th>
+                                        <th>ملاحظات / Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="measureRows"></tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-secondary btn-small" style="margin-top:8px;font-size:11px;" onclick="addMeasureRow()">+ Add row (سطر)</button>
                     </div>
 
                     <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
@@ -593,7 +618,7 @@
             document.getElementById('discountNote').value = '';
             document.getElementById('paidAmount').value = 0;
             document.getElementById('debtNote').value = '';
-            document.getElementById('saleDetails').value = '';
+            resetMeasureSheet();
 
             // Reset order section
             document.getElementById('posOrderCards').innerHTML = '';
@@ -638,7 +663,7 @@
                 remaining,
                 status: remaining === 0 ? 'Paid' : paid === 0 ? 'Debt' : 'Partial',
                 note: document.getElementById('debtNote').value,
-                saleDetails: document.getElementById('saleDetails').value,
+                saleDetails: measurementsText(),
                 items: data.items,
                 workerAccounts: data.workerAccounts
             };
@@ -747,7 +772,7 @@
             const date  = document.getElementById('saleDate').value || '';
             const name  = document.getElementById('clientName').value || '-';
             const phone = document.getElementById('clientPhone').value || '-';
-            const details = document.getElementById('saleDetails').value || '';
+            const measures = getMeasurements();
 
             return `
                 <div style="text-align:center;color:#1f315f;">
@@ -763,7 +788,12 @@
                 <p>Subtotal: ${money(data.saleTotal)}</p>
                 <p>Discount: ${money(discount)}</p>
                 <p>Total: ${money(finalTotal)}</p>
-                ${details ? `<p>تفاصيل / Measurements: ${esc(details)}</p>` : ''}
+                ${measures.length ? `
+                <p>تفاصيل / Measurements</p>
+                <table class="print-order-table">
+                    <thead><tr><th>#</th><th>المكان</th><th>العرض</th><th>الارتفاع</th><th>العدد</th><th>ملاحظات</th></tr></thead>
+                    <tbody>${measures.map((m, i) => `<tr><td>${i + 1}</td><td>${esc(m.room)}</td><td>${esc(m.width)}</td><td>${esc(m.height)}</td><td>${esc(m.qty)}</td><td>${esc(m.note)}</td></tr>`).join('')}</tbody>
+                </table>` : ''}
             `;
         }
 
@@ -775,6 +805,83 @@
             setTimeout(() => document.body.classList.remove('printing-order'), 200);
         }
 
+        // ─── MEASUREMENTS SHEET (spreadsheet-style grid) ────────────────────────
+
+        const MEASURE_FIELDS = ['room', 'width', 'height', 'qty', 'note'];
+
+        function addMeasureRow(afterRow = null) {
+            const row = document.createElement('tr');
+            row.className = 'measure-row';
+            row.innerHTML = `
+                <td class="measure-num"></td>
+                <td><input class="m-room"></td>
+                <td><input class="m-width" inputmode="decimal"></td>
+                <td><input class="m-height" inputmode="decimal"></td>
+                <td><input class="m-qty" inputmode="numeric"></td>
+                <td><input class="m-note"></td>
+                <td class="receipt-action-cell">
+                    <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete row" tabindex="-1" onclick="deleteMeasureRow(this)">×</button>
+                </td>
+            `;
+            if (afterRow) afterRow.insertAdjacentElement('afterend', row);
+            else document.getElementById('measureRows').appendChild(row);
+            renumberMeasureRows();
+            return row;
+        }
+
+        function deleteMeasureRow(button) {
+            const rows = document.querySelectorAll('.measure-row');
+            const row = button.closest('tr');
+            if (rows.length <= 1) {
+                row.querySelectorAll('input').forEach(input => { input.value = ''; });
+                return;
+            }
+            row.remove();
+            renumberMeasureRows();
+        }
+
+        function renumberMeasureRows() {
+            document.querySelectorAll('.measure-row').forEach((row, i) => {
+                row.querySelector('.measure-num').textContent = i + 1;
+            });
+        }
+
+        function resetMeasureSheet() {
+            document.getElementById('measureRows').innerHTML = '';
+            for (let i = 0; i < 3; i++) addMeasureRow();
+        }
+
+        // Spreadsheet keys: Enter / ArrowDown go to the cell below (adding a row at the end), ArrowUp goes up
+        document.getElementById('measureRows').addEventListener('keydown', e => {
+            const input = e.target.closest('input');
+            if (!input || !['Enter', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
+            e.preventDefault();
+            const row = input.closest('tr');
+            const cls = input.className;
+            let target = e.key === 'ArrowUp' ? row.previousElementSibling : row.nextElementSibling;
+            if (!target && e.key !== 'ArrowUp') target = addMeasureRow(row);
+            if (target) target.querySelector('.' + cls).focus();
+        });
+
+        function getMeasurements() {
+            return [...document.querySelectorAll('.measure-row')].map(row => {
+                const m = {};
+                MEASURE_FIELDS.forEach(f => { m[f] = row.querySelector('.m-' + f).value.trim(); });
+                return m;
+            }).filter(m => MEASURE_FIELDS.some(f => m[f]));
+        }
+
+        // Saved as plain text (one line per row) so sale history and debts pages show it as-is
+        function measurementsText() {
+            return getMeasurements().map((m, i) => {
+                const size = [m.width, m.height].filter(Boolean).join(' × ');
+                const parts = [m.room, size, m.qty ? 'العدد ' + m.qty : '', m.note].filter(Boolean);
+                return `${i + 1}. ${parts.join(' — ')}`;
+            }).join('\n');
+        }
+
+        resetMeasureSheet();
+
         // ─── CLIENT QUOTE PDF (sent before payment) ─────────────────────────────
 
         function quoteHtml() {
@@ -784,7 +891,7 @@
             const date    = document.getElementById('saleDate').value || todayInputValue();
             const name    = document.getElementById('clientName').value || '-';
             const phone   = document.getElementById('clientPhone').value || '-';
-            const details = document.getElementById('saleDetails').value || '';
+            const measures = getMeasurements();
             const items   = data.items.filter(item => item.quantity > 0 || item.saleTotal > 0);
 
             // Only confirmed order cards count toward the client total (same rule as calculateInvoice)
@@ -860,11 +967,14 @@
                     ${sumRow('المجموع الكلي / Total', money(grandTotal), true)}
                 </table>
 
-                ${details ? `
-                <div style="margin-top:18px;border:1px solid ${line};border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:12px;font-weight:800;color:${green};margin-bottom:4px;">تفاصيل / Measurements</div>
-                    <div style="font-size:13px;white-space:pre-wrap;">${esc(details)}</div>
-                </div>` : ''}
+                ${measures.length ? `
+                <div style="margin-top:18px;font-weight:800;font-size:13px;color:${green};">تفاصيل / Measurements</div>
+                <table style="width:100%;border-collapse:collapse;margin-top:6px;">
+                    <thead><tr><th ${th}>#</th><th ${th}>المكان</th><th ${th}>العرض</th><th ${th}>الارتفاع</th><th ${th}>العدد</th><th ${th}>ملاحظات</th></tr></thead>
+                    <tbody>${measures.map((m, i) => `<tr>
+                        <td ${td}>${i + 1}</td><td ${td}>${esc(m.room)}</td><td ${td}>${esc(m.width)}</td>
+                        <td ${td}>${esc(m.height)}</td><td ${td}>${esc(m.qty)}</td><td ${td}>${esc(m.note)}</td></tr>`).join('')}</tbody>
+                </table>` : ''}
 
                 <div style="margin-top:26px;padding-top:10px;border-top:1px solid ${line};text-align:center;font-size:12px;color:#6b7280;">
                     هذا عرض سعر وليس فاتورة نهائية · This is a price quote, not a final receipt
