@@ -221,6 +221,7 @@
 
                         <button class="btn btn-success btn-block" onclick="submitSale()">Add sale</button>
                         <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printReceipt()">Print receipt</button>
+                        <button class="btn btn-secondary btn-block" id="quotePdfBtn" style="margin-top:10px;" onclick="downloadQuotePdf()">PDF quote for client (عرض سعر)</button>
                         <div id="submitMessage" class="alert alert-success" style="display:none;margin-top:16px;"></div>
                     </div>
                 </aside>
@@ -233,6 +234,7 @@
 
     <script src="../js/api.js"></script>
     <script src="../js/demo-data.js?v=orders-1"></script>
+    <script src="../js/vendor/html2pdf.bundle.min.js"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -771,6 +773,149 @@
             document.body.classList.add('printing-order');
             window.print();
             setTimeout(() => document.body.classList.remove('printing-order'), 200);
+        }
+
+        // ─── CLIENT QUOTE PDF (sent before payment) ─────────────────────────────
+
+        function quoteHtml() {
+            const data = getInvoiceData();
+            const discount   = Math.min(Number(document.getElementById('discountAmount').value || 0), data.saleTotal);
+            const finalTotal = Math.max(data.saleTotal - discount, 0);
+            const date    = document.getElementById('saleDate').value || todayInputValue();
+            const name    = document.getElementById('clientName').value || '-';
+            const phone   = document.getElementById('clientPhone').value || '-';
+            const details = document.getElementById('saleDetails').value || '';
+            const items   = data.items.filter(item => item.quantity > 0 || item.saleTotal > 0);
+
+            // Only confirmed order cards count toward the client total (same rule as calculateInvoice)
+            const orders = getPosOrdersData().filter(o => o.card.dataset.confirmed === 'true' && (o.items.length || o.total > 0));
+            const orderTotal = orders.reduce((s, o) => s + o.total, 0);
+            const grandTotal = finalTotal + orderTotal;
+
+            const green = '#1b3d2e', gold = '#b89a3a', line = 'rgba(27,61,46,0.18)';
+            const th = `style="background:${green};color:#fff;padding:9px 6px;font-size:12px;font-weight:700;border:1px solid ${green};"`;
+            const td = `style="padding:8px 6px;font-size:12px;border:1px solid ${line};text-align:center;"`;
+            const sumRow = (label, value, strong) => `
+                <tr>
+                    <td style="padding:7px 10px;font-size:${strong ? 15 : 13}px;${strong ? `font-weight:800;background:${green};color:#fff;` : ''}">${label}</td>
+                    <td style="padding:7px 10px;font-size:${strong ? 15 : 13}px;text-align:left;direction:ltr;${strong ? `font-weight:800;background:${green};color:#fff;` : 'font-weight:700;'}">${value}</td>
+                </tr>`;
+
+            const itemRows = items.length
+                ? items.map((item, i) => `<tr>
+                    <td ${td}>${i + 1}</td>
+                    <td ${td}>${esc(item.material)}</td>
+                    <td ${td}>${esc(item.code || '-')}</td>
+                    <td ${td}>${esc(item.quantity)}</td>
+                    <td ${td}>${money(item.price)}</td>
+                    <td ${td}><strong>${money(item.saleTotal)}</strong></td>
+                    <td ${td}>${esc(item.note || '')}</td>
+                </tr>`).join('')
+                : `<tr><td ${td} colspan="7">-</td></tr>`;
+
+            const orderBlock = orders.length ? `
+                <div style="margin-top:18px;font-weight:800;font-size:13px;color:${green};">طلبية / Order items</div>
+                <table style="width:100%;border-collapse:collapse;margin-top:6px;">
+                    <thead><tr><th ${th}>المواد</th><th ${th}>كود</th><th ${th}>الكمية</th><th ${th}>السعر</th><th ${th}>المجموع</th></tr></thead>
+                    <tbody>${orders.map(o => o.items.map(it => `<tr>
+                        <td ${td}>${esc(it.itemType)}</td><td ${td}>${esc(it.code || '-')}</td><td ${td}>${esc(it.quantity)}</td>
+                        <td ${td}>${money(it.price)}</td><td ${td}><strong>${money(it.lineTotal)}</strong></td></tr>`).join('')
+                        + (o.delivery > 0 ? `<tr><td ${td} colspan="4">توصيل / Delivery</td><td ${td}><strong>${money(o.delivery)}</strong></td></tr>` : '')
+                    ).join('')}</tbody>
+                </table>` : '';
+
+            return `
+            <div style="width:760px;padding:28px 30px;background:#fff;color:#1f2937;font-family:'Segoe UI',Tahoma,Arial,sans-serif;direction:rtl;">
+                <div style="background:linear-gradient(135deg,#163329,#245f49);color:#fff;border-radius:10px;padding:22px 24px;text-align:center;">
+                    <div style="font-size:30px;font-weight:900;letter-spacing:6px;direction:ltr;">DLOVAN PARDA</div>
+                    <div style="font-size:20px;font-weight:700;margin-top:4px;color:#e9d9a6;">دلوفان للستائر</div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-bottom:12px;border-bottom:2px solid ${gold};">
+                    <div>
+                        <div style="font-size:22px;font-weight:900;color:${green};">عرض سعر</div>
+                        <div style="font-size:12px;font-weight:700;color:${gold};direction:ltr;text-align:right;">QUOTATION</div>
+                    </div>
+                    <div style="font-size:13px;line-height:1.8;text-align:left;direction:ltr;">
+                        <div><strong>Date:</strong> ${esc(date)}</div>
+                        <div><strong>Client:</strong> ${esc(name)}</div>
+                        <div><strong>Phone:</strong> ${esc(phone)}</div>
+                    </div>
+                </div>
+
+                <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+                    <thead><tr>
+                        <th ${th}>#</th><th ${th}>المواد</th><th ${th}>كود</th><th ${th}>متر / نافذة</th>
+                        <th ${th}>السعر</th><th ${th}>المجموع</th><th ${th}>ملاحظات</th>
+                    </tr></thead>
+                    <tbody>${itemRows}</tbody>
+                </table>
+
+                ${orderBlock}
+
+                <table style="width:320px;border-collapse:collapse;margin-top:18px;margin-right:auto;border:1px solid ${line};">
+                    ${sumRow('المجموع / Subtotal', money(data.saleTotal))}
+                    ${discount > 0 ? sumRow('الخصم / Discount', '- ' + money(discount)) : ''}
+                    ${orders.length ? sumRow('طلبية / Orders', money(orderTotal)) : ''}
+                    ${sumRow('المجموع الكلي / Total', money(grandTotal), true)}
+                </table>
+
+                ${details ? `
+                <div style="margin-top:18px;border:1px solid ${line};border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:12px;font-weight:800;color:${green};margin-bottom:4px;">تفاصيل / Measurements</div>
+                    <div style="font-size:13px;white-space:pre-wrap;">${esc(details)}</div>
+                </div>` : ''}
+
+                <div style="margin-top:26px;padding-top:10px;border-top:1px solid ${line};text-align:center;font-size:12px;color:#6b7280;">
+                    هذا عرض سعر وليس فاتورة نهائية · This is a price quote, not a final receipt
+                </div>
+            </div>`;
+        }
+
+        async function downloadQuotePdf() {
+            calculateInvoice();
+            const data = getInvoiceData();
+            const msg = document.getElementById('submitMessage');
+            if (data.saleTotal <= 0) {
+                msg.textContent = 'Add at least one item with quantity and price before creating the quote.';
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+                return;
+            }
+            if (typeof html2pdf === 'undefined') {
+                msg.textContent = 'PDF library failed to load. Use "Print receipt" and choose "Save as PDF" instead.';
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('quotePdfBtn');
+            const label = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Creating PDF...';
+
+            const holder = document.createElement('div');
+            holder.innerHTML = quoteHtml();
+            const date = document.getElementById('saleDate').value || todayInputValue();
+            const client = (document.getElementById('clientName').value || 'client').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '-');
+
+            try {
+                await html2pdf().set({
+                    margin: [6, 6, 6, 6],
+                    filename: `Dlovan-Parda-Quote-${client}-${date}.pdf`,
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                }).from(holder.firstElementChild).save();
+            } catch (e) {
+                msg.textContent = 'Could not create the PDF: ' + (e && e.message ? e.message : e);
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = label;
+            }
         }
 
         // ─── ORDER SECTION (multi-card) ──────────────────────────────────────────
