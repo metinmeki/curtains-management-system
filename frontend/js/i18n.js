@@ -320,6 +320,8 @@ const translations = {
     'Variant Inventory': 'مخزون الأنواع',
     'Category → Item → Variant structure. Each variant has its own code, quantity, and stock history per store.': 'هيكل الفئة ← المادة ← النوع. لكل نوع كوده وكميته وسجل حركاته الخاص بالمتجر.',
     'Total codes': 'إجمالي الأكواد',
+    'Stock value (cost)': 'قيمة المخزون (بسعر الكلفة)',
+    'Cost price × quantity in stock — not selling price': 'سعر الكلفة × الكمية في المخزون — وليس سعر البيع',
     'Low stock': 'مخزون منخفض',
     'Out of stock': 'نافد المخزون',
     'Movement Log': 'سجل الحركات',
@@ -787,7 +789,172 @@ const translations = {
     'Confirm': 'تأكيد',
     'OK': 'حسناً',
     'Decline': 'رفض',
-    'Saving…': 'جارِ الحفظ…'
+    'Saving…': 'جارِ الحفظ…',
+
+    // ── Stock status labels (JS object literals, not markup) ────────────
+    'In stock': 'متوفر',
+    'Critical': 'حرج',
+    'Empty': 'فارغ',
+
+    // ── Fragments composed with a value at runtime, via ta() ────────────
+    'New variant for': 'نوع جديد لـ',
+    'variant': 'نوع',
+    'Initial stock': 'المخزون الابتدائي',
+    'transaction': 'عملية',
+    'transactions': 'عملية',
+    'across all stores': 'في كل المتاجر',
+    'item types': 'نوع مادة',
+    'tx': 'عملية',
+
+    // ── Calculator widget (built in retail/calculator.js) ───────────────
+    'Calculator': 'الآلة الحاسبة',
+
+    // ── Store names (app constants, not user data) ──────────────────────
+    'Store 1': 'متجر ١',
+    'Store 2': 'متجر ٢',
+    'Store 3': 'متجر ٣',
+    'Store 4': 'متجر ٤',
+    'Store 5': 'متجر ٥',
+
+    // ── Warehouse overview ──────────────────────────────────────────────
+    'Below minimum': 'أقل من الحد الأدنى',
+    'Needs restock': 'يحتاج إعادة تعبئة',
+    'All stores combined': 'كل المتاجر مجتمعة',
+    'Received from stores': 'المستلم من المتاجر',
+    'Outstanding debt': 'الدين المستحق',
+    'Still owed to warehouse': 'ما زال مستحقاً للمخزن',
+    'All supply records': 'كل سجلات التوريد',
+    '(Selling − Cost) × Qty': '(البيع − الكلفة) × الكمية',
+    'Gross − outstanding debts': 'الإجمالي − الديون المستحقة',
+
+    // ── Empty states and misc ───────────────────────────────────────────
+    'No activities yet.': 'لا توجد حركات بعد.',
+    'No clients yet.': 'لا يوجد عملاء بعد.',
+    'Loading...': 'جارِ التحميل...',
+    '10,000 IQD per window to Installation account': '١٠٬٠٠٠ د.ع لكل نافذة إلى حساب التركيب',
+
+    // ── Shared labels ───────────────────────────────────────────────────
+    'Edit': 'تعديل',
+    '✎ Edit': '✎ تعديل',
+    'Save changes': 'حفظ التغييرات',
+    'Totals': 'الإجماليات',
+    'Supplied': 'المورَّد',
+    'optional': 'اختياري',
+    '(optional)': '(اختياري)',
+    'Optional note': 'ملاحظة اختيارية',
+    'code': 'الكود',
+    'Note:': 'ملاحظة:',
+    'Size:': 'القياس:',
+    'Details:': 'التفاصيل:',
+    'Cashier:': 'الكاشير:',
+    'Ref:': 'المرجع:',
+    'Order total': 'إجمالي الطلب',
+    'Buyer paid': 'المدفوع من المشتري',
+
+    // ── Messages and alerts ─────────────────────────────────────────────
+    'Please select a store before saving.': 'يرجى اختيار المتجر قبل الحفظ.',
+    'Add at least one item with quantity and price.': 'أضف مادة واحدة على الأقل مع الكمية والسعر.',
+    'Buyer balance paid.': 'تم تسديد رصيد المشتري.',
+    'Supplier balance paid.': 'تم تسديد رصيد المورّد.',
+    'Connection error.': 'خطأ في الاتصال.',
+    'Enter a valid amount.': 'أدخل مبلغاً صحيحاً.',
+    'Payment recorded.': 'تم تسجيل الدفعة.',
+    'Incorrect PIN or server error.': 'رمز الدخول غير صحيح أو حدث خطأ في الخادم.',
+
+    // ── Empty states ────────────────────────────────────────────────────
+    'No movements recorded yet.': 'لا توجد حركات مسجلة بعد.',
+    'No stock movements yet.': 'لا توجد حركات مخزون بعد.',
+    'No supply transactions yet.': 'لا توجد عمليات توريد بعد.',
+    'No variants yet': 'لا توجد أنواع بعد',
+    'No photo': 'لا توجد صورة',
+
+    // ── Warehouse inventory ─────────────────────────────────────────────
+    '▲ Stock': '▲ المخزون',
+    'Min. level': 'الحد الأدنى',
+    'Change photo': 'تغيير الصورة',
+    '📷 Change photo': '📷 تغيير الصورة',
+    'Click to upload photo': 'اضغط لرفع صورة',
+    'Click to upload new photo': 'اضغط لرفع صورة جديدة',
+    'Color / Attribute': 'اللون / الخاصية',
+    'Size / Type': 'القياس / النوع',
+    'Add variant': 'إضافة نوع',
+    'Add to stock': 'إضافة إلى المخزون',
+    'Deduct from stock': 'خصم من المخزون',
+    'Cost price (IQD)': 'سعر الكلفة (د.ع)',
+    'Selling price (IQD)': 'سعر البيع (د.ع)',
+    'COST PRICE (IQD)': 'سعر الكلفة (د.ع)',
+    'Variants & codes': 'الأنواع والأكواد',
+    'e.g. White, Beige…': 'مثال: أبيض، بيج…',
+    'e.g. 2m, Heavy…': 'مثال: ٢ متر، ثقيل…',
+    'e.g. SK-001': 'مثال: SK-001',
+    'e.g. BLK-RED-M': 'مثال: BLK-RED-M',
+
+    // ── Warehouse dashboard and supply ──────────────────────────────────
+    '▲ View history above': '▲ عرض السجل أعلاه',
+    'Unit price / Price': 'سعر الوحدة',
+    'Save & Record Supply': 'حفظ وتسجيل التوريد',
+    'Pay →': 'دفع ←',
+    // Headings that shipped bilingual — in Arabic only the Arabic half is wanted.
+    'Financial Summary / الملخص المالي': 'الملخص المالي',
+    'Items Supplied / الأصناف المورَّدة': 'الأصناف المورَّدة',
+    'Paid / المدفوع': 'المدفوع',
+    'Remaining debt / المتبقي': 'الدين المتبقي',
+    'Type / نوع': 'النوع',
+    'المجموع / Total': 'المجموع',
+    'الوحدة / Unit': 'الوحدة',
+
+    // ── Retail clients ──────────────────────────────────────────────────
+    'الحساب / Account': 'الحساب',
+    'القياس / Measurements': 'القياس',
+    'المواد / Material': 'المواد',
+    'حسابات العمال / Worker accounts': 'حسابات العمال',
+    'سعر التوصيل / Delivery': 'سعر التوصيل',
+    'ملاحظات / Note': 'ملاحظات',
+
+    // ── Retail POS and orders ───────────────────────────────────────────
+    'اسم الشركة / Supplier name': 'اسم الشركة',
+    'Supplier / Company': 'المورّد / الشركة',
+    'Unit price ($)': 'سعر الوحدة ($)',
+    '✓ Confirm Order': '✓ تأكيد الطلب',
+    '✓ Order confirmed — included in grand total': '✓ تم تأكيد الطلب — مُدرج في المجموع الكلي',
+    '⚠ Not confirmed — not included in grand total': '⚠ غير مؤكد — غير مُدرج في المجموع الكلي',
+    '? not found': '؟ غير موجود',
+    '✗ out': '✗ نافد',
+
+    // ── Category management ─────────────────────────────────────────────
+    '⚙️ Manage Categories': '⚙️ إدارة الفئات',
+    '📊 Dashboard': '📊 لوحة التحكم',
+    '📦 Inventory Sales': '📦 مبيعات المخزن',
+    '🚪 Logout': '🚪 تسجيل الخروج',
+    '1. Add Main Category (الفئة الرئيسية)': '١. إضافة فئة رئيسية',
+    '2. Add Subcategory (الماركة / النوع)': '٢. إضافة فئة فرعية (الماركة / النوع)',
+    'Current Categories in System': 'الفئات الحالية في النظام',
+    'Save Category': 'حفظ الفئة',
+    'Save Subcategory': 'حفظ الفئة الفرعية',
+    'Select Main Category': 'اختر الفئة الرئيسية',
+    'Warehouse (Main)': 'المخزن (الرئيسي)',
+
+    // ── Page titles (browser tab) ───────────────────────────────────────
+    'Login - Curtains Management System': 'تسجيل الدخول - نظام إدارة الستائر',
+    'Settings - Curtains Management System': 'الإعدادات - نظام إدارة الستائر',
+    'Store Inventory - Curtains Management System': 'مخزون المتجر - نظام إدارة الستائر',
+    'Retail Clients - Curtains Management System': 'عملاء التجزئة - نظام إدارة الستائر',
+    'Retail Dashboard - Curtains Management System': 'لوحة التجزئة - نظام إدارة الستائر',
+    'Retail Debts - Curtains Management System': 'ديون التجزئة - نظام إدارة الستائر',
+    'Retail Expenses - Curtains Management System': 'مصاريف التجزئة - نظام إدارة الستائر',
+    'Retail Orders - Curtains Management System': 'طلبات التجزئة - نظام إدارة الستائر',
+    'Retail POS - Curtains Management System': 'نقطة بيع التجزئة - نظام إدارة الستائر',
+    'Retail Reports - Curtains Management System': 'تقارير التجزئة - نظام إدارة الستائر',
+    'Transfer Stock - Curtains Management System': 'نقل المخزون - نظام إدارة الستائر',
+    'Manage Categories - Curtains ERP': 'إدارة الفئات - نظام إدارة الستائر',
+    'Warehouse Overview — Curtains Management System': 'نظرة عامة على المخزن - نظام إدارة الستائر',
+    'Inventory — Warehouse': 'المخزون — المخزن',
+    'Debts — Warehouse': 'الديون — المخزن',
+    'Reports — Warehouse': 'التقارير — المخزن',
+    'New Supply — Warehouse': 'توريد جديد — المخزن',
+    'POS Supply — Warehouse': 'نقطة التوريد — المخزن',
+    'Store Accounts — Warehouse': 'حسابات المتاجر — المخزن',
+    'Supply History — Warehouse': 'سجل التوريد — المخزن'
   }
 };
 
@@ -905,12 +1072,19 @@ function addLanguageSwitcher() {
   }
 }
 
+// The tab title lives in <head>, which translateNode never reaches because it
+// only walks <body>. Remember the English original so switching back restores it.
+let originalTitle = null;
+
 function applyLanguage() {
   const language = getLanguage();
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
   document.body.classList.toggle('ltr', language !== 'ar');
   document.body.classList.toggle('rtl', language === 'ar');
+
+  if (originalTitle === null) originalTitle = document.title;
+  document.title = translateText(originalTitle, language);
 
   addLanguageSwitcher();
 

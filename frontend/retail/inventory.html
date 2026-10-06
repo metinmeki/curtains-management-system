@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Inventory - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ar-1">
+    <link rel="stylesheet" href="rt-style.css?v=ar-2">
     <style>
         .inv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
         .inv-stat { border-radius: 10px; padding: 16px 18px; border: none; color: #fff; }
@@ -153,6 +153,13 @@
                     <button class="btn btn-success" onclick="openAddVariantFor(getInvCategories()[0]?.id||'','')">+ Variant</button>
                     <button class="btn" onclick="openModal('movLogModal')">📋 Movement log</button>
                 </div>
+            </div>
+
+            <!-- Capital tied up in stock -->
+            <div class="inv-capital">
+                <div class="inv-capital-label">Stock value (cost)</div>
+                <div class="inv-capital-value" id="statStockValue">0 IQD</div>
+                <div class="inv-capital-note">Cost price × quantity in stock — not selling price</div>
             </div>
 
             <!-- Stats -->
@@ -403,8 +410,8 @@
     </div>
 </div>
 
-<script src="../js/api.js?v=ar-1"></script>
-<script src="../js/demo-data.js?v=ar-1"></script>
+<script src="../js/api.js?v=ar-2"></script>
+<script src="../js/demo-data.js?v=ar-2"></script>
 <script>
     if (!checkAuth()) throw new Error('Not authenticated');
     if (!getStoreId()) window.location.href = '../landing.html';
@@ -461,6 +468,17 @@
     }
 
     // ─── Stats ───────────────────────────────────────────────────
+    // Money tied up in stock, valued at cost price rather than selling price,
+    // so the figure is what was actually spent to buy what is on the shelf.
+    // Stays on the whole store even when an item or variant is selected below,
+    // since the four cards under it get repurposed by those selections.
+    function renderStockValue() {
+        const total = getInvVariants().reduce((sum, v) =>
+            sum + getVariantQty(v.id, STORE_ID) * Number(v.costPrice || 0), 0);
+        document.getElementById('statStockValue').textContent =
+            Math.round(total).toLocaleString() + ' IQD';
+    }
+
     function renderStats() {
         const variants = getInvVariants();
         let totalQty = 0, low = 0, out = 0;
@@ -692,6 +710,7 @@
 
     function renderAll() {
         renderStats();
+        renderStockValue();
         populateCategoryFilter();
         if (currentView === 'hierarchy') renderHierarchy();
         else renderTable();
@@ -1120,11 +1139,11 @@
     populateCategorySelects();
     renderAll();
 </script>
-<script src="../js/i18n.js?v=ar-1"></script>
-<script src="../js/ui.js?v=ar-1"></script>
+<script src="../js/i18n.js?v=ar-2"></script>
+<script src="../js/ui.js?v=ar-2"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ar-1"></script>
+<script src="calculator.js?v=ar-2"></script>
 </body>
 </html>

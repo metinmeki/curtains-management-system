@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=ar-1">
+    <link rel="stylesheet" href="wh-style.css?v=ar-2">
 </head>
 <body>
 <div class="wh-layout">
@@ -47,6 +47,13 @@
 
     <div style="flex:1;overflow-y:auto;min-height:0;">
     <div class="wh-page">
+
+        <!-- Capital tied up in stock -->
+        <div class="inv-capital">
+            <div class="inv-capital-label">Stock value (cost)</div>
+            <div class="inv-capital-value" id="kpiStockValue">0 IQD</div>
+            <div class="inv-capital-note">Cost price × quantity in stock — not selling price</div>
+        </div>
 
         <!-- KPI -->
         <div class="inv-kpi">
@@ -94,8 +101,8 @@
 
 </div>
 
-<script src="../js/api.js?v=ar-1"></script>
-<script src="../js/demo-data.js?v=ar-1"></script>
+<script src="../js/api.js?v=ar-2"></script>
+<script src="../js/demo-data.js?v=ar-2"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -402,7 +409,7 @@ function renderVariantCard(itemName, v, unit, step) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Quantity (${esc(unit)})</label>
+                    <label>${ta('Quantity')} (${esc(unit)})</label>
                     <input id="adjQty_${esc(v.id)}" type="number" min="0" step="${step}" placeholder="0">
                 </div>
                 <div class="form-group">
@@ -442,7 +449,7 @@ function renderVariantCard(itemName, v, unit, step) {
                     <input id="editSize_${esc(v.id)}" type="text" value="${esc(v.size||'')}" placeholder="e.g. 2m, Heavy…">
                 </div>
                 <div class="form-group">
-                    <label>Min. level (${esc(unit)})</label>
+                    <label>${ta('Min. level')} (${esc(unit)})</label>
                     <input id="editMin_${esc(v.id)}" type="number" min="0" step="${step}" value="${minQty}">
                 </div>
                 <div class="panel-btns">
@@ -468,14 +475,14 @@ function renderItemGroup(item) {
 
     const addForm = `
         <div class="add-variant-form ${isAdding?'open':''}" id="addForm_${esc(item.name)}">
-            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:12px;">New variant for ${esc(item.name)}</div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:12px;">${ta('New variant for')} ${esc(item.name)}</div>
             <div class="add-variant-form-grid">
                 <div class="form-group">
                     <label>Code <span style="color:#ef4444;">*</span></label>
                     <input id="addCode_${esc(item.name)}" type="text" placeholder="e.g. SK-001" autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label>Initial stock (${esc(item.unit)})</label>
+                    <label>${ta('Initial stock')} (${esc(item.unit)})</label>
                     <input id="addQty_${esc(item.name)}" type="number" min="0" step="${item.step}" placeholder="0">
                 </div>
                 <div class="form-group">
@@ -487,7 +494,7 @@ function renderItemGroup(item) {
                     <input id="addSize_${esc(item.name)}" type="text" placeholder="e.g. 2m, Heavy…">
                 </div>
                 <div class="form-group">
-                    <label>Min. level (${esc(item.unit)})</label>
+                    <label>${ta('Min. level')} (${esc(item.unit)})</label>
                     <input id="addMin_${esc(item.name)}" type="number" min="0" step="${item.step}" placeholder="10" value="10">
                 </div>
                 <div class="form-group">
@@ -527,7 +534,7 @@ function renderItemGroup(item) {
                 <div class="item-group-icon">${esc(initials)}</div>
                 <div>
                     <div class="item-group-title">${esc(item.name)}</div>
-                    <div class="item-group-meta">${variants.length} variant${variants.length!==1?'s':''} &nbsp;·&nbsp; ${esc(item.unit)}</div>
+                    <div class="item-group-meta">${variants.length} ${ta(variants.length!==1?'variants':'variant')} &nbsp;·&nbsp; ${esc(item.unit)}</div>
                 </div>
                 <div class="item-group-right">
                     <span class="item-group-total">${totalQty.toLocaleString('en-US').replace(/,/g,'.')} ${esc(item.unit)}</span>
@@ -557,9 +564,13 @@ function toggleGroup(itemName) {
 function renderKPI() {
     const variants = getVariants();
     let total = 0, low = 0, crit = 0;
+    // Money tied up in stock, valued at cost price rather than selling price,
+    // so the figure is what was actually spent to buy what is on the shelf.
+    let stockValue = 0;
     for (const itemName in variants) {
         (variants[itemName] || []).forEach(v => {
             total++;
+            stockValue += Number(v.qty||0) * Number(v.costPrice||0);
             const s = itemStatus(Number(v.qty||0), Number(v.minQty||10));
             if (s === 'low') low++;
             if (s === 'critical' || s === 'empty') crit++;
@@ -568,6 +579,8 @@ function renderKPI() {
     document.getElementById('kpiVariants').textContent = total;
     document.getElementById('kpiLow').textContent      = low;
     document.getElementById('kpiCritical').textContent = crit;
+    document.getElementById('kpiStockValue').textContent =
+        Math.round(stockValue).toLocaleString() + ' IQD';
 
     const today = todayVal();
     const movToday = getMov().filter(m => String(m.date||'').slice(0,10) === today).length;
@@ -657,7 +670,7 @@ window.addEventListener('load', async () => {
     renderMovHistory();
 });
 </script>
-<script src="../js/i18n.js?v=ar-1"></script>
-<script src="../js/ui.js?v=ar-1"></script>
+<script src="../js/i18n.js?v=ar-2"></script>
+<script src="../js/ui.js?v=ar-2"></script>
 </body>
 </html>
