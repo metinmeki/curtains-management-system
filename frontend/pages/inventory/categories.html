@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Categories - Curtains ERP</title>
     <style>
-        body { margin: 0; font-family: Tahoma, sans-serif; background: #f4f7f6; }
+        body { margin: 0; font-family: Tahoma, sans-serif; background: #f7faf8; }
         .dashboard-layout { display: flex; height: 100vh; }
-        .sidebar { width: 250px; background: #1f2937; color: white; padding: 20px; }
+        .sidebar { width: 250px; background: #1a3d2b; color: white; padding: 20px; }
         .sidebar a { display: block; color: white; text-decoration: none; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
-        .sidebar a:hover { background: #374151; }
+        .sidebar a:hover { background: #2d6a47; }
         .sidebar a.active { background: #10b981; }
         .main-content { flex: 1; padding: 30px; display: flex; gap: 20px; overflow-y: auto; }
         .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 50%; height: fit-content;}
@@ -96,7 +96,7 @@
         function logout() { ['auth_token','user','store_id','store_name','cms_active_cashier'].forEach(k => localStorage.removeItem(k)); window.location.href = "../../index.html"; }
     </script>
     <!-- api.js first: i18n reads the language cookie through getCookie(). -->
-    <script src="../../js/api.js?v=ar-2"></script>
-    <script src="../../js/i18n.js?v=ar-2"></script>
+    <script src="../../js/api.js?v=ar-9"></script>
+    <script src="../../js/i18n.js?v=ar-9"></script>
 </body>
 </html>

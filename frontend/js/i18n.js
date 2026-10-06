@@ -799,22 +799,60 @@ const translations = {
     // ── Fragments composed with a value at runtime, via ta() ────────────
     'New variant for': 'نوع جديد لـ',
     'variant': 'نوع',
-    'Initial stock': 'المخزون الابتدائي',
     'transaction': 'عملية',
     'transactions': 'عملية',
     'across all stores': 'في كل المتاجر',
     'item types': 'نوع مادة',
     'tx': 'عملية',
 
+    // ── Pending sales (awaiting supplier confirmation) ──────────────────
+    '⏳ Save as pending (awaiting supplier call)': '⏳ حفظ كمعلّق (بانتظار اتصال المورد)',
+    'Saved as pending — waiting for the supplier\'s call.': 'تم الحفظ كمعلّق — بانتظار اتصال المورد.',
+    '⏳ Pending': '⏳ معلّق',
+    'owing': 'مستحق',
+
+    // ── Refunds ─────────────────────────────────────────────────────────
+    'Refund this sale': 'إرجاع مبلغ هذه الفاتورة',
+    'Refund amount': 'مبلغ الإرجاع',
+    'Maximum refundable': 'الحد الأقصى للإرجاع',
+    'Full refund': 'إرجاع كامل',
+    'Refund': 'إرجاع',
+    'Refunded': 'تم الإرجاع',
+    'Reason': 'السبب',
+    'Enter a refund amount.': 'أدخل مبلغ الإرجاع.',
+    'Refund cannot exceed the amount paid': 'لا يمكن أن يتجاوز الإرجاع المبلغ المدفوع',
+    'Refund failed.': 'فشل الإرجاع.',
+    'for sale': 'للفاتورة',
+    'item(s) returned to stock': 'مادة أُعيدت إلى المخزون',
+    // The dictionary already had 'Balance fully paid.' with a trailing period,
+    // which never matched the text node the panel actually renders.
+    '✓ Balance fully paid': '✓ الرصيد مدفوع بالكامل',
+
     // ── Calculator widget (built in retail/calculator.js) ───────────────
     'Calculator': 'الآلة الحاسبة',
+    'No calculations yet.': 'لا توجد عمليات حسابية بعد.',
+    'Cannot divide by zero': 'لا يمكن القسمة على صفر',
+    'Show tape': 'إظهار الشريط',
+    'Hide tape': 'إخفاء الشريط',
+    'Clear tape': 'مسح الشريط',
+    'Tape cleared': 'تم مسح الشريط',
+    'Memory cleared': 'تم مسح الذاكرة',
+    'Added to memory': 'تمت الإضافة إلى الذاكرة',
+    'Subtracted from memory': 'تم الطرح من الذاكرة',
+    'Copy': 'نسخ',
+    'Copied': 'تم النسخ',
+    'Copy failed': 'فشل النسخ',
+    'Backspace': 'مسح خانة',
+    'Divide': 'قسمة',
+    'Multiply': 'ضرب',
+    'Subtract': 'طرح',
+    // 'Plus' rather than 'Add' — 'Add' is already the stock-movement label
+    // ('إضافة') and a duplicate key would silently override it.
+    'Plus': 'جمع',
+    'Equals': 'يساوي',
 
-    // ── Store names (app constants, not user data) ──────────────────────
-    'Store 1': 'متجر ١',
-    'Store 2': 'متجر ٢',
-    'Store 3': 'متجر ٣',
-    'Store 4': 'متجر ٤',
-    'Store 5': 'متجر ٥',
+    // Stores 1-4 are already translated higher up; only 5 was missing.
+    'Store 5': 'المتجر 5',
 
     // ── Warehouse overview ──────────────────────────────────────────────
     'Below minimum': 'أقل من الحد الأدنى',
@@ -830,7 +868,6 @@ const translations = {
     // ── Empty states and misc ───────────────────────────────────────────
     'No activities yet.': 'لا توجد حركات بعد.',
     'No clients yet.': 'لا يوجد عملاء بعد.',
-    'Loading...': 'جارِ التحميل...',
     '10,000 IQD per window to Installation account': '١٠٬٠٠٠ د.ع لكل نافذة إلى حساب التركيب',
 
     // ── Shared labels ───────────────────────────────────────────────────
@@ -841,7 +878,6 @@ const translations = {
     'Supplied': 'المورَّد',
     'optional': 'اختياري',
     '(optional)': '(اختياري)',
-    'Optional note': 'ملاحظة اختيارية',
     'code': 'الكود',
     'Note:': 'ملاحظة:',
     'Size:': 'القياس:',
@@ -883,7 +919,6 @@ const translations = {
     'Cost price (IQD)': 'سعر الكلفة (د.ع)',
     'Selling price (IQD)': 'سعر البيع (د.ع)',
     'COST PRICE (IQD)': 'سعر الكلفة (د.ع)',
-    'Variants & codes': 'الأنواع والأكواد',
     'e.g. White, Beige…': 'مثال: أبيض، بيج…',
     'e.g. 2m, Heavy…': 'مثال: ٢ متر، ثقيل…',
     'e.g. SK-001': 'مثال: SK-001',
@@ -892,7 +927,6 @@ const translations = {
     // ── Warehouse dashboard and supply ──────────────────────────────────
     '▲ View history above': '▲ عرض السجل أعلاه',
     'Unit price / Price': 'سعر الوحدة',
-    'Save & Record Supply': 'حفظ وتسجيل التوريد',
     'Pay →': 'دفع ←',
     // Headings that shipped bilingual — in Arabic only the Arabic half is wanted.
     'Financial Summary / الملخص المالي': 'الملخص المالي',
@@ -1023,29 +1057,78 @@ function translateNode(node, language) {
   Array.from(node.childNodes).forEach(child => translateNode(child, language));
 }
 
-/* The switcher styles live in css/style.css, which the retail and warehouse
-   shells don't load — so ship a self-contained copy. */
-function ensureLanguageSwitcherStyles() {
-  if (document.getElementById('cms-lang-styles')) return;
+/* Topbar controls are injected by script, so they can't live in the page
+   stylesheets — the retail and warehouse shells don't load css/style.css at
+   all. One definition here is shared by the language switcher, the currency
+   toggle and the icon buttons so they stay visually identical.
+
+   Exposed on window because js/ui.js mounts its controls from the same system
+   and must not ship a second, drifting copy. */
+function cmsEnsureControlStyles() {
+  if (document.getElementById('cms-control-styles')) return;
   const style = document.createElement('style');
-  style.id = 'cms-lang-styles';
+  style.id = 'cms-control-styles';
   style.textContent = `
-#languageSwitcher{display:inline-flex;align-items:center;gap:4px;padding:3px;background:rgba(0,0,0,.06);border-radius:999px;flex-shrink:0}
-#languageSwitcher button{min-height:32px;min-width:44px;padding:6px 12px;border:none;border-radius:999px;background:transparent;color:inherit;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;opacity:.7}
-#languageSwitcher button.active{background:#fffdf6;color:#1a3d2b;opacity:1}
-#languageSwitcher button:focus-visible{outline:2px solid #c4a24d;outline-offset:2px}
-@media(pointer:coarse){#languageSwitcher button{min-height:44px}}
-@media print{#languageSwitcher{display:none!important}}`;
+:root{--cms-ctl-h:36px;--cms-ctl-ink:#1a3d2b;--cms-ctl-ring:#2d6a47}
+@media(pointer:coarse){:root{--cms-ctl-h:44px}}
+
+/* Segmented control: language, currency. */
+.cms-seg{display:inline-flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:rgba(15,45,30,.07);flex-shrink:0;box-sizing:border-box}
+.cms-seg *{box-sizing:border-box}
+.cms-seg__label{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.6;padding:0 6px 0 8px;white-space:nowrap;color:var(--cms-ctl-ink)}
+.cms-seg button{height:var(--cms-ctl-h);min-width:48px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#41594c;font-family:inherit;font-size:12px;font-weight:700;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:background-color .15s ease,color .15s ease}
+.cms-seg button:hover{background:rgba(15,45,30,.08);color:var(--cms-ctl-ink)}
+.cms-seg button[aria-pressed="true"],.cms-seg button.active{background:#fff;color:var(--cms-ctl-ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.cms-seg button:focus-visible{outline:2px solid var(--cms-ctl-ring);outline-offset:2px}
+
+/* Dark topbars (landing, login) need the track and text inverted, otherwise
+   the inherited ink is near-black on a near-black bar. */
+.cms-seg[data-surface="dark"]{background:rgba(255,255,255,.13)}
+.cms-seg[data-surface="dark"] .cms-seg__label{color:rgba(255,255,255,.7)}
+.cms-seg[data-surface="dark"] button{color:rgba(255,255,255,.8)}
+.cms-seg[data-surface="dark"] button:hover{background:rgba(255,255,255,.14);color:#fff}
+.cms-seg[data-surface="dark"] button[aria-pressed="true"],.cms-seg[data-surface="dark"] button.active{background:#fff;color:#14301f}
+.cms-seg[data-surface="dark"] button:focus-visible{outline-color:#fff}
+
+/* Square icon button: calculator, sidebar toggle. */
+.cms-iconbtn{height:var(--cms-ctl-h);width:var(--cms-ctl-h);display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:10px;background:rgba(15,45,30,.07);color:var(--cms-ctl-ink);cursor:pointer;padding:0;flex-shrink:0;box-sizing:border-box;transition:background-color .15s ease,color .15s ease}
+.cms-iconbtn:hover{background:rgba(15,45,30,.14)}
+.cms-iconbtn:active{background:rgba(15,45,30,.2)}
+.cms-iconbtn:focus-visible{outline:2px solid var(--cms-ctl-ring);outline-offset:2px}
+.cms-iconbtn svg{width:19px;height:19px;display:block;pointer-events:none}
+.cms-iconbtn[data-surface="dark"]{background:rgba(255,255,255,.13);color:#fff}
+.cms-iconbtn[data-surface="dark"]:hover{background:rgba(255,255,255,.22)}
+.cms-iconbtn[data-surface="dark"]:focus-visible{outline-color:#fff}
+
+@media(prefers-reduced-motion:reduce){.cms-seg button,.cms-iconbtn{transition:none}}
+@media print{.cms-seg,.cms-iconbtn{display:none!important}}`;
   document.head.appendChild(style);
 }
+window.cmsEnsureControlStyles = cmsEnsureControlStyles;
+
+/* Walks up for the first opaque background and decides whether the control is
+   sitting on a dark bar, so one component works on both shells. */
+function cmsIsDarkSurface(el) {
+  let node = el;
+  while (node && node !== document.documentElement) {
+    const parts = (getComputedStyle(node).backgroundColor || '').match(/[\d.]+/g);
+    if (parts && parts.length >= 3 && (parts.length < 4 || parseFloat(parts[3]) > 0.5)) {
+      const [r, g, b] = parts.map(Number);
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 140;
+    }
+    node = node.parentElement;
+  }
+  return false;
+}
+window.cmsIsDarkSurface = cmsIsDarkSurface;
 
 function addLanguageSwitcher() {
   if (document.getElementById('languageSwitcher')) return;
-  ensureLanguageSwitcherStyles();
+  cmsEnsureControlStyles();
 
   const switcher = document.createElement('div');
   switcher.id = 'languageSwitcher';
-  switcher.className = 'language-switcher no-print';
+  switcher.className = 'cms-seg language-switcher no-print';
   switcher.setAttribute('role', 'group');
   switcher.setAttribute('aria-label', 'Language');
   switcher.innerHTML = `
@@ -1069,6 +1152,11 @@ function addLanguageSwitcher() {
     navTarget.prepend(switcher);
   } else if (loginCard) {
     loginCard.prepend(switcher);
+  }
+
+  // Must run after mounting: the host's background is what decides the variant.
+  if (switcher.parentElement && cmsIsDarkSurface(switcher.parentElement)) {
+    switcher.setAttribute('data-surface', 'dark');
   }
 }
 

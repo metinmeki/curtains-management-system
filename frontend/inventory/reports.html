@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=ar-2">
+    <link rel="stylesheet" href="wh-style.css?v=ar-9">
     <style>
         /* ── Filter bar ─────────────────────────────────────────────── */
         .rpt-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:24px;
@@ -15,7 +15,7 @@
         .rpt-filters input,.rpt-filters select{padding:8px 11px;border:1.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;background:rgba(255,255,255,.12);color:#fff;width:100%;outline:none;}
         .rpt-filters input::placeholder{color:rgba(255,255,255,.5);}
         .rpt-filters select option{background:#1a3d2b;color:#fff;}
-        .rpt-btn{padding:9px 20px;background:#c4a24d;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.3px;transition:background .15s;}
+        .rpt-btn{padding:9px 20px;background:#2d6a47;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.3px;transition:background .15s;}
         .rpt-btn:hover{background:#b08d3a;}
         .rpt-btn.refresh{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);}
         .rpt-btn.refresh:hover{background:rgba(255,255,255,.25);}
@@ -29,9 +29,9 @@
         .rpt-metric strong{display:block;font-size:22px;font-weight:900;margin:6px 0 3px;letter-spacing:-.3px;}
         .rpt-metric small{font-size:11px;opacity:.75;}
         .rpt-metric.m-green{background:linear-gradient(135deg,#1e6b45,#2d9e66);}
-        .rpt-metric.m-blue{background:linear-gradient(135deg,#5c4a10,#c4a24d);}
+        .rpt-metric.m-blue{background:linear-gradient(135deg,#5c4a10,#2d6a47);}
         .rpt-metric.m-red{background:linear-gradient(135deg,#8b2020,#c0392b);}
-        .rpt-metric.m-gold{background:linear-gradient(135deg,#7a5a10,#c4a24d);}
+        .rpt-metric.m-gold{background:linear-gradient(135deg,#7a5a10,#2d6a47);}
 
         /* ── Section cards ──────────────────────────────────────────── */
         .rpt-card{background:#fff;border-radius:14px;margin-bottom:20px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);}
@@ -174,7 +174,7 @@
         <!-- Per-store balances -->
         <div class="rpt-card">
             <div class="rpt-card-head">
-                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#5c4a10,#c4a24d);">🏪</div>
+                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#5c4a10,#2d6a47);">🏪</div>
                 <div class="rpt-card-title">Balance by store</div>
             </div>
             <div class="rpt-card-body">
@@ -196,7 +196,7 @@
         <!-- Items breakdown -->
         <div class="rpt-card">
             <div class="rpt-card-head">
-                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#7a5a10,#c4a24d);">📦</div>
+                <div class="rpt-card-icon" style="background:linear-gradient(135deg,#7a5a10,#2d6a47);">📦</div>
                 <div class="rpt-card-title">Items sold</div>
             </div>
             <div class="rpt-card-body">
@@ -221,8 +221,8 @@
 </div>
 </div>
 
-<script src="../js/api.js?v=ar-2"></script>
-<script src="../js/demo-data.js?v=ar-2"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
 if (!checkAuth()) throw new Error('Not authenticated');
 loadShell('Inventory / Warehouse');
@@ -354,7 +354,7 @@ function applyFilters() {
 
 loadAll();
 </script>
-<script src="../js/i18n.js?v=ar-2"></script>
-<script src="../js/ui.js?v=ar-2"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 </body>
 </html>

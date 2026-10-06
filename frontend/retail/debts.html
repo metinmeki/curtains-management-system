@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Debts - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ar-2">
+    <link rel="stylesheet" href="rt-style.css?v=ar-9">
     <style>
         @media print {
             body { background: #fff; }
@@ -61,7 +61,7 @@
     </aside>
     <div class="rt-main">
         <div class="rt-topbar">
-            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <button type="button" class="cms-iconbtn rt-menu-btn" aria-label="Open menu" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
             <span class="rt-topbar-title">Retail Debts</span>
             <div class="rt-topbar-right">
                 <span class="scope-pill">selected store debts</span>
@@ -210,8 +210,8 @@
     </div>
 </div>
 
-    <script src="../js/api.js?v=ar-2"></script>
-    <script src="../js/demo-data.js?v=ar-2"></script>
+    <script src="../js/api.js?v=ar-9"></script>
+    <script src="../js/demo-data.js?v=ar-9"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -619,11 +619,11 @@
             } catch(e) { showSaveError('Sale deletion', e); }
         }
     </script>
-    <script src="../js/i18n.js?v=ar-2"></script>
-<script src="../js/ui.js?v=ar-2"></script>
+    <script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ar-2"></script>
+<script src="calculator.js?v=ar-9"></script>
 </body>
 </html>

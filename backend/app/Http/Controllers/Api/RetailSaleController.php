@@ -55,6 +55,9 @@ class RetailSaleController extends Controller
             "paid_amount"     => $data["paid"] ?? 0,
             "remaining_amount"=> $data["remaining"] ?? 0,
             "payment_status"  => $this->mapStatus($data["status"] ?? "partial"),
+            // Whitelisted rather than passed through: this drives a badge and
+            // must never hold arbitrary client input.
+            "approval_status" => (($data["approvalStatus"] ?? "accepted") === "pending") ? "pending" : "accepted",
             "subtotal"        => $data["subtotal"] ?? null,
             "discount_amount" => $data["discount"] ?? 0,
             "discount_type"   => $data["discountType"] ?? null,
@@ -176,6 +179,101 @@ class RetailSaleController extends Controller
         ]);
 
         return response()->json(['status' => 'success', 'paid' => $newPaid, 'remaining' => $newRemaining, 'payment_status' => $newStatus]);
+    }
+
+    /**
+     * Refund part or all of what a client paid on a sale.
+     *
+     * total_amount and paid_amount both drop by the refunded amount, which
+     * leaves remaining_amount untouched: the client gets money back for goods
+     * they returned, and any debt they still carry on the sale is unaffected.
+     * Capping at paid_amount is what stops a refund from silently turning into
+     * a discount on an unpaid balance.
+     */
+    public function refund(Request $request, $saleId)
+    {
+        $user   = $request->user();
+        $data   = $request->json()->all();
+        $amount = round(floatval($data['amount'] ?? 0), 2);
+        $note   = trim($data['note'] ?? '');
+
+        if ($amount <= 0) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid amount'], 422);
+        }
+
+        $sale = DB::table('retail_sales')->find($saleId);
+        if (!$sale) {
+            return response()->json(['status' => 'error', 'message' => 'Sale not found'], 404);
+        }
+
+        if ($user->role === 'cashier' && $user->store_id && (int)$user->store_id !== (int)$sale->store_id) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $paid = floatval($sale->paid_amount);
+        if ($amount > $paid) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Refund cannot exceed the amount paid on this sale.',
+                'paid'    => $paid,
+            ], 422);
+        }
+
+        $oldTotal     = floatval($sale->total_amount);
+        $newPaid      = round($paid - $amount, 2);
+        $newTotal     = round($oldTotal - $amount, 2);
+        $newRemaining = max(round($newTotal - $newPaid, 2), 0);
+        $newRefunded  = round(floatval($sale->refunded_amount ?? 0) + $amount, 2);
+        $newStatus    = $newRemaining == 0 ? 'full' : ($newPaid > 0 ? 'partial' : 'unpaid');
+
+        /* Margin given back, in proportion to the share of the sale refunded.
+           Not the refund amount itself: the goods return to stock carrying
+           their cost, so only the profit on them is lost. */
+        $share        = $oldTotal > 0 ? min($amount / $oldTotal, 1) : 0;
+        $lineProfit   = (float)DB::table('retail_sale_items')->where('sale_id', $saleId)->sum('profit_amount');
+        $profitBack   = round($lineProfit * $share, 2);
+        $newRefProfit = round(floatval($sale->refunded_profit ?? 0) + $profitBack, 2);
+
+        $payments   = json_decode($sale->payments ?? '[]', true) ?: [];
+        $payments[] = [
+            'date'   => now()->toDateString(),
+            'amount' => -$amount,
+            'note'   => $note !== '' ? $note : 'Refund',
+            'refund' => true,
+        ];
+
+        DB::transaction(function () use ($saleId, $newPaid, $newTotal, $newRemaining, $newRefunded, $newRefProfit, $newStatus, $payments, $amount, $note) {
+            DB::table('retail_sales')->where('id', $saleId)->update([
+                'total_amount'     => $newTotal,
+                'paid_amount'      => $newPaid,
+                'remaining_amount' => $newRemaining,
+                'refunded_amount'  => $newRefunded,
+                'refunded_profit'  => $newRefProfit,
+                'payment_status'   => $newStatus,
+                'payments'         => json_encode($payments),
+                'updated_at'       => now(),
+            ]);
+
+            // Negative row keeps the money ledger a single ordered list.
+            DB::table('retail_payments')->insert([
+                'sale_id'    => $saleId,
+                'amount'     => -$amount,
+                'is_refund'  => true,
+                'notes'      => $note !== '' ? $note : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        return response()->json([
+            'status'          => 'success',
+            'total'           => $newTotal,
+            'paid'            => $newPaid,
+            'remaining'       => $newRemaining,
+            'refunded'        => $newRefunded,
+            'refunded_profit' => $newRefProfit,
+            'payment_status'  => $newStatus,
+        ]);
     }
 
     public function destroy(Request $request, $saleId)

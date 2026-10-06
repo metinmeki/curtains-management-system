@@ -149,6 +149,12 @@ class RetailDashboardController extends Controller
             $grossProfit = (float)\Illuminate\Support\Facades\DB::table('retail_sale_items')
                 ->whereIn('sale_id', $saleIds)
                 ->sum('profit_amount');
+
+            // profit_amount is a snapshot taken at sale time and is never
+            // rewritten, so margin handed back on refunds comes off here.
+            $grossProfit -= (float)\Illuminate\Support\Facades\DB::table('retail_sales')
+                ->whereIn('id', $saleIds)
+                ->sum('refunded_profit');
         }
 
         // Order profit (ربحنا) for this store in the same period

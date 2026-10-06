@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Clients - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ar-2">
+    <link rel="stylesheet" href="rt-style.css?v=ar-9">
 </head>
 <body class="ltr">
 <div class="rt-layout">
@@ -42,7 +42,7 @@
     </aside>
     <div class="rt-main">
         <div class="rt-topbar">
-            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <button type="button" class="cms-iconbtn rt-menu-btn" aria-label="Open menu" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
             <span class="rt-topbar-title">Retail Clients</span>
             <div class="rt-topbar-right">
                 <span class="scope-pill">store clients only</span>
@@ -82,8 +82,8 @@
         </div>
     </div>
 </div>
-    <script src="../js/api.js?v=ar-2"></script>
-    <script src="../js/demo-data.js?v=ar-2"></script>
+    <script src="../js/api.js?v=ar-9"></script>
+    <script src="../js/demo-data.js?v=ar-9"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -177,6 +177,55 @@
 
         // Supplier orders (طلبية) placed for this customer, matched on name/phone
         // since the POS order link stores a pre-save sale id.
+        /* The API returns snake_case and the local/demo store keeps camelCase,
+           so both spellings have to be accepted. */
+        function isSalePending(sale) {
+            return (sale.approval_status ?? sale.approvalStatus) === 'pending';
+        }
+
+        function saleRefunded(sale) {
+            return num(sale.refunded_amount ?? sale.refundedAmount);
+        }
+
+        function salePaid(sale) {
+            return num(sale.paid_amount ?? sale.paid);
+        }
+
+        /* Refunds are capped at what the client actually handed over for this
+           sale. Anything above that would be writing off debt, not refunding. */
+        function refundPanelHtml(sale, index, sIndex) {
+            const paid = salePaid(sale);
+            if (paid <= 0) return '';
+            const id = `${index}_${sIndex}`;
+            return `
+                <details class="refund-panel">
+                    <summary class="refund-summary">↩ ${ta('Refund this sale')}</summary>
+                    <div class="refund-body">
+                        <div class="refund-hint">${ta('Maximum refundable')}: <strong>${money(paid)}</strong></div>
+                        <div class="refund-fields">
+                            <div class="form-group">
+                                <label for="refundAmount${id}">${ta('Refund amount')}</label>
+                                <input id="refundAmount${id}" type="number" min="0" max="${paid}" step="any" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="refundNote${id}">${ta('Reason')}</label>
+                                <input id="refundNote${id}" placeholder="${ta('Optional note')}">
+                            </div>
+                        </div>
+                        <div class="refund-actions">
+                            <button type="button" class="btn btn-small btn-outline" onclick="fillFullRefund('${id}', ${paid})">${ta('Full refund')}</button>
+                            <button type="button" class="btn btn-small btn-danger" onclick="recordRefund(${index}, ${sIndex})">↩ ${ta('Refund')}</button>
+                        </div>
+                        <div class="refund-msg" id="refundMsg${id}" role="status" aria-live="polite"></div>
+                    </div>
+                </details>`;
+        }
+
+        function fillFullRefund(id, paid) {
+            const input = document.getElementById(`refundAmount${id}`);
+            if (input) { input.value = paid; input.focus(); }
+        }
+
         function ordersForClient(client) {
             const name  = (client.name  || '').trim().toLowerCase();
             const phone = (client.phone || '').replace(/\s+/g, '');
@@ -247,7 +296,13 @@
         function paymentHistoryHtml(sale) {
             const payments = sale.payments || [];
             if (!payments.length) return '';
-            return `<div class="payment-history">${payments.map(p=>`<div>Payment ${p.date||'-'}: ${money(p.amount)}${p.note?' — '+p.note:''}</div>`).join('')}</div>`;
+            // Refunds are stored as negative rows in the same ledger, so label
+            // them differently rather than showing "Payment −50,000".
+            return `<div class="payment-history">${payments.map(p => {
+                const isRefund = p.refund === true || num(p.amount) < 0;
+                const label = isRefund ? ta('Refund') : ta('Payment');
+                return `<div class="${isRefund ? 'is-refund' : ''}">${label} ${p.date||'-'}: ${money(Math.abs(num(p.amount)))}${p.note?' — '+esc(p.note):''}</div>`;
+            }).join('')}</div>`;
         }
 
         function clientPaymentPanel(client, index) {
@@ -256,7 +311,7 @@
             }
             return `
                 <div class="client-balance-panel">
-                    <div class="client-balance-total">Balance: ${money(client.totalDebt)}</div>
+                    <div class="client-balance-total">${ta('Balance')}: ${money(client.totalDebt)}</div>
                     <div class="form-group">
                         <label>Payment amount</label>
                         <input id="clientPayAmount${index}" type="number" min="0" placeholder="0">
@@ -270,18 +325,27 @@
         }
 
         function clientHistoryHtml(client, index) {
-            const salesHtml = client.sales.map(sale => {
+            const salesHtml = client.sales.map((sale, sIndex) => {
                 const remaining = num(sale.remaining_amount ?? sale.remaining);
                 const status    = sale.payment_status || sale.status || '';
                 const isPaid    = remaining === 0 || status === 'full' || status === 'Paid';
                 const rowClass  = isPaid ? 'paid-sale-row' : 'debt-sale-row';
                 const saleDate  = (sale.sale_date || sale.created_at || sale.date || '-').slice(0,10);
                 const note      = sale.notes ?? sale.note;
+                // Approval is a separate axis from payment: a pending sale can
+                // still be fully paid, so this badge sits beside the money chip.
+                const pendingBadge = isSalePending(sale)
+                    ? ' <span class="badge badge-warning">⏳ Pending</span>'
+                    : '';
+                const refunded = saleRefunded(sale);
+                const refundBadge = refunded > 0
+                    ? ` <span class="badge badge-danger">↩ ${ta('Refunded')} ${money(refunded)}</span>`
+                    : '';
                 return `
                     <div class="client-history-entry ${rowClass}">
                         <div class="client-history-head">
-                            <span>#${esc(sale.id)} — ${esc(saleDate)}${sale.created_by ? ` · ${esc(sale.created_by)}` : ''}</span>
-                            <span class="chip ${isPaid ? 'chip-paid' : 'chip-debt'}">${isPaid ? 'Paid' : money(remaining) + ' owing'}</span>
+                            <span>#${esc(sale.id)} — ${esc(saleDate)}${sale.created_by ? ` · ${esc(sale.created_by)}` : ''}${pendingBadge}${refundBadge}</span>
+                            <span class="chip ${isPaid ? 'chip-paid' : 'chip-debt'}">${isPaid ? ta('Paid') : money(remaining) + ' ' + ta('owing')}</span>
                         </div>
                         ${saleItemsTable(sale)}
                         ${saleMeasurementsHtml(sale)}
@@ -289,6 +353,7 @@
                         ${saleTotalsHtml(sale)}
                         ${note ? `<div class="sale-block"><div class="sale-block-title">Note</div><div class="sale-note-text">${esc(note)}</div></div>` : ''}
                         ${paymentHistoryHtml(sale)}
+                        ${refundPanelHtml(sale, index, sIndex)}
                     </div>`;
             }).join('');
 
@@ -414,6 +479,110 @@
             if (refreshed >= 0) toggleClientDetails(refreshed);
         }
 
+        /* Refund: total and paid both drop by the amount, so remaining — the
+           client's outstanding debt — is deliberately left alone. Goods go back
+           into stock proportionally to the share of the sale being refunded,
+           because a money amount alone doesn't say which lines came back. */
+        async function recordRefund(index, sIndex) {
+            const client = window.clientAccounts[index];
+            const sale   = client && client.sales[sIndex];
+            if (!sale) return;
+
+            const id     = `${index}_${sIndex}`;
+            const msgEl  = document.getElementById(`refundMsg${id}`);
+            const amount = Number(document.getElementById(`refundAmount${id}`)?.value || 0);
+            const note   = document.getElementById(`refundNote${id}`)?.value.trim() || '';
+            const paid   = salePaid(sale);
+
+            const say = (text, ok) => {
+                if (!msgEl) return;
+                msgEl.textContent = text;
+                msgEl.className = 'refund-msg ' + (ok ? 'ok' : 'bad');
+            };
+
+            if (!(amount > 0)) return say(ta('Enter a refund amount.'), false);
+            if (amount > paid) return say(`${ta('Refund cannot exceed the amount paid')} (${money(paid)}).`, false);
+
+            const confirmed = typeof cmsConfirm === 'function'
+                ? await cmsConfirm(`${ta('Refund')} ${money(amount)} ${ta('for sale')} #${sale.id}?`, { danger: true })
+                : confirm(`${ta('Refund')} ${money(amount)}?`);
+            if (!confirmed) return;
+
+            const token = getToken();
+            if (token && token !== 'demo-frontend-token') {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/retail/sales/${sale.id}/refund`, {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount, note })
+                    });
+                    const data = await res.json().catch(() => null);
+                    if (!res.ok) return say((data && data.message) || ta('Refund failed.'), false);
+                    sale.total_amount     = data.total;
+                    sale.paid_amount      = data.paid;
+                    sale.remaining_amount = data.remaining;
+                    sale.refunded_amount  = data.refunded;
+                    sale.refunded_profit  = data.refunded_profit;
+                    sale.payment_status   = data.payment_status;
+                } catch (e) {
+                    return say(ta('Connection error.'), false);
+                }
+            } else {
+                // Demo/local: mirror exactly what the API would have done.
+                const total = num(sale.total_amount ?? sale.total);
+                sale.total_amount     = total - amount;
+                sale.paid_amount      = paid - amount;
+                sale.remaining_amount = Math.max((total - amount) - (paid - amount), 0);
+                sale.refunded_amount  = saleRefunded(sale) + amount;
+                sale.refunded_profit  = num(sale.refunded_profit) + refundedProfitFor(sale, amount, total);
+                sale.payment_status   = sale.remaining_amount === 0 ? 'full' : (sale.paid_amount > 0 ? 'partial' : 'unpaid');
+            }
+
+            sale.payments = sale.payments || [];
+            sale.payments.push({ date: new Date().toISOString().slice(0,10), amount: -amount, note: note || ta('Refund'), refund: true });
+
+            const restocked = restockRefundedItems(sale, amount, note);
+
+            renderClients();
+            const refreshed = window.clientAccounts.findIndex(c => c.key === client.key);
+            if (refreshed >= 0) toggleClientDetails(refreshed);
+            if (typeof showToast === 'function') {
+                showToast(`${ta('Refunded')} ${money(amount)}${restocked ? ` — ${restocked} ${ta('item(s) returned to stock')}` : ''}`, 'success');
+            }
+        }
+
+        /* Margin given back, in proportion to the share of the sale refunded.
+           Not the refund amount itself: the goods go back into stock carrying
+           their cost, so only the profit earned on them is lost. Refunding
+           25,000 on a line that earned 5,000 costs 5,000 of profit. */
+        function refundedProfitFor(sale, amount, originalTotal) {
+            if (!(originalTotal > 0)) return 0;
+            const lineProfit = (sale.items || []).reduce((s, i) => s + num(i.profit_amount ?? i.profitAmount), 0);
+            return lineProfit * Math.min(amount / originalTotal, 1);
+        }
+
+        /* A refund is entered as money, not as line quantities, so stock goes
+           back in proportion to the refunded share of the sale. A full refund
+           therefore returns exactly what went out. Returns how many lines moved. */
+        function restockRefundedItems(sale, amount, note) {
+            const items = sale.items || [];
+            if (!items.length || typeof returnVariantStock !== 'function') return 0;
+
+            const originalTotal = num(sale.total_amount ?? sale.total) + amount;
+            if (originalTotal <= 0) return 0;
+            const share = Math.min(amount / originalTotal, 1);
+
+            let moved = 0;
+            items.forEach(it => {
+                const variantId = it.variantId ?? it.variant_id;
+                const qty = num(it.quantity) * share;
+                if (!variantId || qty <= 0) return;
+                returnVariantStock(variantId, qty, getStoreId(), note || 'Refund', String(sale.id));
+                moved++;
+            });
+            return moved;
+        }
+
         (async function() {
             const token = getToken();
             if (token && token !== 'demo-frontend-token') {
@@ -443,11 +612,11 @@
             renderClients();
         })();
     </script>
-    <script src="../js/i18n.js?v=ar-2"></script>
-<script src="../js/ui.js?v=ar-2"></script>
+    <script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
     <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ar-2"></script>
+<script src="calculator.js?v=ar-9"></script>
 </body>
 </html>

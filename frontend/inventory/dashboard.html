@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Supply — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=ar-2">
+    <link rel="stylesheet" href="wh-style.css?v=ar-9">
     <style>
         /* ── Section labels ─────────────────────────────────────────── */
         .wh-section { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
-            color:#1a3d2b; margin:24px 0 12px; border-left:3px solid #c4a24d; padding-left:10px; }
+            color:#1a3d2b; margin:24px 0 12px; border-left:3px solid #2d6a47; padding-left:10px; }
 
         /* ── Store tabs ─────────────────────────────────────────────── */
         #storeTabs { display:flex !important; flex-wrap:wrap; gap:8px; margin-bottom:14px; min-height:38px; padding:4px 0; }
@@ -43,7 +43,7 @@
         .history-tx-totals .val.paid { color:#10b981; }
         .history-tx-totals .val.debt { color:#ef4444; }
         .history-pay-log { background:#f8faff; border-radius:8px; padding:10px 12px; font-size:13px; }
-        .code-cell { font-family:monospace; font-size:12px; color:#c4a24d; font-weight:700; }
+        .code-cell { font-family:monospace; font-size:12px; color:#2d6a47; font-weight:700; }
 
         /* ── Items management panel ──────────────────────────────────── */
         .items-mgmt-panel { background:#fff; border-radius:14px; box-shadow:0 3px 16px rgba(0,0,0,.08); overflow:hidden; margin-bottom:4px; }
@@ -329,8 +329,8 @@
 
 </div><!-- /.wh-layout -->
 
-<script src="../js/api.js?v=ar-2"></script>
-<script src="../js/demo-data.js?v=ar-2"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -682,7 +682,7 @@ function makeRow(item) {
                 <span class="item-name-label" data-item="${esc(item.name)}">${esc(item.name)}</span>
                 <span class="item-unit-badge">${esc(item.unit)}</span>
             </td>
-            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" oninput="onCodeInput(this)" style="width:100%;border:0;background:transparent;color:#c4a24d;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
+            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" oninput="onCodeInput(this)" style="width:100%;border:0;background:transparent;color:#2d6a47;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
             <td>
                 <div class="qty-stepper">
                     <button class="qty-btn" onclick="stepQty(this, -${item.step})">−</button>
@@ -1049,7 +1049,7 @@ function renderStoreAccounts() {
                 </div>
                 <div class="store-account-toggle">
                     <span>${stats.count} transaction${stats.count !== 1 ? 's' : ''}</span>
-                    <span style="color:#c4a24d;">▲ View history above</span>
+                    <span style="color:#2d6a47;">▲ View history above</span>
                 </div>
             </div>
         `;
@@ -1100,7 +1100,7 @@ async function loadAllWarehouseData() {
 }
 loadAllWarehouseData();
 </script>
-<script src="../js/i18n.js?v=ar-2"></script>
-<script src="../js/ui.js?v=ar-2"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 </body>
 </html>
