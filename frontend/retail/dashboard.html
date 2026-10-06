@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Dashboard - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ux-9">
+    <link rel="stylesheet" href="rt-style.css?v=ar-1">
     <style>
         .dashboard-metrics .metric-card { color:#fff !important; border-left:none !important; border-radius:10px; }
         .dashboard-metrics .metric-card span { color:rgba(255,255,255,0.82) !important; font-size:13px; }
@@ -111,10 +111,10 @@
                 <div class="metric-card"><span>Supplier unpaid</span><strong id="orderSupplierUnpaid">0 IQD</strong><small>We still owe</small></div>
                 <div class="metric-card"><span>Buyer order paid</span><strong id="orderBuyerPaid">0 IQD</strong><small>Collected from buyers</small></div>
                 <div class="metric-card"><span>Buyer order debt</span><strong id="orderBuyerDebt">0 IQD</strong><small>Customers still owe</small></div>
-                <div class="metric-card"><span>حساب الخياطة</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
-                <div class="metric-card"><span>حساب التركيب</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
-                <div class="metric-card"><span>الربح الإجمالي</span><strong id="grossProfit">0 IQD</strong><small>(Selling − Cost) × Qty sold</small></div>
-                <div class="metric-card"><span>الربح الصافي</span><strong id="netProfit">0 IQD</strong><small>Gross − Expenses − Discounts</small></div>
+                <div class="metric-card"><span>Sewing account</span><strong id="sewingAccountTotal">...</strong><small>1,000 IQD per meter</small></div>
+                <div class="metric-card"><span>Installation account</span><strong id="installationAccountTotal">...</strong><small>10,000 IQD per window</small></div>
+                <div class="metric-card"><span>Gross profit</span><strong id="grossProfit">0 IQD</strong><small>(Selling − Cost) × Qty sold</small></div>
+                <div class="metric-card"><span>Net profit</span><strong id="netProfit">0 IQD</strong><small>Gross − Expenses − Discounts</small></div>
             </div>
 
             <div class="card">
@@ -188,8 +188,8 @@
         </div>
     </div>
 </div>
-    <script src="../js/api.js?v=ux-9"></script>
-    <script src="../js/demo-data.js?v=ux-9"></script>
+    <script src="../js/api.js?v=ar-1"></script>
+    <script src="../js/demo-data.js?v=ar-1"></script>
     <script>
         if (!checkAuth()) throw new Error("Not authenticated");
         if (!getStoreId()) window.location.href = "../landing.html";
@@ -353,11 +353,11 @@
         loadSalesFromAPI();
         setInterval(loadSalesFromAPI, 30000);
     </script>
-    <script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+    <script src="../js/i18n.js?v=ar-1"></script>
+<script src="../js/ui.js?v=ar-1"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ux-9"></script>
+<script src="calculator.js?v=ar-1"></script>
 </body>
 </html>

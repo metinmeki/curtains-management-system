@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Inventory - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ux-9">
+    <link rel="stylesheet" href="rt-style.css?v=ar-1">
     <style>
         .inv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
         .inv-stat { border-radius: 10px; padding: 16px 18px; border: none; color: #fff; }
@@ -309,11 +309,11 @@
             </div>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Cost price (ما اشتريناه) IQD</label>
+                    <label>Cost price IQD</label>
                     <input id="variantCostPrice" type="number" min="0" step="1" value="0" placeholder="5000">
                 </div>
                 <div class="form-group">
-                    <label>Selling price (ما بعناه) IQD</label>
+                    <label>Selling price IQD</label>
                     <input id="variantSellingPrice" type="number" min="0" step="1" value="0" placeholder="6000">
                 </div>
             </div>
@@ -403,8 +403,8 @@
     </div>
 </div>
 
-<script src="../js/api.js?v=ux-9"></script>
-<script src="../js/demo-data.js?v=ux-9"></script>
+<script src="../js/api.js?v=ar-1"></script>
+<script src="../js/demo-data.js?v=ar-1"></script>
 <script>
     if (!checkAuth()) throw new Error('Not authenticated');
     if (!getStoreId()) window.location.href = '../landing.html';
@@ -1120,11 +1120,11 @@
     populateCategorySelects();
     renderAll();
 </script>
-<script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+<script src="../js/i18n.js?v=ar-1"></script>
+<script src="../js/ui.js?v=ar-1"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ux-9"></script>
+<script src="calculator.js?v=ar-1"></script>
 </body>
 </html>

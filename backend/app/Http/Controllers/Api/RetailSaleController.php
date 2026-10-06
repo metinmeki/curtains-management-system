@@ -17,6 +17,12 @@ class RetailSaleController extends Controller
             'paid'        => 'sometimes|numeric|min:0',
             'discount'    => 'sometimes|numeric|min:0',
             'saleDetails' => 'sometimes|nullable|string|max:5000',
+            'saleWidth'   => 'sometimes|nullable|numeric|min:0|max:999999',
+            'saleLength'  => 'sometimes|nullable|numeric|min:0|max:999999',
+            'subtotal'     => 'sometimes|nullable|numeric|min:0',
+            'discountType' => 'sometimes|nullable|in:amount,percent',
+            'priceCurrency'=> 'sometimes|nullable|in:IQD,USD',
+            'exchangeRate' => 'sometimes|nullable|numeric|min:0',
         ]);
 
         $storeId = ($user->role === "cashier" && $user->store_id) ? (int)$user->store_id : (int)($data["storeId"] ?? $data["store_id"] ?? $user->store_id ?? 1);
@@ -49,10 +55,16 @@ class RetailSaleController extends Controller
             "paid_amount"     => $data["paid"] ?? 0,
             "remaining_amount"=> $data["remaining"] ?? 0,
             "payment_status"  => $this->mapStatus($data["status"] ?? "partial"),
+            "subtotal"        => $data["subtotal"] ?? null,
             "discount_amount" => $data["discount"] ?? 0,
+            "discount_type"   => $data["discountType"] ?? null,
+            "price_currency"  => $data["priceCurrency"] ?? null,
+            "exchange_rate"   => $data["exchangeRate"] ?? null,
             "discount_note"   => $data["discountNote"] ?? null,
             "notes"           => $data["note"] ?? null,
             "sale_details"    => $data["saleDetails"] ?? null,
+            "sale_width"      => ($data["saleWidth"]  ?? '') !== '' ? $data["saleWidth"]  : null,
+            "sale_length"     => ($data["saleLength"] ?? '') !== '' ? $data["saleLength"] : null,
             "worker_accounts" => !empty($data["workerAccounts"]) ? json_encode($data["workerAccounts"]) : null,
             "created_by"      => $user->name,
             "created_at"      => now(),
@@ -67,26 +79,41 @@ class RetailSaleController extends Controller
 
         if (!empty($data["items"])) {
             foreach ($data["items"] as $item) {
-                if (($item["quantity"] ?? 0) > 0 && ($item["price"] ?? 0) > 0) {
-                    $materialName = $item["material"] ?? "Unknown";
-                    $unitPrice    = (float)($item["price"] ?? 0);
-                    $quantity     = (float)($item["quantity"] ?? 0);
-                    // Snapshot cost price: use item's own costPrice if sent, else look up from catalog
-                    $costPrice    = (float)($item["costPrice"] ?? $item["cost_price"] ?? $itemTypeCosts[$materialName] ?? 0);
-                    $profitAmount = ($unitPrice - $costPrice) * $quantity;
+                $quantity = (float)($item["quantity"] ?? 0);
+                $unitPrice = (float)($item["price"] ?? 0);
 
-                    DB::table("retail_sale_items")->insert([
-                        "sale_id"      => $saleId,
-                        "material"     => $materialName,
-                        "quantity"     => $quantity,
-                        "unit_price"   => $unitPrice,
-                        "cost_price"   => $costPrice,
-                        "profit_amount"=> $profitAmount,
-                        "total_price"  => (float)($item["saleTotal"] ?? $unitPrice * $quantity),
-                        "created_at"   => now(),
-                        "updated_at"   => now()
-                    ]);
+                // Keep any line the cashier actually filled in. The old rule
+                // required a price above zero, which silently discarded free or
+                // included items. Quantity is the real signal — a price alone is
+                // just the untouched default on a worker-account row.
+                $hasText = ($item["note"] ?? '') !== '' || ($item["code"] ?? '') !== '';
+                if ($quantity <= 0 && !$hasText) {
+                    continue;
                 }
+
+                $materialName = $item["material"] ?? "Unknown";
+                // Snapshot cost price: use item's own costPrice if sent, else look up from catalog
+                $costPrice    = (float)($item["costPrice"] ?? $item["cost_price"] ?? $itemTypeCosts[$materialName] ?? 0);
+                $profitAmount = ($unitPrice - $costPrice) * $quantity;
+
+                DB::table("retail_sale_items")->insert([
+                    "sale_id"      => $saleId,
+                    "material"     => $materialName,
+                    "code"         => ($item["code"] ?? '') !== '' ? $item["code"] : null,
+                    "variant_id"   => $item["variantId"] ?? null,
+                    "variant_name" => ($item["variantName"] ?? '') !== '' ? $item["variantName"] : null,
+                    "unit"         => $item["unit"] ?? null,
+                    "note"         => ($item["note"] ?? '') !== '' ? $item["note"] : null,
+                    "quantity"     => $quantity,
+                    "unit_price"   => $unitPrice,
+                    "cost_price"   => $costPrice,
+                    "profit_amount"=> $profitAmount,
+                    "account_total"=> $item["accountTotal"] ?? 0,
+                    "store_share"  => $item["storeShare"] ?? null,
+                    "total_price"  => (float)($item["saleTotal"] ?? $unitPrice * $quantity),
+                    "created_at"   => now(),
+                    "updated_at"   => now()
+                ]);
             }
         }
 

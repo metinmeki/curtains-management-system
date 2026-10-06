@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail POS - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ux-9">
+    <link rel="stylesheet" href="rt-style.css?v=ar-1">
 </head>
 <body class="ltr">
 <div class="rt-layout">
@@ -96,20 +96,20 @@
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>المواد</th>
-                                    <th>كود / Code</th>
-                                    <th>متر / نافذة</th>
+                                    <th>Material</th>
+                                    <th>Code</th>
+                                    <th>Metres / Windows</th>
                                     <th style="white-space:nowrap;">
-                                        <span id="priceColLabel">سعر المتر</span>
+                                        <span id="priceColLabel">Unit price</span>
                                         <div role="group" aria-label="Price entry currency" style="display:inline-flex;gap:2px;background:rgba(27,61,46,0.12);border-radius:4px;padding:2px;margin-right:4px;vertical-align:middle;">
                                             <button class="cur-btn active" id="priceBtnIQD" onclick="setPriceCurrency('IQD')" aria-pressed="true" style="padding:5px 9px;font-size:11px;border-radius:3px;">IQD</button>
                                             <button class="cur-btn" id="priceBtnUSD" onclick="setPriceCurrency('USD')" aria-pressed="false" style="padding:5px 9px;font-size:11px;border-radius:3px;">$</button>
                                         </div>
                                     </th>
-                                    <th>المجموع</th>
-                                    <th>الحساب</th>
-                                    <th>ملاحظات</th>
-                                    <th class="receipt-actions-head">إضافة</th>
+                                    <th>Total</th>
+                                    <th>Account</th>
+                                    <th>Notes</th>
+                                    <th class="receipt-actions-head">Add</th>
                                 </tr>
                             </thead>
                             <tbody id="invoiceRows"></tbody>
@@ -130,19 +130,32 @@
                         </div>
                     </div>
                     <div class="no-print" style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
-                        <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
-                        <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
+                        <span class="group-caption" style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">Measurements</span>
+                        <div class="measure-grid">
+                            <div>
+                                <label for="saleWidth" class="measure-label">Width (cm)</label>
+                                <input id="saleWidth" class="measure-input quick-number" type="number" min="0" step="0.5" placeholder="0" onfocus="selectNumber(this)">
+                            </div>
+                            <div>
+                                <label for="saleLength" class="measure-label">Length (cm)</label>
+                                <input id="saleLength" class="measure-input quick-number" type="number" min="0" step="0.5" placeholder="0" onfocus="selectNumber(this)">
+                            </div>
+                            <div>
+                                <label for="saleDetails" class="measure-label">Details</label>
+                                <textarea id="saleDetails" class="measure-input" rows="3" placeholder="Write measurements and details here…"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
                     <div class="no-print" style="padding:10px 18px;border-top:1px solid rgba(27,61,46,0.12);background:rgba(27,61,46,0.03);">
-                        <button class="btn btn-secondary btn-small" onclick="togglePosOrder()" id="posOrderToggleBtn" style="font-size:11px;">+ Add Order Items (طلبية)</button>
+                        <button class="btn btn-secondary btn-small" onclick="togglePosOrder()" id="posOrderToggleBtn" style="font-size:11px;">+ Add order items</button>
                     </div>
 
                     <div id="posOrderSection" class="no-print" style="display:none;">
                         <div id="posOrderCards"></div>
                         <div style="padding:8px 18px;border-top:1px solid rgba(27,61,46,0.08);background:rgba(27,61,46,0.02);">
-                            <button class="btn btn-secondary btn-small" onclick="addPosOrderCard()" style="font-size:11px;">+ Add another order (طلبية إضافية)</button>
+                            <button class="btn btn-secondary btn-small" onclick="addPosOrderCard()" style="font-size:11px;">+ Add another order</button>
                         </div>
                     </div>
 
@@ -174,8 +187,8 @@
                             </div>
                         </div>
                         <div class="summary-line"><span>Customer sale total</span><strong id="saleTotal">0 IQD</strong></div>
-                        <div class="summary-line"><span>خياطة account</span><strong id="sewingTotal">0 IQD</strong></div>
-                        <div class="summary-line"><span>تركيب account</span><strong id="installationTotal">0 IQD</strong></div>
+                        <div class="summary-line"><span>Sewing account</span><strong id="sewingTotal">0 IQD</strong></div>
+                        <div class="summary-line"><span>Installation account</span><strong id="installationTotal">0 IQD</strong></div>
 
                         <div class="form-grid">
                             <div class="form-group">
@@ -233,8 +246,8 @@
 
 <div id="printPosReceipt" class="print-order-receipt"></div>
 
-    <script src="../js/api.js?v=ux-9"></script>
-    <script src="../js/demo-data.js?v=ux-9"></script>
+    <script src="../js/api.js?v=ar-1"></script>
+    <script src="../js/demo-data.js?v=ar-1"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -448,8 +461,8 @@
                 priceInput.value = option.dataset.price;
                 priceInput.readOnly = true;
                 note.placeholder = option.value === 'خياطة'
-                    ? '1,000 IQD per meter to خياطة account'
-                    : '10,000 IQD per window to تركيب account';
+                    ? '1,000 IQD per meter to Sewing account'
+                    : '10,000 IQD per window to Installation account';
             } else {
                 priceInput.readOnly = false;
                 if (Number(priceInput.value) === 1000 || Number(priceInput.value) === 10000) priceInput.value = 0;
@@ -632,6 +645,8 @@
             document.getElementById('paidAmount').value = 0;
             document.getElementById('debtNote').value = '';
             document.getElementById('saleDetails').value = '';
+            document.getElementById('saleWidth').value = '';
+            document.getElementById('saleLength').value = '';
 
             // Reset order section
             document.getElementById('posOrderCards').innerHTML = '';
@@ -640,7 +655,7 @@
             document.getElementById('posOrderSection').style.display = 'none';
             document.getElementById('posGrandTotalBar').style.display = 'none';
             document.getElementById('posOrderPayRow').style.display = 'none';
-            document.getElementById('posOrderToggleBtn').textContent = '+ Add Order Items (طلبية)';
+            document.getElementById('posOrderToggleBtn').textContent = '+ Add order items';
             calculateInvoice();
         }
 
@@ -698,6 +713,11 @@
                 cashierName: _activeCashier ? _activeCashier.name : 'Admin',
                 subtotal: data.saleTotal,
                 discount,
+                // Record how the discount was expressed and what the prices were
+                // entered in, so the sale can be reconstructed later.
+                discountType: (document.getElementById('discountType') || {}).value || 'amount',
+                priceCurrency: localStorage.getItem('price_currency') || 'IQD',
+                exchangeRate: getExchangeRate(),
                 discountNote: document.getElementById('discountNote').value,
                 total: finalTotal,
                 paid,
@@ -705,6 +725,8 @@
                 status: remaining === 0 ? 'Paid' : paid === 0 ? 'Debt' : 'Partial',
                 note: document.getElementById('debtNote').value,
                 saleDetails: document.getElementById('saleDetails').value,
+                saleWidth:  document.getElementById('saleWidth').value,
+                saleLength: document.getElementById('saleLength').value,
                 items: data.items,
                 workerAccounts: data.workerAccounts
             };
@@ -812,6 +834,8 @@
             const name  = document.getElementById('clientName').value || '-';
             const phone = document.getElementById('clientPhone').value || '-';
             const details = document.getElementById('saleDetails').value || '';
+            const width   = document.getElementById('saleWidth').value || '';
+            const length  = document.getElementById('saleLength').value || '';
 
             return `
                 <div style="text-align:center;color:#1f315f;">
@@ -821,13 +845,14 @@
                 <p>Date: ${esc(date)}</p>
                 <p>Client: ${esc(name)} - ${esc(phone)}</p>
                 <table class="print-order-table">
-                    <thead><tr><th>المواد</th><th>كود</th><th>متر / نافذة</th><th>سعر المتر</th><th>المجموع</th><th>ملاحظات</th></tr></thead>
+                    <thead><tr><th>Material</th><th>كود</th><th>Metres / Windows</th><th>Unit price</th><th>Total</th><th>Notes</th></tr></thead>
                     <tbody>${data.items.map(item => `<tr><td>${esc(item.material)}</td><td>${esc(item.code || '-')}</td><td>${esc(item.quantity)}</td><td>${money(item.price)}</td><td>${money(item.saleTotal)}</td><td>${esc(item.note || '')}</td></tr>`).join('')}</tbody>
                 </table>
                 <p>Subtotal: ${money(data.saleTotal)}</p>
                 <p>Discount: ${money(discount)}</p>
                 <p>Total: ${money(finalTotal)}</p>
-                ${details ? `<p>تفاصيل / Measurements: ${esc(details)}</p>` : ''}
+                ${(width || length) ? `<p class="print-measure">القياس / Size: <strong>${esc(width || '—')} × ${esc(length || '—')} cm</strong> (العرض × الطول / W × L)</p>` : ''}
+                ${details ? `<p>Measurements: ${esc(details)}</p>` : ''}
             `;
         }
 
@@ -874,10 +899,10 @@
                             <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">نوع المادة</th>
                             <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">الكود</th>
                             <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">Qty</th>
-                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">الوحدة</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">Unit</th>
                             <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">السعر ($)</th>
                             <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;">مجموع السطر</th>
-                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;" class="receipt-actions-head">إضافة</th>
+                            <th style="background:transparent;color:#c4a24d;border-bottom:2px solid #c4a24d;" class="receipt-actions-head">Add</th>
                         </tr></thead>
                         <tbody class="po-item-rows"></tbody>
                     </table>
@@ -1030,7 +1055,7 @@
             section.style.display = showing ? 'none' : 'block';
             bar.style.display     = showing ? 'none' : 'flex';
             payRow.style.display  = showing ? 'none' : 'block';
-            btn.textContent       = showing ? '+ Add Order Items (طلبية)' : '− Remove Orders';
+            btn.textContent       = showing ? '+ Add order items' : '− Remove Orders';
             if (!showing && document.getElementById('posOrderCards').children.length === 0) addPosOrderCard();
             calcPosOrder();
         }
@@ -1055,7 +1080,7 @@
             document.getElementById('priceBtnUSD').classList.toggle('active', cur === 'USD');
             document.getElementById('priceBtnIQD').setAttribute('aria-pressed', String(cur === 'IQD'));
             document.getElementById('priceBtnUSD').setAttribute('aria-pressed', String(cur === 'USD'));
-            document.getElementById('priceColLabel').textContent = cur === 'USD' ? 'سعر المتر ($)' : 'سعر المتر';
+            document.getElementById('priceColLabel').textContent = cur === 'USD' ? 'Unit price ($)' : 'Unit price';
             document.querySelectorAll('.row-price').forEach(function(inp) {
                 inp.placeholder = cur === 'USD' ? '$' : '0';
             });
@@ -1068,16 +1093,16 @@
             document.getElementById('priceBtnIQD').setAttribute('aria-pressed', String(cur === 'IQD'));
             document.getElementById('priceBtnUSD').setAttribute('aria-pressed', String(cur === 'USD'));
             if (cur === 'USD') {
-                document.getElementById('priceColLabel').textContent = 'سعر المتر ($)';
+                document.getElementById('priceColLabel').textContent = 'Unit price ($)';
                 document.querySelectorAll('.row-price').forEach(function(inp) { inp.placeholder = '$'; });
             }
         })();
     </script>
-    <script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+    <script src="../js/i18n.js?v=ar-1"></script>
+<script src="../js/ui.js?v=ar-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ux-9"></script>
+<script src="calculator.js?v=ar-1"></script>
 </body>
 </html>

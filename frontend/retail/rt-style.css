@@ -443,11 +443,67 @@ html,body{overflow-x:hidden;max-width:100%}
   .cur-btn{min-height:40px!important;min-width:44px!important;padding:8px 12px!important;font-size:12px!important}
 }
 
+/* ── Measurements block (POS + debts) ───────────────────────────────────────
+   Width and length sit beside the free-text details so the fitters get the
+   sizes on the printed receipt. */
+.measure-grid{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;align-items:start}
+.measure-label{display:block;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#1b3d2e;opacity:.55;margin-bottom:4px}
+.measure-input{width:100%;border:1.5px solid rgba(27,61,46,.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;font-family:inherit;box-sizing:border-box}
+textarea.measure-input{resize:vertical;min-height:0}
+.measure-input:focus{outline:none;border-color:#2d6a47;box-shadow:0 0 0 3px rgba(45,106,71,.12)}
+@media(max-width:700px){.measure-grid{grid-template-columns:1fr 1fr}.measure-grid>div:last-child{grid-column:1 / -1}}
+
+/* ── Client details: full sale breakdown ────────────────────────────────── */
+.client-filter-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 18px 14px}
+.client-filter-row .group-caption{margin:0}
+.filter-count{display:inline-block;margin-left:6px;background:rgba(0,0,0,.1);border-radius:999px;padding:1px 7px;font-size:11px;font-weight:700}
+.filter-btn.active .filter-count{background:rgba(255,255,255,.25)}
+
+.sale-table-wrap{overflow-x:auto;margin:8px 0}
+.sale-detail-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;overflow:hidden}
+.sale-detail-table th{background:#f0ece0;color:#5a4a38;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:7px 9px;text-align:left;white-space:nowrap}
+.sale-detail-table td{padding:7px 9px;border-top:1px solid #efe9dc;vertical-align:top}
+.sale-detail-table tbody tr:nth-child(even) td{background:#fbf8f1}
+.sale-detail-table .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#8a6d3b}
+.sale-detail-table .note-cell{max-width:200px;white-space:pre-wrap;color:#6b5a4a}
+
+.sale-block{margin:10px 0 0;padding:10px 12px;background:#fbf8f1;border-radius:8px;border:1px solid #efe9dc}
+.sale-block-title{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#8a7558;margin-bottom:6px}
+.sale-note-text{font-size:13px;color:#3d2412;white-space:pre-wrap;line-height:1.5}
+.sale-kv{display:grid;grid-template-columns:1fr auto;gap:4px 14px;font-size:13px;align-items:baseline}
+.sale-kv span{color:#6b5a4a}
+.sale-kv strong{text-align:right;color:#2c1a0e}
+.sale-kv strong.ok{color:#1a7a3d}
+.sale-kv strong.bad{color:#b4534a}
+.sale-kv .muted{color:#8a7558;font-style:italic;font-weight:400}
+.sale-empty{font-size:12px;color:#8a7558;font-style:italic;padding:6px 0}
+
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800}
+.chip-size{background:#e8f0ea;color:#1b5e32}
+.chip-paid{background:#dcf0e2;color:#1a7a3d}
+.chip-debt{background:#f7dedb;color:#8e3b33}
+
+.client-orders{margin-top:14px;padding-top:12px;border-top:2px dashed #ddd0b5}
+.client-orders-title{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#8a6d3b;margin-bottom:8px}
+.order-entry{background:#fffdf6;border:1px solid #e4d9bf;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.order-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:#5a4a38;margin-bottom:4px}
+
+@media(max-width:700px){
+  .sale-kv{grid-template-columns:1fr auto}
+  .client-filter-row{padding:0 12px 12px}
+  .sale-detail-table{font-size:11px}
+}
+
+/* Printed measurements line — fitters read this off the receipt. */
+.print-measure{margin:6px 0;font-size:13px}
+.print-measure strong{font-weight:700}
+
 /* Tap targets on small screens. Keyed on width as well as pointer type, since
    a narrow window deserves the same treatment as a phone. */
 @media(max-width:768px){
   .btn{min-height:44px}
   .btn-sm,.btn-small{min-height:38px}
+  .filter-btn,.tab-btn{min-height:38px}
   .receipt-action-btn{min-height:38px!important;min-width:38px!important;padding:6px!important}
   .cur-btn{min-height:36px!important;min-width:40px!important;padding:7px 10px!important;font-size:12px!important}
   .calc-topbar-btn{min-height:40px!important;min-width:40px!important}

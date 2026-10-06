@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer Stock - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ux-9">
+    <link rel="stylesheet" href="rt-style.css?v=ar-1">
     <style>
         .trf-card { background:#fff; border:1px solid #e8e4da; border-radius:12px; padding:20px; margin-bottom:18px; }
         .trf-card-head { font-size:14px; font-weight:800; color:#2c1a0e; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #e8e4da; display:flex; align-items:center; gap:8px; }
@@ -109,7 +109,7 @@
                     </div>
                 </div>
                 <div class="form-group" style="margin-top:4px;margin-bottom:0;">
-                    <label>Notes / ملاحظات</label>
+                    <label>Notes</label>
                     <input type="text" id="transferNotes" placeholder="Optional notes about this transfer">
                 </div>
             </div>
@@ -133,10 +133,10 @@
                         <thead>
                             <tr>
                                 <th style="width:36px;"></th>
-                                <th>Item / الصنف</th>
-                                <th>Code / كود</th>
+                                <th>Item</th>
+                                <th>Code</th>
                                 <th>Category</th>
-                                <th>Available / المتاح</th>
+                                <th>Available</th>
                                 <th>Transfer Qty</th>
                             </tr>
                         </thead>
@@ -185,8 +185,8 @@
     </div>
 </div>
 
-<script src="../js/api.js?v=ux-9"></script>
-<script src="../js/demo-data.js?v=ux-9"></script>
+<script src="../js/api.js?v=ar-1"></script>
+<script src="../js/demo-data.js?v=ar-1"></script>
 <script>
 if (!checkAuth()) throw new Error('Not authenticated');
 if (!getStoreId()) window.location.href = '../landing.html';
@@ -516,8 +516,8 @@ function toggleSidebar() {
 document.getElementById('itemsCard').style.display = 'none';
 loadStores().then(() => loadHistory());
 </script>
-<script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+<script src="../js/i18n.js?v=ar-1"></script>
+<script src="../js/ui.js?v=ar-1"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 </body>
