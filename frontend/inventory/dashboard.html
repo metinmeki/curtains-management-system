@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Supply — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=ux-9">
+    <link rel="stylesheet" href="wh-style.css?v=ar-9">
     <style>
         /* ── Section labels ─────────────────────────────────────────── */
         .wh-section { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
-            color:#1a3d2b; margin:24px 0 12px; border-left:3px solid #c4a24d; padding-left:10px; }
+            color:#1a3d2b; margin:24px 0 12px; border-left:3px solid #2d6a47; padding-left:10px; }
 
         /* ── Store tabs ─────────────────────────────────────────────── */
         #storeTabs { display:flex !important; flex-wrap:wrap; gap:8px; margin-bottom:14px; min-height:38px; padding:4px 0; }
@@ -43,7 +43,7 @@
         .history-tx-totals .val.paid { color:#10b981; }
         .history-tx-totals .val.debt { color:#ef4444; }
         .history-pay-log { background:#f8faff; border-radius:8px; padding:10px 12px; font-size:13px; }
-        .code-cell { font-family:monospace; font-size:12px; color:#c4a24d; font-weight:700; }
+        .code-cell { font-family:monospace; font-size:12px; color:#2d6a47; font-weight:700; }
 
         /* ── Items management panel ──────────────────────────────────── */
         .items-mgmt-panel { background:#fff; border-radius:14px; box-shadow:0 3px 16px rgba(0,0,0,.08); overflow:hidden; margin-bottom:4px; }
@@ -218,21 +218,21 @@
             <section class="receipt-card">
                 <div class="receipt-head">
                     <div class="receipt-brand">DLOVAN PARDA</div>
-                    <div class="receipt-subbrand">المستودع المركزي &nbsp;|&nbsp; Warehouse Supply</div>
+                    <div class="receipt-subbrand">Warehouse supply</div>
                 </div>
                 <div class="receipt-meta">
                     <div class="form-group">
-                        <label>Date / التاريخ</label>
+                        <label>Date</label>
                         <input type="date" id="supplyDate">
                     </div>
                     <div class="form-group">
-                        <label>Store / المتجر</label>
+                        <label>Store</label>
                         <select id="storeSelect" onchange="onStoreChange()">
                             <option value="">— Select store —</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Notes / ملاحظات</label>
+                        <label>Notes</label>
                         <input id="supplyNotes" placeholder="Optional">
                     </div>
                 </div>
@@ -241,13 +241,13 @@
                     <table class="receipt-table">
                         <thead>
                             <tr>
-                                <th style="text-align:right;min-width:130px;">الصنف / Item</th>
-                                <th style="min-width:100px;">الكود / Code</th>
-                                <th style="min-width:130px;">الكمية / Qty</th>
-                                <th style="min-width:60px;">الوحدة</th>
-                                <th style="min-width:110px;">سعر الوحدة</th>
-                                <th style="min-width:100px;">المجموع</th>
-                                <th style="min-width:70px;">إجراء</th>
+                                <th style="text-align:right;min-width:130px;">Item</th>
+                                <th style="min-width:100px;">Code</th>
+                                <th style="min-width:130px;">Qty</th>
+                                <th style="min-width:60px;">Unit</th>
+                                <th style="min-width:110px;">Unit price</th>
+                                <th style="min-width:100px;">Total</th>
+                                <th style="min-width:70px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="supplyRows"></tbody>
@@ -259,26 +259,26 @@
 
                 <div class="receipt-bottom">
                     <div class="receipt-bottom-item">
-                        <span>Store prev. debt / دين سابق</span>
+                        <span>Store previous debt</span>
                         <strong id="storeDebtDisplay">—</strong>
                     </div>
                     <div class="receipt-bottom-item">
-                        <span>Subtotal / المجموع</span>
+                        <span>Subtotal</span>
                         <strong id="subtotalDisplay">0 IQD</strong>
                     </div>
                     <div class="receipt-bottom-item">
-                        <span>Invoice total / الإجمالي</span>
+                        <span>Invoice total</span>
                         <strong id="totalDisplay">0 IQD</strong>
                     </div>
                 </div>
             </section>
 
             <aside class="wh-card pay-panel-card no-print" style="align-self:start;">
-                <div class="wh-card-head"><h3>Payment / الدفع</h3></div>
+                <div class="wh-card-head"><h3>Payment</h3></div>
                 <div class="wh-card-body pay-panel">
                     <div id="submitMsg" class="alert" style="display:none;"></div>
                     <div class="form-group">
-                        <label>Paid now / المدفوع</label>
+                        <label>Paid now</label>
                         <input type="number" id="paidAmount" min="0" step="1000" placeholder="0" oninput="updatePaySummary()">
                     </div>
                     <div class="pay-summary">
@@ -329,8 +329,8 @@
 
 </div><!-- /.wh-layout -->
 
-<script src="../js/api.js?v=ux-9"></script>
-<script src="../js/demo-data.js?v=ux-9"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -682,7 +682,7 @@ function makeRow(item) {
                 <span class="item-name-label" data-item="${esc(item.name)}">${esc(item.name)}</span>
                 <span class="item-unit-badge">${esc(item.unit)}</span>
             </td>
-            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" oninput="onCodeInput(this)" style="width:100%;border:0;background:transparent;color:#c4a24d;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
+            <td class="row-code-cell"><input class="code-input" type="text" placeholder="كود" value="${esc(code)}" oninput="onCodeInput(this)" style="width:100%;border:0;background:transparent;color:#2d6a47;font-weight:800;font-size:12px;letter-spacing:0.5px;text-align:center;padding:4px;"></td>
             <td>
                 <div class="qty-stepper">
                     <button class="qty-btn" onclick="stepQty(this, -${item.step})">−</button>
@@ -896,7 +896,7 @@ function renderHistoryPanel() {
     document.getElementById('historyTitle').textContent = store
         ? `${store.name} — transaction history`
         : 'All stores — full history';
-    document.getElementById('historySub').textContent = `${sales.length} transaction${sales.length !== 1 ? 's' : ''}${store ? '' : ' across all stores'}`;
+    document.getElementById('historySub').textContent = `${sales.length} ${ta(sales.length !== 1 ? 'transactions' : 'transaction')}${store ? '' : ' ' + ta('across all stores')}`;
 
     const strip = document.getElementById('historyPayStrip');
     if (store) {
@@ -947,11 +947,11 @@ function renderHistoryPanel() {
                 <table class="history-tx-table">
                     <thead>
                         <tr>
-                            <th>الصنف / Item</th>
-                            <th>الكود / Code</th>
-                            <th>الكمية / Qty</th>
+                            <th>Item</th>
+                            <th>Code</th>
+                            <th>Qty</th>
                             <th>الوحدة / Unit</th>
-                            <th>سعر الوحدة / Price</th>
+                            <th>Unit price / Price</th>
                             <th>المجموع / Total</th>
                         </tr>
                     </thead>
@@ -960,7 +960,7 @@ function renderHistoryPanel() {
 
                 <div class="history-section-label" style="margin-top:12px;">Financial Summary / الملخص المالي</div>
                 <div class="history-tx-totals">
-                    <div><span class="lbl">Invoice total / الإجمالي</span><span class="val">${money(s.finalTotal)}</span></div>
+                    <div><span class="lbl">Invoice total</span><span class="val">${money(s.finalTotal)}</span></div>
                     <div><span class="lbl">Paid / المدفوع</span><span class="val paid">${money(s.paid)}</span></div>
                     <div><span class="lbl">Remaining debt / المتبقي</span><span class="val ${Number(s.remaining)>0?'debt':''}">${money(s.remaining)}</span></div>
                     <div><span class="lbl">Type / نوع</span><span style="font-size:13px;font-weight:800;color:#374151;">${s.type === 'debt' ? 'Credit / دين' : 'Cash / نقدي'}</span></div>
@@ -1049,7 +1049,7 @@ function renderStoreAccounts() {
                 </div>
                 <div class="store-account-toggle">
                     <span>${stats.count} transaction${stats.count !== 1 ? 's' : ''}</span>
-                    <span style="color:#c4a24d;">▲ View history above</span>
+                    <span style="color:#2d6a47;">▲ View history above</span>
                 </div>
             </div>
         `;
@@ -1100,7 +1100,7 @@ async function loadAllWarehouseData() {
 }
 loadAllWarehouseData();
 </script>
-<script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 </body>
 </html>

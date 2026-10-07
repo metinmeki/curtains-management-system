@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Supply — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=ux-9">
+    <link rel="stylesheet" href="wh-style.css?v=ar-9">
     <style>
         @media print {
             .wh-sidebar,.wh-topbar,.page-header,.two-column > aside,.receipt-action-cell,.receipt-actions-head,.no-print { display:none !important; }
@@ -68,21 +68,21 @@
             <section class="receipt-card">
                 <div class="receipt-head">
                     <div class="receipt-brand">DLOVAN PARDA</div>
-                    <div class="receipt-subbrand">المستودع المركزي &nbsp;|&nbsp; Central Warehouse</div>
+                    <div class="receipt-subbrand">Central warehouse</div>
                 </div>
                 <div class="receipt-meta">
                     <div class="form-group">
-                        <label>Date / التاريخ</label>
+                        <label>Date</label>
                         <input type="date" id="supplyDate">
                     </div>
                     <div class="form-group">
-                        <label>Store / المتجر</label>
+                        <label>Store</label>
                         <select id="storeSelect" aria-label="Store" onchange="onStoreChange()">
                             <option value="">— Select store —</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Notes / ملاحظات</label>
+                        <label>Notes</label>
                         <input id="supplyNotes" placeholder="Optional notes">
                     </div>
                 </div>
@@ -98,12 +98,12 @@
                         </colgroup>
                         <thead>
                             <tr>
-                                <th>الصنف / Item</th>
-                                <th>الكمية / Qty</th>
-                                <th>الوحدة</th>
-                                <th>سعر التكلفة</th>
-                                <th>سعر الوحدة</th>
-                                <th>المجموع</th>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Unit</th>
+                                <th>Cost price</th>
+                                <th>Unit price</th>
+                                <th>Total</th>
                                 <th class="receipt-actions-head">+</th>
                             </tr>
                         </thead>
@@ -112,27 +112,27 @@
                 </div>
                 <div class="receipt-bottom">
                     <div class="receipt-bottom-item">
-                        <span>Store prev. debt / دين سابق</span>
+                        <span>Store previous debt</span>
                         <strong id="storeDebtDisplay">0 IQD</strong>
                     </div>
                     <div class="receipt-bottom-item">
-                        <span>Subtotal / المجموع</span>
+                        <span>Subtotal</span>
                         <strong id="subtotalDisplay">0 IQD</strong>
                     </div>
                     <div class="receipt-bottom-item">
-                        <span>Invoice total / الإجمالي</span>
+                        <span>Invoice total</span>
                         <strong id="totalDisplay">0 IQD</strong>
                     </div>
                 </div>
             </section>
 
             <aside class="wh-card no-print" style="align-self:start;">
-                <div class="wh-card-head"><h3>Payment / الدفع</h3></div>
+                <div class="wh-card-head"><h3>Payment</h3></div>
                 <div class="wh-card-body">
                     <div id="submitMsg" class="alert" style="display:none;margin-bottom:12px;"></div>
                     <div class="pay-panel">
                         <div class="form-group">
-                            <label>Paid amount / المبلغ المدفوع</label>
+                            <label>Paid amount</label>
                             <input type="number" id="paidAmount" min="0" step="1000" placeholder="0" oninput="updatePaySummary()">
                         </div>
                         <div class="pay-summary">
@@ -168,8 +168,8 @@
 
 </div>
 
-<script src="../js/api.js?v=ux-9"></script>
-<script src="../js/demo-data.js?v=ux-9"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
 if (!checkAuth()) throw new Error('Not authenticated');
 loadShell('Warehouse');
@@ -488,7 +488,7 @@ window.cmsRedraw = function() {
     onStoreChange();
 };
 </script>
-<script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 </body>
 </html>

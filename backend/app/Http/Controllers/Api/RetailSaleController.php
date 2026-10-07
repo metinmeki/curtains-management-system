@@ -17,6 +17,12 @@ class RetailSaleController extends Controller
             'paid'        => 'sometimes|numeric|min:0',
             'discount'    => 'sometimes|numeric|min:0',
             'saleDetails' => 'sometimes|nullable|string|max:5000',
+            'saleWidth'   => 'sometimes|nullable|numeric|min:0|max:999999',
+            'saleLength'  => 'sometimes|nullable|numeric|min:0|max:999999',
+            'subtotal'     => 'sometimes|nullable|numeric|min:0',
+            'discountType' => 'sometimes|nullable|in:amount,percent',
+            'priceCurrency'=> 'sometimes|nullable|in:IQD,USD',
+            'exchangeRate' => 'sometimes|nullable|numeric|min:0',
         ]);
 
         $storeId = ($user->role === "cashier" && $user->store_id) ? (int)$user->store_id : (int)($data["storeId"] ?? $data["store_id"] ?? $user->store_id ?? 1);
@@ -49,10 +55,19 @@ class RetailSaleController extends Controller
             "paid_amount"     => $data["paid"] ?? 0,
             "remaining_amount"=> $data["remaining"] ?? 0,
             "payment_status"  => $this->mapStatus($data["status"] ?? "partial"),
+            // Whitelisted rather than passed through: this drives a badge and
+            // must never hold arbitrary client input.
+            "approval_status" => (($data["approvalStatus"] ?? "accepted") === "pending") ? "pending" : "accepted",
+            "subtotal"        => $data["subtotal"] ?? null,
             "discount_amount" => $data["discount"] ?? 0,
+            "discount_type"   => $data["discountType"] ?? null,
+            "price_currency"  => $data["priceCurrency"] ?? null,
+            "exchange_rate"   => $data["exchangeRate"] ?? null,
             "discount_note"   => $data["discountNote"] ?? null,
             "notes"           => $data["note"] ?? null,
             "sale_details"    => $data["saleDetails"] ?? null,
+            "sale_width"      => ($data["saleWidth"]  ?? '') !== '' ? $data["saleWidth"]  : null,
+            "sale_length"     => ($data["saleLength"] ?? '') !== '' ? $data["saleLength"] : null,
             "worker_accounts" => !empty($data["workerAccounts"]) ? json_encode($data["workerAccounts"]) : null,
             "created_by"      => $user->name,
             "created_at"      => now(),
@@ -67,26 +82,41 @@ class RetailSaleController extends Controller
 
         if (!empty($data["items"])) {
             foreach ($data["items"] as $item) {
-                if (($item["quantity"] ?? 0) > 0 && ($item["price"] ?? 0) > 0) {
-                    $materialName = $item["material"] ?? "Unknown";
-                    $unitPrice    = (float)($item["price"] ?? 0);
-                    $quantity     = (float)($item["quantity"] ?? 0);
-                    // Snapshot cost price: use item's own costPrice if sent, else look up from catalog
-                    $costPrice    = (float)($item["costPrice"] ?? $item["cost_price"] ?? $itemTypeCosts[$materialName] ?? 0);
-                    $profitAmount = ($unitPrice - $costPrice) * $quantity;
+                $quantity = (float)($item["quantity"] ?? 0);
+                $unitPrice = (float)($item["price"] ?? 0);
 
-                    DB::table("retail_sale_items")->insert([
-                        "sale_id"      => $saleId,
-                        "material"     => $materialName,
-                        "quantity"     => $quantity,
-                        "unit_price"   => $unitPrice,
-                        "cost_price"   => $costPrice,
-                        "profit_amount"=> $profitAmount,
-                        "total_price"  => (float)($item["saleTotal"] ?? $unitPrice * $quantity),
-                        "created_at"   => now(),
-                        "updated_at"   => now()
-                    ]);
+                // Keep any line the cashier actually filled in. The old rule
+                // required a price above zero, which silently discarded free or
+                // included items. Quantity is the real signal — a price alone is
+                // just the untouched default on a worker-account row.
+                $hasText = ($item["note"] ?? '') !== '' || ($item["code"] ?? '') !== '';
+                if ($quantity <= 0 && !$hasText) {
+                    continue;
                 }
+
+                $materialName = $item["material"] ?? "Unknown";
+                // Snapshot cost price: use item's own costPrice if sent, else look up from catalog
+                $costPrice    = (float)($item["costPrice"] ?? $item["cost_price"] ?? $itemTypeCosts[$materialName] ?? 0);
+                $profitAmount = ($unitPrice - $costPrice) * $quantity;
+
+                DB::table("retail_sale_items")->insert([
+                    "sale_id"      => $saleId,
+                    "material"     => $materialName,
+                    "code"         => ($item["code"] ?? '') !== '' ? $item["code"] : null,
+                    "variant_id"   => $item["variantId"] ?? null,
+                    "variant_name" => ($item["variantName"] ?? '') !== '' ? $item["variantName"] : null,
+                    "unit"         => $item["unit"] ?? null,
+                    "note"         => ($item["note"] ?? '') !== '' ? $item["note"] : null,
+                    "quantity"     => $quantity,
+                    "unit_price"   => $unitPrice,
+                    "cost_price"   => $costPrice,
+                    "profit_amount"=> $profitAmount,
+                    "account_total"=> $item["accountTotal"] ?? 0,
+                    "store_share"  => $item["storeShare"] ?? null,
+                    "total_price"  => (float)($item["saleTotal"] ?? $unitPrice * $quantity),
+                    "created_at"   => now(),
+                    "updated_at"   => now()
+                ]);
             }
         }
 
@@ -149,6 +179,101 @@ class RetailSaleController extends Controller
         ]);
 
         return response()->json(['status' => 'success', 'paid' => $newPaid, 'remaining' => $newRemaining, 'payment_status' => $newStatus]);
+    }
+
+    /**
+     * Refund part or all of what a client paid on a sale.
+     *
+     * total_amount and paid_amount both drop by the refunded amount, which
+     * leaves remaining_amount untouched: the client gets money back for goods
+     * they returned, and any debt they still carry on the sale is unaffected.
+     * Capping at paid_amount is what stops a refund from silently turning into
+     * a discount on an unpaid balance.
+     */
+    public function refund(Request $request, $saleId)
+    {
+        $user   = $request->user();
+        $data   = $request->json()->all();
+        $amount = round(floatval($data['amount'] ?? 0), 2);
+        $note   = trim($data['note'] ?? '');
+
+        if ($amount <= 0) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid amount'], 422);
+        }
+
+        $sale = DB::table('retail_sales')->find($saleId);
+        if (!$sale) {
+            return response()->json(['status' => 'error', 'message' => 'Sale not found'], 404);
+        }
+
+        if ($user->role === 'cashier' && $user->store_id && (int)$user->store_id !== (int)$sale->store_id) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $paid = floatval($sale->paid_amount);
+        if ($amount > $paid) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Refund cannot exceed the amount paid on this sale.',
+                'paid'    => $paid,
+            ], 422);
+        }
+
+        $oldTotal     = floatval($sale->total_amount);
+        $newPaid      = round($paid - $amount, 2);
+        $newTotal     = round($oldTotal - $amount, 2);
+        $newRemaining = max(round($newTotal - $newPaid, 2), 0);
+        $newRefunded  = round(floatval($sale->refunded_amount ?? 0) + $amount, 2);
+        $newStatus    = $newRemaining == 0 ? 'full' : ($newPaid > 0 ? 'partial' : 'unpaid');
+
+        /* Margin given back, in proportion to the share of the sale refunded.
+           Not the refund amount itself: the goods return to stock carrying
+           their cost, so only the profit on them is lost. */
+        $share        = $oldTotal > 0 ? min($amount / $oldTotal, 1) : 0;
+        $lineProfit   = (float)DB::table('retail_sale_items')->where('sale_id', $saleId)->sum('profit_amount');
+        $profitBack   = round($lineProfit * $share, 2);
+        $newRefProfit = round(floatval($sale->refunded_profit ?? 0) + $profitBack, 2);
+
+        $payments   = json_decode($sale->payments ?? '[]', true) ?: [];
+        $payments[] = [
+            'date'   => now()->toDateString(),
+            'amount' => -$amount,
+            'note'   => $note !== '' ? $note : 'Refund',
+            'refund' => true,
+        ];
+
+        DB::transaction(function () use ($saleId, $newPaid, $newTotal, $newRemaining, $newRefunded, $newRefProfit, $newStatus, $payments, $amount, $note) {
+            DB::table('retail_sales')->where('id', $saleId)->update([
+                'total_amount'     => $newTotal,
+                'paid_amount'      => $newPaid,
+                'remaining_amount' => $newRemaining,
+                'refunded_amount'  => $newRefunded,
+                'refunded_profit'  => $newRefProfit,
+                'payment_status'   => $newStatus,
+                'payments'         => json_encode($payments),
+                'updated_at'       => now(),
+            ]);
+
+            // Negative row keeps the money ledger a single ordered list.
+            DB::table('retail_payments')->insert([
+                'sale_id'    => $saleId,
+                'amount'     => -$amount,
+                'is_refund'  => true,
+                'notes'      => $note !== '' ? $note : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        return response()->json([
+            'status'          => 'success',
+            'total'           => $newTotal,
+            'paid'            => $newPaid,
+            'remaining'       => $newRemaining,
+            'refunded'        => $newRefunded,
+            'refunded_profit' => $newRefProfit,
+            'payment_status'  => $newStatus,
+        ]);
     }
 
     public function destroy(Request $request, $saleId)

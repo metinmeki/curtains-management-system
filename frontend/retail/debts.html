@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Debts - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ux-9">
+    <link rel="stylesheet" href="rt-style.css?v=ar-9">
     <style>
         @media print {
             body { background: #fff; }
@@ -61,7 +61,7 @@
     </aside>
     <div class="rt-main">
         <div class="rt-topbar">
-            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <button type="button" class="cms-iconbtn rt-menu-btn" aria-label="Open menu" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
             <span class="rt-topbar-title">Retail Debts</span>
             <div class="rt-topbar-right">
                 <span class="scope-pill">selected store debts</span>
@@ -107,14 +107,14 @@
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>المواد</th>
-                                    <th>كود / Code</th>
-                                    <th>متر / نافذة</th>
-                                    <th>سعر المتر</th>
-                                    <th>المجموع</th>
-                                    <th>الحساب</th>
-                                    <th>ملاحظات</th>
-                                    <th class="receipt-actions-head">إضافة</th>
+                                    <th>Material</th>
+                                    <th>Code</th>
+                                    <th>Metres / Windows</th>
+                                    <th>Unit price</th>
+                                    <th>Total</th>
+                                    <th>Account</th>
+                                    <th>Notes</th>
+                                    <th class="receipt-actions-head">Add</th>
                                 </tr>
                             </thead>
                             <tbody id="invoiceRows"></tbody>
@@ -135,8 +135,21 @@
                         </div>
                     </div>
                     <div style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
-                        <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
-                        <textarea id="saleDetails" rows="3" placeholder="اكتب القياسات والتفاصيل هنا..." style="width:100%;border:1.5px solid rgba(27,61,46,0.18);border-radius:6px;padding:8px 10px;font-size:13px;color:#1b3d2e;background:transparent;resize:vertical;font-family:inherit;"></textarea>
+                        <span class="group-caption" style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">Measurements</span>
+                        <div class="measure-grid">
+                            <div>
+                                <label for="saleWidth" class="measure-label">Width (cm)</label>
+                                <input id="saleWidth" class="measure-input quick-number" type="number" min="0" step="0.5" placeholder="0" onfocus="selectNumber(this)">
+                            </div>
+                            <div>
+                                <label for="saleLength" class="measure-label">Length (cm)</label>
+                                <input id="saleLength" class="measure-input quick-number" type="number" min="0" step="0.5" placeholder="0" onfocus="selectNumber(this)">
+                            </div>
+                            <div>
+                                <label for="saleDetails" class="measure-label">Details</label>
+                                <textarea id="saleDetails" class="measure-input" rows="3" placeholder="Write measurements and details here…"></textarea>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -197,8 +210,8 @@
     </div>
 </div>
 
-    <script src="../js/api.js?v=ux-9"></script>
-    <script src="../js/demo-data.js?v=ux-9"></script>
+    <script src="../js/api.js?v=ar-9"></script>
+    <script src="../js/demo-data.js?v=ar-9"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -272,7 +285,7 @@
                 priceInput.readOnly = true;
                 note.placeholder = option.value === 'خياطة'
                     ? 'Enter sewing meter price; khayat gets 1,000 IQD per meter'
-                    : '10,000 IQD per window to تركيب account';
+                    : '10,000 IQD per window to Installation account';
             } else {
                 priceInput.readOnly = false;
                 if (Number(priceInput.value) === 1000 || Number(priceInput.value) === 10000) priceInput.value = '';
@@ -420,10 +433,21 @@
                             status: s.payment_status === 'debt' ? 'Debt' : 'Partial',
                             date: s.created_at ? s.created_at.slice(0,10) : '',
                             note: s.notes || '',
-                            saleDetails: s.sale_details || ''
+                            saleDetails: s.sale_details || '',
+                            saleWidth: s.sale_width,
+                            saleLength: s.sale_length
                         }));
                 }
             } catch(e) { window._apiDebts = []; }
+        }
+
+        // Shows the curtain size above the free-text details, so the fitters
+        // can read it straight off the debts list.
+        function sizeLabel(debt) {
+            const w = debt.saleWidth, l = debt.saleLength;
+            if ((w === null || w === undefined || w === '') && (l === null || l === undefined || l === '')) return '';
+            const fmt = v => (v === null || v === undefined || v === '') ? '—' : Number(v);
+            return `<strong style="color:#1b3d2e;">${fmt(w)} × ${fmt(l)} cm</strong><br>`;
         }
 
         function renderDebtRows() {
@@ -433,7 +457,7 @@
                     <tr><td>${esc(debt.client)}</td><td>${esc(debt.phone)}</td>
                     <td><span style="font-size:12px;color:var(--text-gray);">${esc(debt.cashierName || '-')}</span></td>
                     <td>${money(debt.original)}</td><td>${money(debt.paid)}</td><td>${money(debt.remaining)}</td><td>${esc(debt.status)}</td><td>${esc(debt.date)}</td>
-                    <td style="max-width:180px;white-space:pre-wrap;font-size:12px;color:var(--text-gray);">${esc(debt.saleDetails || debt.note || '-')}</td>
+                    <td style="max-width:180px;white-space:pre-wrap;font-size:12px;color:var(--text-gray);">${sizeLabel(debt)}${esc(debt.saleDetails || debt.note || (sizeLabel(debt) ? '' : '-'))}</td>
                     <td style="white-space:nowrap;">${debt._id ? `<button class="btn btn-small btn-primary" onclick="openDebtPayModal(${debt._id},${debt.remaining})">Add payment</button> <button class="btn btn-small btn-danger" onclick="deleteSale(${debt._id})">Delete</button>` : '-'}</td></tr>
                 `).join('')
                 : '<tr><td colspan="10">No debts yet.</td></tr>';
@@ -446,6 +470,8 @@
             document.getElementById('debtPaidAmount').value = 0;
             document.getElementById('debtNote').value = '';
             document.getElementById('saleDetails').value = '';
+            document.getElementById('saleWidth').value = '';
+            document.getElementById('saleLength').value = '';
             document.querySelectorAll('.invoice-row.is-added-row').forEach(row => row.remove());
             document.querySelectorAll('.invoice-row').forEach(row => {
                 row.querySelector('.row-qty').value = '';
@@ -495,6 +521,12 @@
                 status: remaining === 0 ? 'Paid' : paid === 0 ? 'Debt' : 'Partial',
                 note: document.getElementById('debtNote').value,
                 saleDetails: document.getElementById('saleDetails').value,
+                saleWidth:  document.getElementById('saleWidth').value,
+                saleLength: document.getElementById('saleLength').value,
+                // Record what prices were entered in, so the sale can be
+                // reconstructed even if the rate changes later.
+                priceCurrency: localStorage.getItem('price_currency') || 'IQD',
+                exchangeRate: getExchangeRate(),
                 items: data.items,
                 workerAccounts: data.workerAccounts
             };
@@ -587,11 +619,11 @@
             } catch(e) { showSaveError('Sale deletion', e); }
         }
     </script>
-    <script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+    <script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ux-9"></script>
+<script src="calculator.js?v=ar-9"></script>
 </body>
 </html>

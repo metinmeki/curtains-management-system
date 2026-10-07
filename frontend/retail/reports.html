@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Reports - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=ux-9">
+    <link rel="stylesheet" href="rt-style.css?v=ar-9">
     <style>
         @media print {
             .rt-sidebar, .rt-topbar, .no-print { display:none !important; }
@@ -16,30 +16,43 @@
         .report-filters .form-group { margin:0; min-width:140px; }
         .report-filters label { color:#1a3d2b !important; font-weight:700; font-size:12px; }
         .period-btns { display:flex; gap:6px; flex-wrap:wrap; }
-        .period-btn { padding:6px 14px; border-radius:6px; border:1px solid #c4a24d; background:#fff; color:#1a3d2b; font-weight:700; font-size:12px; cursor:pointer; }
+        .period-btn { padding:6px 14px; border-radius:6px; border:1px solid #2d6a47; background:#fff; color:#1a3d2b; font-weight:700; font-size:12px; cursor:pointer; }
         .period-btn.active { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; border-color:#1a3d2b; }
         .report-section { margin-bottom:28px; }
-        .report-section h2 { font-size:15px; font-weight:800; color:#1a3d2b; margin:0 0 10px; border-bottom:2px solid #c4a24d; padding-bottom:6px; }
+        .report-section h2 { font-size:15px; font-weight:800; color:#1a3d2b; margin:0 0 10px; border-bottom:2px solid #2d6a47; padding-bottom:6px; }
         .metrics-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
         .metric-card { border-radius:10px; padding:14px 16px; color:#fff; }
         .metric-card span { font-size:12px; opacity:.82; display:block; margin-bottom:4px; color:#fff; }
         .metric-card strong { font-size:18px; font-weight:800; display:block; color:#fff; }
         .mc-1 { background:linear-gradient(135deg,#1a3d2b,#2d6a47); }
         .mc-2 { background:linear-gradient(135deg,#1f4a1f,#3b7a52); }
-        .mc-3 { background:linear-gradient(135deg,#7a3b10,#c4a24d); }
+        .mc-3 { background:linear-gradient(135deg,#7a3b10,#2d6a47); }
         .mc-4 { background:linear-gradient(135deg,#5c1a1a,#a04040); }
         .mc-5 { background:linear-gradient(135deg,#1a3d4a,#2d6a7a); }
         .mc-6 { background:linear-gradient(135deg,#2d1a4a,#5a3d7a); }
         .mc-7 { background:linear-gradient(135deg,#1a4a3d,#2d7a6a); }
         .mc-8 { background:linear-gradient(135deg,#3d1a2b,#7a2d47); }
         .rpt-table { width:100%; border-collapse:collapse; font-size:13px; }
-        .rpt-table th { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; padding:8px 10px; text-align:left; border-bottom:2px solid #c4a24d; }
+        .rpt-table th { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; padding:8px 10px; text-align:left; border-bottom:2px solid #2d6a47; }
         .rpt-table td { padding:8px 10px; border-bottom:1px solid #e8f0eb; }
         .rpt-table tr:hover td { background:#f5faf6; }
         .status-full { color:#1a7a3d; font-weight:700; }
-        .status-partial { color:#c4a24d; font-weight:700; }
+        .status-partial { color:#2d6a47; font-weight:700; }
         .status-debt { color:#a04040; font-weight:700; }
         .print-btn { background:linear-gradient(135deg,#1a3d2b,#2d6a47); color:#fff; border:none; padding:9px 20px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; }
+        .metric-hint { display:block; font-size:10px; font-style:normal; opacity:.75; margin-top:4px; color:#fff; line-height:1.3; }
+        .metrics-row.is-loading { opacity:.45; }
+        /* Expandable per-sale line detail */
+        .sub-row > td { padding:0 !important; border:0 !important; }
+        .sub-row:not(.open) { display:none; }
+        .sub-row.open > td { padding:10px 12px !important; background:#f7faf7; border-bottom:1px solid #e8f0eb !important; }
+        .sub-table { width:100%; border-collapse:collapse; font-size:12px; background:#fff; }
+        .sub-table th { background:#eaf2ec; color:#3f5a4a; font-size:10px; text-transform:uppercase; letter-spacing:.4px; padding:6px 8px; text-align:left; white-space:nowrap; }
+        .sub-table td { padding:6px 8px; border-top:1px solid #eef4f0; }
+        .sub-table .mono { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11px; color:#8a6d3b; }
+        .sub-meta { font-size:12px; color:#4a5a50; margin-top:8px; line-height:1.7; }
+        /* Printed reports show every line, with no toggle buttons. */
+        @media print { .sub-row { display:table-row !important; } .sub-row > td { padding:8px 10px !important; } }
     </style>
 </head>
 <body class="ltr">
@@ -78,7 +91,7 @@
     </aside>
     <div class="rt-main">
         <div class="rt-topbar">
-            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <button type="button" class="cms-iconbtn rt-menu-btn" aria-label="Open menu" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
             <span class="rt-topbar-title">Reports</span>
             <div class="rt-topbar-right">
                 <button class="print-btn no-print" onclick="window.print()">🖨 <span>Print Report</span></button>
@@ -122,6 +135,8 @@
                 <p id="reportPeriodLabel" style="color:#555;font-size:13px;margin:4px 0 0;"></p>
             </div>
 
+            <div id="reportError" class="alert alert-danger no-print" role="alert" style="display:none;margin-bottom:14px;"></div>
+
             <!-- Metric cards -->
             <div class="metrics-row" id="metricsRow">
                 <div class="metric-card mc-1"><span>Total Sales</span><strong id="mTotalSales">—</strong></div>
@@ -130,8 +145,8 @@
                 <div class="metric-card mc-4"><span>Total Expenses</span><strong id="mTotalExpenses">—</strong></div>
                 <div class="metric-card mc-5"><span>Total Discounts</span><strong id="mTotalDiscounts">—</strong></div>
                 <div class="metric-card mc-6"><span>Gross Profit</span><strong id="mGrossProfit">—</strong></div>
-                <div class="metric-card mc-7"><span>Order Profit (ربحنا)</span><strong id="mOrderProfit">—</strong></div>
-                <div class="metric-card mc-8"><span>Net Profit</span><strong id="mNetProfit">—</strong></div>
+                <div class="metric-card mc-7"><span>Order profit — USD</span><strong id="mOrderProfit">—</strong></div>
+                <div class="metric-card mc-8"><span>Net Profit</span><strong id="mNetProfit">—</strong><em class="metric-hint" id="netProfitHint"></em></div>
             </div>
 
             <!-- Sales table -->
@@ -161,7 +176,7 @@
                 <h2><span>Orders</span> (<span id="ordersCount">0</span>)</h2>
                 <div style="overflow-x:auto;">
                     <table class="rpt-table">
-                        <thead><tr><th>Ref</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total</th><th>Our Profit</th><th>Buyer Due</th><th>Supplier Due</th></tr></thead>
+                        <thead><tr><th>Ref</th><th>Date</th><th>Buyer</th><th>Supplier</th><th>Total ($)</th><th>Our Profit ($)</th><th>Buyer Due ($)</th><th>Supplier Due ($)</th></tr></thead>
                         <tbody id="ordersRows"><tr><td colspan="8" style="text-align:center;color:#888;">Loading…</td></tr></tbody>
                     </table>
                 </div>
@@ -171,16 +186,67 @@
     </div>
 </div>
 
-<script src="../js/api.js?v=ux-9"></script>
-<script src="../js/demo-data.js?v=ux-9"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
     if (!checkAuth()) throw new Error('Not authenticated');
     if (!getStoreId()) window.location.href = '../landing.html';
     loadShell(getStoreName());
 
     let _period = 'today';
+    let _rows = { sales: [], expenses: [], orders: [] };
 
-    function money(v) { return Number(v || 0).toLocaleString('en-US') + ' IQD'; }
+    // NOTE: money() and formatUSD() come from api.js. This page used to define
+    // its own money(), which shadowed the shared one — that broke the IQD/USD
+    // toggle, used the wrong thousand separator, and labelled USD order
+    // amounts as IQD.
+
+    const n = v => Number(v || 0);
+
+    // Dates are compared as plain YYYY-MM-DD strings. Parsing them into Date
+    // objects treated them as UTC midnight while the bounds were local
+    // midnight, so at UTC+3 "Today" excluded everything booked today.
+    function ymd(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function periodRange() {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        if (_period === 'all') return null;
+        if (_period === 'today') return { from: ymd(today), to: ymd(today) };
+        if (_period === 'week') {
+            const from = new Date(today); from.setDate(today.getDate() - today.getDay());
+            const to   = new Date(from);  to.setDate(from.getDate() + 6);
+            return { from: ymd(from), to: ymd(to) };
+        }
+        if (_period === 'month') {
+            return {
+                from: ymd(new Date(today.getFullYear(), today.getMonth(), 1)),
+                to:   ymd(new Date(today.getFullYear(), today.getMonth() + 1, 0))
+            };
+        }
+        if (_period === 'custom') {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (!s || !e) return null;
+            return s <= e ? { from: s, to: e } : { from: e, to: s };
+        }
+        return null;
+    }
+
+    // Business date for a row, falling back to entry date for older records.
+    function rowDate(row, preferred) {
+        return String(row[preferred] || row.sale_date || row.date || row.created_at || '').slice(0, 10);
+    }
+
+    function filterByPeriod(rows, dateField) {
+        const range = periodRange();
+        if (!range) return rows;
+        return rows.filter(r => {
+            const d = rowDate(r, dateField);
+            return d && d >= range.from && d <= range.to;
+        });
+    }
 
     function setPeriod(p, btn) {
         _period = p;
@@ -206,142 +272,211 @@
         return labels[_period] || _period;
     }
 
+    function setReportError(msg) {
+        const bar = document.getElementById('reportError');
+        bar.textContent = msg || '';
+        bar.style.display = msg ? 'block' : 'none';
+    }
+
     async function loadReport() {
         const storeId = getStoreId();
         const token   = getToken();
         if (!token) return;
-
-        // Build dashboard URL
-        let url = API_BASE_URL + '/retail/dashboard/' + storeId + '?period=' + _period;
         if (_period === 'custom') {
             const s = document.getElementById('startDate').value;
             const e = document.getElementById('endDate').value;
             if (!s || !e) return;
-            url += '&start_date=' + s + '&end_date=' + e;
         }
 
-        // Fetch dashboard stats + sales + expenses + orders in parallel
         const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+        setReportError('');
+        document.getElementById('metricsRow').classList.add('is-loading');
 
-        let salesPeriodParam = _period === 'all' ? '' : ('?period=' + _period);
-        if (_period === 'custom') {
-            const s = document.getElementById('startDate').value;
-            const e = document.getElementById('endDate').value;
-            salesPeriodParam = s && e ? '?period=custom&start_date=' + s + '&end_date=' + e : '';
+        // Everything on this page is derived from these three lists, so the
+        // metric cards and the tables below can never disagree.
+        const [salesRes, expRes, ordRes] = await Promise.allSettled([
+            fetch(API_BASE_URL + '/retail/sales/'    + storeId, { headers }),
+            fetch(API_BASE_URL + '/retail/expenses/' + storeId, { headers }),
+            fetch(API_BASE_URL + '/retail/orders/'   + storeId, { headers })
+        ]);
+
+        const failed = [];
+        const take = async (settled, label) => {
+            try {
+                if (settled.status !== 'fulfilled' || !settled.value.ok) throw new Error(label);
+                const j = await settled.value.json();
+                return Array.isArray(j?.data) ? j.data : [];
+            } catch (e) { failed.push(label); return null; }
+        };
+
+        const sales    = await take(salesRes, 'sales');
+        const expenses = await take(expRes,   'expenses');
+        const orders   = await take(ordRes,   'orders');
+
+        document.getElementById('metricsRow').classList.remove('is-loading');
+
+        // A failed request must never be shown as a zero — that reads as
+        // "no business today" when it actually means "we don't know".
+        if (failed.length) {
+            setReportError('Could not load ' + failed.join(', ') + '. The figures below are incomplete — do not use this report until it loads cleanly.');
         }
 
-        try {
-            const [dashRes, salesRes, expRes, ordRes] = await Promise.all([
-                fetch(url, { headers }),
-                fetch(API_BASE_URL + '/retail/sales/' + storeId, { headers }),
-                fetch(API_BASE_URL + '/retail/expenses/' + storeId, { headers }),
-                fetch(API_BASE_URL + '/retail/orders/' + storeId, { headers }),
-            ]);
+        _rows.sales    = filterByPeriod(sales    || [], 'sale_date');
+        _rows.expenses = filterByPeriod(expenses || [], 'date');
+        _rows.orders   = filterByPeriod(orders   || [], 'date');
 
-            const dash    = dashRes.ok  ? await dashRes.json()  : null;
-            const salesD  = salesRes.ok ? await salesRes.json() : null;
-            const expD    = expRes.ok   ? await expRes.json()   : null;
-            const ordD    = ordRes.ok   ? await ordRes.json()   : null;
+        renderMetrics(failed);
+        renderSales();
+        renderExpenses();
+        renderOrders();
 
-            const stats = dash?.data?.stats || {};
+        document.getElementById('reportPeriodLabel').textContent =
+            'Period: ' + periodLabel() + ' | Store: ' + getStoreName() + ' | Generated: ' + ymd(new Date());
+    }
 
-            // Metrics
-            document.getElementById('mTotalSales').textContent    = money(stats.total_sales);
-            document.getElementById('mTotalPaid').textContent     = money(stats.total_paid);
-            document.getElementById('mTotalDebt').textContent     = money(stats.total_debt);
-            document.getElementById('mTotalExpenses').textContent = money(stats.total_expenses);
-            document.getElementById('mTotalDiscounts').textContent= money(stats.total_discounts);
-            document.getElementById('mGrossProfit').textContent   = money(stats.gross_profit);
-            document.getElementById('mNetProfit').textContent     = money(stats.net_profit);
+    function renderMetrics(failed) {
+        const unknown = f => failed.includes(f);
+        const S = _rows.sales, E = _rows.expenses, O = _rows.orders;
 
-            // Order profit: compute from orders in period
-            let allOrders = (ordD?.data || []);
-            allOrders = filterByPeriod(allOrders, 'date');
-            const orderProfit = allOrders.reduce((s, o) => s + Number(o.our_profit || 0), 0);
-            document.getElementById('mOrderProfit').textContent = money(orderProfit);
+        const totalSales = S.reduce((a, s) => a + n(s.total_amount), 0);
+        const totalPaid  = S.reduce((a, s) => a + n(s.paid_amount), 0);
+        const totalDebt  = S.reduce((a, s) => a + n(s.remaining_amount), 0);
+        const discounts  = S.reduce((a, s) => a + n(s.discount_amount), 0);
+        const expenses   = E.reduce((a, e) => a + n(e.amount), 0);
 
-            // Filter sales & expenses by period
-            let allSales    = filterByPeriod(salesD?.data || [], 'sale_date');
-            let allExpenses = filterByPeriod(expD?.data  || [], 'date');
+        // Gross profit from the per-line snapshots taken at sale time, less the
+        // sale-level discounts — those come straight off the margin, and
+        // without them "profit" could exceed total sales.
+        const lineProfit  = S.reduce((a, s) =>
+            a + (s.items || []).reduce((b, i) => b + n(i.profit_amount), 0), 0);
+        // Margin handed back on refunds. The line snapshots above are never
+        // rewritten, so the refunded share is carried on the sale instead.
+        const refundedProfit = S.reduce((a, s) => a + n(s.refunded_profit ?? s.refundedProfit), 0);
+        const grossProfit = lineProfit - discounts - refundedProfit;
 
-            // Sales table
-            document.getElementById('salesCount').textContent = allSales.length;
-            document.getElementById('salesRows').innerHTML = allSales.length
-                ? allSales.map((s, i) => `
-                    <tr>
-                        <td>${i+1}</td>
-                        <td>${s.sale_date || '-'}</td>
-                        <td>${esc(s.client_name || '-')}</td>
-                        <td>${money(s.total_amount)}</td>
-                        <td>${money(s.paid_amount)}</td>
-                        <td>${money(s.remaining_amount)}</td>
-                        <td><span class="status-${s.payment_status === 'full' ? 'full' : s.payment_status === 'partial' ? 'partial' : 'debt'}">${s.payment_status}</span></td>
-                        <td style="font-size:11px;color:#666;">${esc(s.sale_details || s.notes || '-')}</td>
-                    </tr>`).join('')
-                : '<tr><td colspan="8" style="text-align:center;color:#888;">No sales in this period.</td></tr>';
+        // Supplier orders are tracked in USD; convert before mixing into a
+        // net figure that is otherwise all IQD.
+        const orderProfitUsd = O.reduce((a, o) => a + n(o.our_profit), 0);
+        const rate = getExchangeRate();
+        const orderProfitIqd = rate ? orderProfitUsd * rate : 0;
+        const netProfit = grossProfit - expenses + orderProfitIqd;
 
-            // Expenses table
-            document.getElementById('expensesCount').textContent = allExpenses.length;
-            document.getElementById('expensesRows').innerHTML = allExpenses.length
-                ? allExpenses.map((e, i) => `
-                    <tr>
-                        <td>${i+1}</td>
-                        <td>${e.date}</td>
-                        <td>${esc(e.category)}</td>
-                        <td>${money(e.amount)}</td>
-                        <td>${esc(e.note || '-')}</td>
-                    </tr>`).join('')
-                : '<tr><td colspan="5" style="text-align:center;color:#888;">No expenses in this period.</td></tr>';
+        const put = (id, val, isUnknown) => {
+            document.getElementById(id).textContent = isUnknown ? '—' : val;
+        };
+        put('mTotalSales',     money(totalSales),  unknown('sales'));
+        put('mTotalPaid',      money(totalPaid),   unknown('sales'));
+        put('mTotalDebt',      money(totalDebt),   unknown('sales'));
+        put('mTotalExpenses',  money(expenses),    unknown('expenses'));
+        put('mTotalDiscounts', money(discounts),   unknown('sales'));
+        put('mGrossProfit',    money(grossProfit), unknown('sales'));
+        put('mOrderProfit',    formatUSD(orderProfitUsd), unknown('orders'));
+        put('mNetProfit',      money(netProfit),   unknown('sales') || unknown('expenses'));
 
-            // Orders table
-            document.getElementById('ordersCount').textContent = allOrders.length;
-            document.getElementById('ordersRows').innerHTML = allOrders.length
-                ? allOrders.map(o => `
-                    <tr>
-                        <td>${esc(o.reference || '-')}</td>
-                        <td>${o.date || '-'}</td>
-                        <td>${esc(o.buyer_name || '-')}</td>
-                        <td>${esc(o.supplier_name || '-')}</td>
-                        <td>${money(o.final_total)}</td>
-                        <td>${money(o.our_profit)}</td>
-                        <td>${money(o.buyer_due)}</td>
-                        <td>${money(o.supplier_due)}</td>
-                    </tr>`).join('')
-                : '<tr><td colspan="8" style="text-align:center;color:#888;">No orders in this period.</td></tr>';
+        document.getElementById('netProfitHint').textContent = rate
+            ? 'Gross − expenses + order profit @ ' + Number(rate).toLocaleString('de-DE')
+            : 'Gross − expenses (order profit excluded: no exchange rate)';
+    }
 
-            // Print header
-            document.getElementById('reportPeriodLabel').textContent = 'Period: ' + periodLabel() + ' | Store: ' + getStoreName();
+    function statusClass(s) {
+        return s === 'full' ? 'full' : s === 'partial' ? 'partial' : 'debt';
+    }
 
-        } catch(e) {
-            console.error('Report load error:', e);
+    // Per-line breakdown, so a report row can be checked against the receipt.
+    function saleItemsHtml(sale) {
+        const items = sale.items || [];
+        const bits = [];
+        if (items.length) {
+            bits.push(`<table class="sub-table">
+                <thead><tr><th>Material</th><th>Code</th><th>Qty</th><th>Unit</th><th>Unit price</th><th>Line total</th><th>Profit</th><th>Note</th></tr></thead>
+                <tbody>${items.map(i => `<tr>
+                    <td>${esc(i.material || '-')}</td>
+                    <td class="mono">${esc(i.code || '—')}</td>
+                    <td>${n(i.quantity)}</td>
+                    <td>${esc(i.unit || '—')}</td>
+                    <td>${money(i.unit_price)}</td>
+                    <td><strong>${money(i.total_price)}</strong></td>
+                    <td>${money(i.profit_amount)}</td>
+                    <td>${esc(i.note || '—')}</td>
+                </tr>`).join('')}</tbody></table>`);
         }
+        const w = sale.sale_width, l = sale.sale_length;
+        const extra = [];
+        if (n(w) || n(l)) extra.push(`<strong>Size:</strong> ${n(w) || '—'} × ${n(l) || '—'} cm`);
+        if (sale.sale_details) extra.push(`<strong>Details:</strong> ${esc(sale.sale_details)}`);
+        if (n(sale.discount_amount)) extra.push(`<strong>Discount${sale.discount_type === 'percent' ? ' (%)' : ''}:</strong> ${money(sale.discount_amount)}${sale.discount_note ? ' — ' + esc(sale.discount_note) : ''}`);
+        if (sale.notes) extra.push(`<strong>Note:</strong> ${esc(sale.notes)}`);
+        if (sale.created_by) extra.push(`<strong>Cashier:</strong> ${esc(sale.created_by)}`);
+        if (extra.length) bits.push(`<div class="sub-meta">${extra.join(' &nbsp;·&nbsp; ')}</div>`);
+        return bits.join('') || '<div class="sub-meta">No line detail recorded.</div>';
     }
 
-    function filterByPeriod(rows, dateField) {
-        if (_period === 'all') return rows;
-        const today = new Date(); today.setHours(0,0,0,0);
-        let from, to;
-        if (_period === 'today') {
-            from = to = today;
-        } else if (_period === 'week') {
-            const day = today.getDay();
-            from = new Date(today); from.setDate(today.getDate() - day);
-            to   = new Date(from);  to.setDate(from.getDate() + 6);
-        } else if (_period === 'month') {
-            from = new Date(today.getFullYear(), today.getMonth(), 1);
-            to   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        } else if (_period === 'custom') {
-            const s = document.getElementById('startDate').value;
-            const e = document.getElementById('endDate').value;
-            if (!s || !e) return rows;
-            from = new Date(s); to = new Date(e);
-        } else return rows;
-
-        return rows.filter(row => {
-            const d = new Date((row[dateField] || '').slice(0, 10));
-            return d >= from && d <= to;
-        });
+    function renderSales() {
+        const S = _rows.sales;
+        document.getElementById('salesCount').textContent = S.length;
+        document.getElementById('salesRows').innerHTML = S.length
+            ? S.map((s, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${esc(rowDate(s, 'sale_date'))}</td>
+                    <td>${esc(s.client_name || '-')}</td>
+                    <td>${money(s.total_amount)}</td>
+                    <td>${money(s.paid_amount)}</td>
+                    <td>${money(s.remaining_amount)}</td>
+                    <td><span class="status-${statusClass(s.payment_status)}">${esc(s.payment_status || '-')}</span></td>
+                    <td><button class="btn btn-small btn-primary no-print" aria-expanded="false" aria-controls="saleDetail${i}" onclick="toggleSale(${i}, this)">Lines (${(s.items || []).length})</button></td>
+                </tr>
+                <tr class="sub-row" id="saleDetail${i}"><td colspan="8">${saleItemsHtml(s)}</td></tr>`).join('')
+            : '<tr><td colspan="8" style="text-align:center;color:#888;">No sales in this period.</td></tr>';
     }
+
+    function toggleSale(i, btn) {
+        const row  = document.getElementById('saleDetail' + i);
+        const open = !row.classList.contains('open');
+        row.classList.toggle('open', open);
+        if (btn) btn.setAttribute('aria-expanded', String(open));
+    }
+
+    function renderExpenses() {
+        const E = _rows.expenses;
+        document.getElementById('expensesCount').textContent = E.length;
+        document.getElementById('expensesRows').innerHTML = E.length
+            ? E.map((e, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${esc(rowDate(e, 'date'))}</td>
+                    <td>${esc(e.category || '-')}</td>
+                    <td>${money(e.amount)}</td>
+                    <td>${esc(e.note || '-')}</td>
+                </tr>`).join('')
+            : '<tr><td colspan="5" style="text-align:center;color:#888;">No expenses in this period.</td></tr>';
+    }
+
+    function renderOrders() {
+        const O = _rows.orders;
+        document.getElementById('ordersCount').textContent = O.length;
+        // Orders are denominated in USD — formatUSD, never money().
+        document.getElementById('ordersRows').innerHTML = O.length
+            ? O.map(o => `
+                <tr>
+                    <td>${esc(o.reference || '-')}</td>
+                    <td>${esc(rowDate(o, 'date'))}</td>
+                    <td>${esc(o.buyer_name || '-')}</td>
+                    <td>${esc(o.supplier_name || '-')}</td>
+                    <td>${formatUSD(o.final_total)}</td>
+                    <td>${formatUSD(o.our_profit)}</td>
+                    <td>${formatUSD(o.buyer_due)}</td>
+                    <td>${formatUSD(o.supplier_due)}</td>
+                </tr>`).join('')
+            : '<tr><td colspan="8" style="text-align:center;color:#888;">No orders in this period.</td></tr>';
+    }
+
+    // The toggle in the shared topbar re-renders without refetching.
+    window.cmsRedraw = function() {
+        renderMetrics([]);
+        renderSales();
+        renderExpenses();
+    };
 
     function esc(v) {
         return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -359,11 +494,11 @@
     document.getElementById('endDate').value   = todayStr;
     loadReport();
 </script>
-<script src="../js/i18n.js?v=ux-9"></script>
-<script src="../js/ui.js?v=ux-9"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 <script>if(localStorage.getItem("cms_active_cashier")){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js?v=ux-9"></script>
+<script src="calculator.js?v=ar-9"></script>
 </body>
 </html>

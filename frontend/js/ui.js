@@ -11,14 +11,14 @@ function _cmsEnsureDialogStyles() {
     style.id = 'cms-dialog-styles';
     style.textContent = `
 .cms-dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px}
-.cms-dialog{background:#fffdf6;border-radius:12px;max-width:420px;width:100%;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:inherit}
-.cms-dialog-msg{font-size:15px;line-height:1.55;color:#1a0e06;margin:0 0 20px}
+.cms-dialog{background:#fff;border-radius:12px;max-width:420px;width:100%;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:inherit}
+.cms-dialog-msg{font-size:15px;line-height:1.55;color:#1a2e1f;margin:0 0 20px}
 .cms-dialog-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 .cms-dialog button{min-height:44px;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;border:1px solid transparent;cursor:pointer}
-.cms-dialog-cancel{background:#f0e8d0;color:#1a0e06;border-color:#ddd0b5!important}
-.cms-dialog-ok{background:#3d2412;color:#fff}
+.cms-dialog-cancel{background:#eef3ef;color:#1a2e1f;border-color:#cfe0d5!important}
+.cms-dialog-ok{background:#1a3d2b;color:#fff}
 .cms-dialog-ok.danger{background:#b4534a}
-.cms-dialog button:focus-visible{outline:3px solid #c4a24d;outline-offset:2px}
+.cms-dialog button:focus-visible{outline:3px solid #2d6a47;outline-offset:2px}
 @media (prefers-reduced-motion: no-preference){.cms-dialog{animation:cms-dialog-in .16s ease}}
 @keyframes cms-dialog-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}`;
     document.head.appendChild(style);
@@ -108,9 +108,9 @@ function cmsAlert(message) {
 
 function _cmsCurrencyToggleHtml(cur) {
     return `
-<span class="cms-cur-label">${typeof ta === 'function' ? ta('Display') : 'Display'}</span>
+<span class="cms-seg__label">${typeof ta === 'function' ? ta('Display') : 'Display'}</span>
 <button type="button" data-cur="IQD" aria-pressed="${cur === 'IQD'}">IQD</button>
-<button type="button" data-cur="USD" aria-pressed="${cur === 'USD'}">$ USD</button>`;
+<button type="button" data-cur="USD" aria-pressed="${cur === 'USD'}">USD</button>`;
 }
 
 function setDisplayCurrency(cur) {
@@ -147,24 +147,21 @@ function mountCurrencyToggle() {
         || document.querySelector('.navbar-actions');
     if (!host) return;
 
+    // Shared control styles come from js/i18n.js so both toggles stay identical.
+    if (typeof cmsEnsureControlStyles === 'function') cmsEnsureControlStyles();
+
     if (!document.getElementById('cms-currency-styles')) {
         const style = document.createElement('style');
         style.id = 'cms-currency-styles';
         style.textContent = `
-.cms-currency-toggle{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.06);border-radius:999px;padding:3px 3px 3px 10px}
-.cms-currency-toggle .cms-cur-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.65;margin-right:2px}
-.cms-currency-toggle button{min-height:32px;min-width:44px;padding:6px 12px;border:none;border-radius:999px;background:transparent;color:inherit;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;opacity:.7}
-.cms-currency-toggle button[aria-pressed="true"]{background:#fffdf6;color:#1a3d2b;opacity:1}
-.cms-currency-toggle button:focus-visible{outline:2px solid #c4a24d;outline-offset:2px}
-@media(pointer:coarse){.cms-currency-toggle button{min-height:44px}}
-#cms-rate-warning{display:none;background:#f6ebc8;color:#7a581d;border-left:4px solid #c79543;border-radius:0;padding:10px 14px;font-size:13px;font-weight:600;margin:0}
-@media(max-width:600px){.cms-currency-toggle .cms-cur-label{display:none}.cms-currency-toggle{padding-left:3px}}`;
+#cms-rate-warning{display:none;background:#fdf3d8;color:#7a581d;border-left:4px solid #d9a52e;border-radius:0;padding:10px 14px;font-size:13px;font-weight:600;margin:0}
+@media(max-width:600px){.cms-currency-toggle .cms-seg__label{display:none}}`;
         document.head.appendChild(style);
     }
 
     const cur = getDisplayCurrency();
     const wrap = document.createElement('div');
-    wrap.className = 'cms-currency-toggle no-print';
+    wrap.className = 'cms-seg cms-currency-toggle no-print';
     wrap.setAttribute('role', 'group');
     wrap.setAttribute('aria-label', typeof ta === 'function' ? ta('Display currency') : 'Display currency');
     wrap.innerHTML = _cmsCurrencyToggleHtml(cur);
@@ -172,6 +169,10 @@ function mountCurrencyToggle() {
         b.addEventListener('click', () => setDisplayCurrency(b.dataset.cur));
     });
     host.prepend(wrap);
+
+    if (typeof cmsIsDarkSurface === 'function' && cmsIsDarkSurface(host)) {
+        wrap.setAttribute('data-surface', 'dark');
+    }
 
     // Banner shown only when USD is selected but no rate is available.
     if (!document.getElementById('cms-rate-warning')) {
@@ -224,15 +225,21 @@ function mountMobileNav() {
         existing.setAttribute('aria-controls', sidebar.id);
         existing.classList.add('cms-menu-btn-managed');
     } else if (topbar) {
+        if (typeof cmsEnsureControlStyles === 'function') cmsEnsureControlStyles();
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'cms-menu-btn';
+        btn.className = 'cms-iconbtn cms-menu-btn';
         btn.setAttribute('aria-label', typeof ta === 'function' ? ta('Open menu') : 'Open menu');
         btn.setAttribute('aria-expanded', 'false');
         btn.setAttribute('aria-controls', sidebar.id);
-        btn.innerHTML = '<span aria-hidden="true">☰</span>';
+        // Vector icon, not the ☰ glyph: that renders at a different weight and
+        // baseline in every font and can't be sized against the other controls.
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
         btn.addEventListener('click', () => cmsToggleSidebar());
         topbar.insertBefore(btn, topbar.firstChild);
+        if (typeof cmsIsDarkSurface === 'function' && cmsIsDarkSurface(topbar)) {
+            btn.setAttribute('data-surface', 'dark');
+        }
     }
 
     // Reuse the existing retail overlay if the page already has one.

@@ -345,6 +345,31 @@ function addInvMovement(mov, storeId) {
   _invMovements[sid] = _invMovements[sid].slice(0, 1000);
 }
 
+/* Mirror of deductVariantStock, for goods coming back on a refund. Logged as
+   its own movement type so the history shows a return rather than looking like
+   an unexplained manual adjustment. */
+function returnVariantStock(variantId, qty, storeId, reason, saleRef) {
+  const stock = getStoreStock(storeId);
+  const current = stock[String(variantId)] || 0;
+  const back = Math.max(0, Number(qty) || 0);
+  const next = current + back;
+  stock[String(variantId)] = next;
+  saveStoreStock(storeId, stock);
+
+  const variant = getInvVariants().find(v => String(v.id) === String(variantId));
+  addInvMovement({
+    variantId: String(variantId),
+    variantCode: variant ? variant.code : '',
+    variantName: variant ? variant.name : '',
+    type: 'return',
+    delta: back,
+    prevQty: current,
+    nextQty: next,
+    reason: reason || 'Refund',
+    ref: saleRef || ''
+  }, storeId);
+}
+
 function deductVariantStock(variantId, qty, storeId, reason, saleRef) {
   const stock = getStoreStock(storeId);
   const current = stock[String(variantId)] || 0;

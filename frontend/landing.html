@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dilovan Curtains Management System</title>
-    <link rel="stylesheet" href="css/style.css?v=ux-9">
+    <link rel="stylesheet" href="css/style.css?v=ar-9">
     <style>
         body {
             background-color: #0f2d1e !important;
@@ -18,20 +18,31 @@
             min-height: 100vh;
         }
         /* keep cards readable on top of the dark green background */
-        .navbar { background: rgba(10,25,18,0.82) !important; backdrop-filter: blur(8px); border-bottom: 1px solid rgba(196,162,77,0.25) !important; }
-        .navbar-brand-text, .user-name { color: #e8e4da !important; }
-        .navbar-brand-logo { background: #c4a24d !important; color: #1a3d2b !important; }
+        .navbar { background: rgba(10,25,18,0.82) !important; backdrop-filter: blur(8px); border-bottom: 1px solid rgba(45,106,71,0.25) !important; }
+        .navbar-brand-text, .user-name { color: #eef3ef !important; }
+        /* Was #1a3d2b on #2d6a47 — about 1.9:1, effectively unreadable. */
+        .navbar-brand-logo { background: #2d6a47 !important; color: #ffffff !important; }
         .page-title { color: #e8e4da !important; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
         main > .page-header { padding-bottom: 8px; }
         .cashier-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
         @media(max-width:640px) { .cashier-form-grid { grid-template-columns:1fr; } }
         @media(pointer:coarse) { .cashier-form-grid input, .cashier-form-grid select { min-height:44px; font-size:16px; } }
         @media(max-width:600px) { #landingMain { padding: 16px 12px !important; } }
+        /* Navbar action pills: same 36px rhythm as the injected controls. */
+        .nav-pill { display:inline-flex; align-items:center; gap:7px; height:var(--cms-ctl-h,36px); padding:0 14px; border:0; border-radius:999px;
+                    font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; text-decoration:none; flex-shrink:0;
+                    transition:background-color .15s ease, color .15s ease; }
+        .nav-pill svg { width:16px; height:16px; flex-shrink:0; }
+        .nav-pill-quiet { background:rgba(255,255,255,0.13); color:#eef3ef; }
+        .nav-pill-quiet:hover { background:rgba(255,255,255,0.24); color:#fff; }
+        .nav-pill-danger { background:rgba(220,38,38,0.18); color:#ffb4ad; }
+        .nav-pill-danger:hover { background:#dc2626; color:#fff; }
+        .nav-pill:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+        @media(prefers-reduced-motion:reduce) { .nav-pill { transition:none; } }
         @media(max-width:768px) {
             .scope-pill { display: none !important; }
             .nav-btn-label { display: none; }
-            .nav-btn-icon { display: inline !important; }
-            .nav-icon-btn { padding: 7px 10px; font-size: 16px; margin-right: 4px !important; }
+            .nav-pill { padding: 0; width: var(--cms-ctl-h,36px); justify-content: center; }
         }
     </style>
 </head>
@@ -53,7 +64,7 @@
                 <div class="user-avatar" id="userAvatar">A</div>
                 <span class="user-name" id="userName">Admin</span>
             </div>
-            <a href="settings.html" class="btn btn-primary nav-icon-btn" aria-label="Settings" style="margin-right:8px;"><span aria-hidden="true">⚙</span><span class="nav-btn-label"> Settings</span></a><button class="btn btn-danger nav-icon-btn" aria-label="Logout" onclick="handleLogout()"><span class="nav-btn-label">Logout</span><span class="nav-btn-icon" aria-hidden="true" style="display:none;">✕</span></button>
+            <a href="settings.html" class="nav-pill nav-pill-quiet" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="nav-btn-label">Settings</span></a><button type="button" class="nav-pill nav-pill-danger" aria-label="Logout" onclick="handleLogout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span class="nav-btn-label">Logout</span></button>
         </div>
     </nav>
 
@@ -64,15 +75,15 @@
             <img src="icons/logo.png" alt="Dilovan Curtains"
                  style="height:90px;width:auto;object-fit:contain;border-radius:16px;
                         box-shadow:0 8px 32px rgba(0,0,0,0.55);
-                        border:3px solid rgba(196,162,77,0.45);
+                        border:3px solid rgba(45,106,71,0.45);
                         margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;">
             <div style="font-size:32px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 2px 16px rgba(0,0,0,0.6);line-height:1.1;">
-                Dilovan <span style="color:#c4a24d;">Curtains</span>
+                Dilovan <span style="color:#a8f0c0;">Curtains</span>
             </div>
             <div style="font-size:13px;font-weight:600;color:rgba(200,230,210,0.7);letter-spacing:3px;text-transform:uppercase;margin-top:6px;">
                 Management System
             </div>
-            <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#c4a24d,transparent);margin:14px auto 0;"></div>
+            <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#2d6a47,transparent);margin:14px auto 0;"></div>
         </div>
 
         <div class="page-header">
@@ -138,7 +149,7 @@
 
     </main>
 
-    <script src="js/api.js?v=ux-9"></script>
+    <script src="js/api.js?v=ar-9"></script>
     <script>
         if (!checkAuth()) {
             window.location.href = 'index.html';
@@ -471,8 +482,8 @@
             if (window.applyLanguage) applyLanguage();
         });
     </script>
-    <script src="js/i18n.js?v=ux-9"></script>
-<script src="js/ui.js?v=ux-9"></script>
+    <script src="js/i18n.js?v=ar-9"></script>
+<script src="js/ui.js?v=ar-9"></script>
 </body>
 </html>
 

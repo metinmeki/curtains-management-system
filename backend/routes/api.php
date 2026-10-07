@@ -48,6 +48,7 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get("/retail/dashboard/{storeId}", [RetailDashboardController::class, "index"]);
     Route::post("/retail/sales", [RetailSaleController::class, "store"]);
     Route::post("/retail/sales/{saleId}/pay", [RetailSaleController::class, "pay"]);
+    Route::post("/retail/sales/{saleId}/refund", [RetailSaleController::class, "refund"]);
     Route::delete("/retail/sales/{saleId}", [RetailSaleController::class, "destroy"]);
     Route::get("/retail/sales/{storeId}", [RetailSaleController::class, "index"]);
     Route::get("/retail/expenses/{storeId}", [RetailExpenseController::class, "index"]);

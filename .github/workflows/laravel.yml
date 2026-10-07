@@ -19,7 +19,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.3'
+        # Symfony 8 in composer.lock requires php >=8.4.1, so 8.3 cannot
+        # install the locked dependency set at all.
+        php-version: '8.4'
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
     - name: Install Dependencies

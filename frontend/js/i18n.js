@@ -320,6 +320,8 @@ const translations = {
     'Variant Inventory': 'مخزون الأنواع',
     'Category → Item → Variant structure. Each variant has its own code, quantity, and stock history per store.': 'هيكل الفئة ← المادة ← النوع. لكل نوع كوده وكميته وسجل حركاته الخاص بالمتجر.',
     'Total codes': 'إجمالي الأكواد',
+    'Stock value (cost)': 'قيمة المخزون (بسعر الكلفة)',
+    'Cost price × quantity in stock — not selling price': 'سعر الكلفة × الكمية في المخزون — وليس سعر البيع',
     'Low stock': 'مخزون منخفض',
     'Out of stock': 'نافد المخزون',
     'Movement Log': 'سجل الحركات',
@@ -577,7 +579,416 @@ const translations = {
     'Net Profit': 'صافي الربح',
     'Ref': 'المرجع',
     'Our Profit': 'ربحنا',
-    'Print': 'طباعة'
+    'Print': 'طباعة',
+    'Curtains': 'ستائر',
+    '👥 Cashiers': '👥 أمناء الصندوق',
+    '✓ Saved for all devices': '✓ تم الحفظ لكل الأجهزة',
+    'Example: $100 =': 'مثال: 100 دولار =',
+    '⏳ Save as pending (awaiting supplier call)': '⏳ حفظ كمعلّق (بانتظار اتصال المورد)',
+    '🔄 New Transfer': '🔄 نقل جديد',
+    '📦 Select Items to Transfer': '📦 اختر الأصناف للنقل',
+    '✓ Save Transfer': '✓ حفظ النقل',
+    '📋 Transfer History': '📋 سجل النقل',
+    '🖨 Print': '🖨 طباعة',
+    '🏪 Manage Stores': '🏪 إدارة المتاجر',
+    '▼ Open': '▼ فتح',
+    '+ Add Store': '+ إضافة متجر',
+    '— Select store —': '— اختر المتجر —',
+    '↺ Reset all rows': '↺ إعادة تعيين كل الصفوف',
+    'Save — Cash Supply': 'حفظ — توريد نقدي',
+    'Save — Full Debt': 'حفظ — دين كامل',
+    '+ New Supply': '+ توريد جديد',
+    'Manage →': 'إدارة ←',
+    'All →': 'الكل ←',
+    '↻ Refresh': '↻ تحديث',
+    '🔍 Apply': '🔍 تطبيق',
+    '💰 Total revenue': '💰 إجمالي الإيراد',
+    '✅ Total paid': '✅ إجمالي المدفوع',
+    '⚠️ Outstanding debt': '⚠️ الديون المستحقة',
+    '📈 Gross profit': '📈 الربح الإجمالي',
+    '🔑 Admin': '🔑 المدير',
+    '👤 Cashier': '👤 أمين الصندوق',
+    '+ Add client': '+ إضافة عميل',
+    'DLOVAN PARDA — Retail Report': 'دلوفان باردة — تقرير المتجر',
+    'Warehouse supply': 'توريد المستودع',
+    'Dilovan Curtains Management System': 'نظام دلوفان لإدارة الستائر',
+    'Settings': 'الإعدادات',
+    'Management System': 'نظام الإدارة',
+    '← Back': '← رجوع',
+    '← Switch workspace': '← تبديل مساحة العمل',
+    'Store Inventory': 'مخزون المتجر',
+    'Transfer Stock': 'نقل المخزون',
+    'Overview': 'نظرة عامة',
+    'Central': 'المركزي',
+    'Main': 'الرئيسي',
+    'Currency Exchange Rate': 'سعر صرف العملة',
+    'Set the USD to IQD exchange rate. This will be used across the POS system.': 'حدد سعر صرف الدولار مقابل الدينار. سيُستخدم في كامل نظام نقطة البيع.',
+    '1 USD = ? IQD': '1 دولار = ؟ دينار',
+    'Stored on the server, so every till and phone uses the same rate.': 'محفوظ على الخادم، لذا تستخدم كل الأجهزة نفس السعر.',
+    'Save rate': 'حفظ السعر',
+    'Current rate:': 'السعر الحالي:',
+    'Not set': 'غير محدد',
+    'IQD': 'دينار',
+    'Measurements': 'القياسات',
+    'Width (cm)': 'العرض (سم)',
+    'Length (cm)': 'الطول (سم)',
+    'Material': 'المواد',
+    'Metres / Windows': 'متر / نافذة',
+    'Account': 'الحساب',
+    '+ Add order items': '+ إضافة طلبية',
+    '+ Add another order': '+ إضافة طلبية أخرى',
+    'Grand Total — Sale + All Orders': 'المجموع الكلي — البيع + كل الطلبيات',
+    '+ Orders total': '+ مجموع الطلبيات',
+    '= GRAND TOTAL': '= المجموع الكلي',
+    'Order buyer paid': 'المدفوع من المشتري',
+    'Grand remaining': 'المتبقي الكلي',
+    'Write measurements and details here…': 'اكتب القياسات والتفاصيل هنا…',
+    'Price entry currency': 'عملة إدخال السعر',
+    'Discount type': 'نوع الخصم',
+    'Supplier debt': 'دين المورد',
+    'Buyer debt': 'دين المشتري',
+    'Buyer remaining debt': 'المتبقي على المشتري',
+    'Buyer paid amount': 'المدفوع من المشتري',
+    'Search companies': 'بحث عن الشركات',
+    'Supplier company name': 'اسم شركة المورد',
+    'Optional order notes': 'ملاحظات اختيارية للطلبية',
+    'Order, buyer, phone, supplier, code': 'طلبية، مشتري، هاتف، مورد، كود',
+    'Supplier name': 'اسم المورد',
+    'Total ($)': 'المجموع (دولار)',
+    'Our Profit ($)': 'ربحنا (دولار)',
+    'Buyer Due ($)': 'مستحق المشتري (دولار)',
+    'Supplier Due ($)': 'مستحق المورد (دولار)',
+    'Remaining:': 'المتبقي:',
+    'Note (optional)': 'ملاحظة (اختياري)',
+    'Edit Expense': 'تعديل المصروف',
+    'Optional notes': 'ملاحظات اختيارية',
+    'Optional': 'اختياري',
+    'Move inventory between any two stores in any direction.': 'نقل المخزون بين أي متجرين في أي اتجاه.',
+    'From Store': 'من متجر',
+    'To Store': 'إلى متجر',
+    '— Select source —': '— اختر المصدر —',
+    '— Select destination —': '— اختر الوجهة —',
+    'Select All': 'تحديد الكل',
+    'Clear': 'مسح',
+    'Loading inventory…': 'جارِ تحميل المخزون…',
+    'Transfer Qty': 'كمية النقل',
+    'No items with stock in this store. Add stock from Inventory page first.': 'لا توجد أصناف بمخزون في هذا المتجر. أضف المخزون من صفحة المخزون أولاً.',
+    'To': 'إلى',
+    'No transfers recorded yet.': 'لا توجد عمليات نقل مسجلة بعد.',
+    'Optional notes about this transfer': 'ملاحظات اختيارية حول هذا النقل',
+    'All clients': 'كل العملاء',
+    'In debt': 'عليه دين',
+    'Hide details': 'إخفاء التفاصيل',
+    'No clients currently owe anything.': 'لا يوجد عملاء عليهم مستحقات حالياً.',
+    'No fully paid clients yet.': 'لا يوجد عملاء مدفوعين بالكامل بعد.',
+    'With debt': 'عليه دين',
+    'Client / Store': 'العميل / المتجر',
+    'Total supplied': 'إجمالي المورّد',
+    'Each inventory client has balance, sales history, paid total, and debts.': 'لكل عميل رصيد وسجل مبيعات وإجمالي مدفوع وديون.',
+    'Warehouse client balances — separate from retail store debts.': 'أرصدة عملاء المستودع — منفصلة عن ديون المتاجر.',
+    'Order profit — USD': 'ربح الطلبيات — دولار',
+    'Gross profit': 'الربح الإجمالي',
+    'Net profit': 'الربح الصافي',
+    'From date': 'من تاريخ',
+    'To date': 'إلى تاريخ',
+    'Supply transactions': 'عمليات التوريد',
+    'Balance by store': 'الرصيد حسب المتجر',
+    'Transactions': 'العمليات',
+    'Items sold': 'الأصناف المباعة',
+    'Supply ref': 'مرجع التوريد',
+    'Supply History': 'سجل التوريد',
+    'Supply history': 'سجل التوريد',
+    'Recent supply history and store transactions.': 'سجل التوريد الأخير وعمليات المتاجر.',
+    'Collected from stores': 'المحصّل من المتاجر',
+    'Still owed by stores': 'ما زال على المتاجر',
+    'From all supply transactions': 'من كل عمليات التوريد',
+    'Selling − cost price': 'سعر البيع − سعر التكلفة',
+    'Central warehouse': 'المستودع المركزي',
+    'Central warehouse | Warehouse supply': 'المستودع المركزي | توريد المستودع',
+    'New Supply': 'توريد جديد',
+    'Invoice total': 'إجمالي الفاتورة',
+    'Paid now': 'المدفوع الآن',
+    'Store Accounts': 'حسابات المتاجر',
+    'Transaction History': 'سجل العمليات',
+    'All stores — full history': 'كل المتاجر — السجل الكامل',
+    'Showing all supply transactions': 'عرض كل عمليات التوريد',
+    'Record payment': 'تسجيل دفعة',
+    'Pay': 'دفع',
+    'Select a store tab above to view its history.': 'اختر متجراً من الأعلى لعرض سجله.',
+    'Store previous debt': 'دين المتجر السابق',
+    'New store name…': 'اسم المتجر الجديد…',
+    'Warehouse Overview': 'نظرة عامة على المستودع',
+    'Stock levels, store balances, and recent activity': 'مستويات المخزون وأرصدة المتاجر والنشاط الأخير',
+    'Financials': 'الماليات',
+    'Stock Overview': 'نظرة على المخزون',
+    'Item stock levels': 'مستويات مخزون الأصناف',
+    'Variants & codes': 'المتغيرات والأكواد',
+    'Total stock': 'إجمالي المخزون',
+    'Level': 'المستوى',
+    'Recent supply transactions': 'عمليات التوريد الأخيرة',
+    'Store balances': 'أرصدة المتاجر',
+    'Outstanding debt per store': 'الدين المستحق لكل متجر',
+    'Recent stock movements': 'حركات المخزون الأخيرة',
+    'Warehouse supply transactions, store balances, and item breakdown.': 'عمليات توريد المستودع وأرصدة المتاجر وتفصيل الأصناف.',
+    'POS Supply': 'نقطة بيع التوريد',
+    'Supply to Store': 'توريد إلى متجر',
+    'Select a store, add warehouse items, set quantities and prices, then save the supply transaction.': 'اختر متجراً، أضف أصناف المستودع، حدد الكميات والأسعار، ثم احفظ عملية التوريد.',
+    'Remaining / Debt': 'المتبقي / الدين',
+    'Save & Record Supply': 'حفظ وتسجيل التوريد',
+    'Recent warehouse supplies': 'توريدات المستودع الأخيرة',
+    'All stores': 'كل المتاجر',
+    'Stock by item': 'المخزون حسب الصنف',
+    'Stock movements': 'حركات المخزون',
+    'Total variants': 'إجمالي المتغيرات',
+    'Across all items': 'عبر كل الأصناف',
+    'Below minimum level': 'أقل من الحد الأدنى',
+    'Empty / Critical': 'فارغ / حرج',
+    'Needs restock now': 'يحتاج تعبئة الآن',
+    'Movements today': 'حركات اليوم',
+    'Adjustments recorded': 'التعديلات المسجلة',
+    'All items': 'كل الأصناف',
+    'All types': 'كل الأنواع',
+    'Deduct': 'خصم',
+    'Set quantity': 'تحديد الكمية',
+    'Supply to store': 'توريد إلى متجر',
+    'Code / Variant': 'الكود / المتغير',
+    'Change': 'التغيير',
+    'Before': 'قبل',
+    'After': 'بعد',
+    'Cost price IQD': 'سعر التكلفة دينار',
+    'Selling price IQD': 'سعر البيع دينار',
+    'Available': 'المتاح',
+    'Cost price': 'سعر التكلفة',
+    'Adjustment type': 'نوع التعديل',
+    'Filter by category': 'تصفية حسب الفئة',
+    'Filter by status': 'تصفية حسب الحالة',
+    'Filter by item': 'تصفية حسب الصنف',
+    'Filter by movement type': 'تصفية حسب نوع الحركة',
+    'Filter by date': 'تصفية حسب التاريخ',
+    'Filter history': 'تصفية السجل',
+    'e.g. Curtain Fabrics': 'مثال: أقمشة ستائر',
+    'Short description': 'وصف مختصر',
+    'e.g. Blackout Curtain': 'مثال: ستارة معتمة',
+    'e.g. Red / Medium': 'مثال: أحمر / وسط',
+    'e.g. Red': 'مثال: أحمر',
+    'e.g. Medium': 'مثال: وسط',
+    'e.g. Received shipment, annual count…': 'مثال: استلام شحنة، جرد سنوي…',
+    'Login successful. Redirecting…': 'تم تسجيل الدخول. جارِ التحويل…',
+    'No cashiers have been added yet.': 'لم تتم إضافة أمناء صندوق بعد.',
+    'Ask your admin to add you from the main page.': 'اطلب من المدير إضافتك من الصفحة الرئيسية.',
+    'PIN for': 'الرمز السري لـ',
+    'e.g. Ahmed': 'مثال: أحمد',
+    'e.g. 1234': 'مثال: 1234',
+    'e.g. 1480': 'مثال: 1480',
+    'Choose your name': 'اختر اسمك',
+    'Open menu': 'فتح القائمة',
+    'Display': 'العرض',
+    'Display currency': 'عملة العرض',
+    'Language': 'اللغة',
+    'Exchange rate not available — USD amounts cannot be shown.': 'سعر الصرف غير متوفر — لا يمكن عرض المبالغ بالدولار.',
+    'Confirm': 'تأكيد',
+    'OK': 'حسناً',
+    'Decline': 'رفض',
+    'Saving…': 'جارِ الحفظ…',
+
+    // ── Stock status labels (JS object literals, not markup) ────────────
+    'In stock': 'متوفر',
+    'Critical': 'حرج',
+    'Empty': 'فارغ',
+
+    // ── Fragments composed with a value at runtime, via ta() ────────────
+    'New variant for': 'نوع جديد لـ',
+    'variant': 'نوع',
+    'transaction': 'عملية',
+    'transactions': 'عملية',
+    'across all stores': 'في كل المتاجر',
+    'item types': 'نوع مادة',
+    'tx': 'عملية',
+
+    // ── Pending sales (awaiting supplier confirmation) ──────────────────
+    '⏳ Save as pending (awaiting supplier call)': '⏳ حفظ كمعلّق (بانتظار اتصال المورد)',
+    'Saved as pending — waiting for the supplier\'s call.': 'تم الحفظ كمعلّق — بانتظار اتصال المورد.',
+    '⏳ Pending': '⏳ معلّق',
+    'owing': 'مستحق',
+
+    // ── Refunds ─────────────────────────────────────────────────────────
+    'Refund this sale': 'إرجاع مبلغ هذه الفاتورة',
+    'Refund amount': 'مبلغ الإرجاع',
+    'Maximum refundable': 'الحد الأقصى للإرجاع',
+    'Full refund': 'إرجاع كامل',
+    'Refund': 'إرجاع',
+    'Refunded': 'تم الإرجاع',
+    'Reason': 'السبب',
+    'Enter a refund amount.': 'أدخل مبلغ الإرجاع.',
+    'Refund cannot exceed the amount paid': 'لا يمكن أن يتجاوز الإرجاع المبلغ المدفوع',
+    'Refund failed.': 'فشل الإرجاع.',
+    'for sale': 'للفاتورة',
+    'item(s) returned to stock': 'مادة أُعيدت إلى المخزون',
+    // The dictionary already had 'Balance fully paid.' with a trailing period,
+    // which never matched the text node the panel actually renders.
+    '✓ Balance fully paid': '✓ الرصيد مدفوع بالكامل',
+
+    // ── Calculator widget (built in retail/calculator.js) ───────────────
+    'Calculator': 'الآلة الحاسبة',
+    'No calculations yet.': 'لا توجد عمليات حسابية بعد.',
+    'Cannot divide by zero': 'لا يمكن القسمة على صفر',
+    'Show tape': 'إظهار الشريط',
+    'Hide tape': 'إخفاء الشريط',
+    'Clear tape': 'مسح الشريط',
+    'Tape cleared': 'تم مسح الشريط',
+    'Memory cleared': 'تم مسح الذاكرة',
+    'Added to memory': 'تمت الإضافة إلى الذاكرة',
+    'Subtracted from memory': 'تم الطرح من الذاكرة',
+    'Copy': 'نسخ',
+    'Copied': 'تم النسخ',
+    'Copy failed': 'فشل النسخ',
+    'Backspace': 'مسح خانة',
+    'Divide': 'قسمة',
+    'Multiply': 'ضرب',
+    'Subtract': 'طرح',
+    // 'Plus' rather than 'Add' — 'Add' is already the stock-movement label
+    // ('إضافة') and a duplicate key would silently override it.
+    'Plus': 'جمع',
+    'Equals': 'يساوي',
+
+    // Stores 1-4 are already translated higher up; only 5 was missing.
+    'Store 5': 'المتجر 5',
+
+    // ── Warehouse overview ──────────────────────────────────────────────
+    'Below minimum': 'أقل من الحد الأدنى',
+    'Needs restock': 'يحتاج إعادة تعبئة',
+    'All stores combined': 'كل المتاجر مجتمعة',
+    'Received from stores': 'المستلم من المتاجر',
+    'Outstanding debt': 'الدين المستحق',
+    'Still owed to warehouse': 'ما زال مستحقاً للمخزن',
+    'All supply records': 'كل سجلات التوريد',
+    '(Selling − Cost) × Qty': '(البيع − الكلفة) × الكمية',
+    'Gross − outstanding debts': 'الإجمالي − الديون المستحقة',
+
+    // ── Empty states and misc ───────────────────────────────────────────
+    'No activities yet.': 'لا توجد حركات بعد.',
+    'No clients yet.': 'لا يوجد عملاء بعد.',
+    '10,000 IQD per window to Installation account': '١٠٬٠٠٠ د.ع لكل نافذة إلى حساب التركيب',
+
+    // ── Shared labels ───────────────────────────────────────────────────
+    'Edit': 'تعديل',
+    '✎ Edit': '✎ تعديل',
+    'Save changes': 'حفظ التغييرات',
+    'Totals': 'الإجماليات',
+    'Supplied': 'المورَّد',
+    'optional': 'اختياري',
+    '(optional)': '(اختياري)',
+    'code': 'الكود',
+    'Note:': 'ملاحظة:',
+    'Size:': 'القياس:',
+    'Details:': 'التفاصيل:',
+    'Cashier:': 'الكاشير:',
+    'Ref:': 'المرجع:',
+    'Order total': 'إجمالي الطلب',
+    'Buyer paid': 'المدفوع من المشتري',
+
+    // ── Messages and alerts ─────────────────────────────────────────────
+    'Please select a store before saving.': 'يرجى اختيار المتجر قبل الحفظ.',
+    'Add at least one item with quantity and price.': 'أضف مادة واحدة على الأقل مع الكمية والسعر.',
+    'Buyer balance paid.': 'تم تسديد رصيد المشتري.',
+    'Supplier balance paid.': 'تم تسديد رصيد المورّد.',
+    'Connection error.': 'خطأ في الاتصال.',
+    'Enter a valid amount.': 'أدخل مبلغاً صحيحاً.',
+    'Payment recorded.': 'تم تسجيل الدفعة.',
+    'Incorrect PIN or server error.': 'رمز الدخول غير صحيح أو حدث خطأ في الخادم.',
+
+    // ── Empty states ────────────────────────────────────────────────────
+    'No movements recorded yet.': 'لا توجد حركات مسجلة بعد.',
+    'No stock movements yet.': 'لا توجد حركات مخزون بعد.',
+    'No supply transactions yet.': 'لا توجد عمليات توريد بعد.',
+    'No variants yet': 'لا توجد أنواع بعد',
+    'No photo': 'لا توجد صورة',
+
+    // ── Warehouse inventory ─────────────────────────────────────────────
+    '▲ Stock': '▲ المخزون',
+    'Min. level': 'الحد الأدنى',
+    'Change photo': 'تغيير الصورة',
+    '📷 Change photo': '📷 تغيير الصورة',
+    'Click to upload photo': 'اضغط لرفع صورة',
+    'Click to upload new photo': 'اضغط لرفع صورة جديدة',
+    'Color / Attribute': 'اللون / الخاصية',
+    'Size / Type': 'القياس / النوع',
+    'Add variant': 'إضافة نوع',
+    'Add to stock': 'إضافة إلى المخزون',
+    'Deduct from stock': 'خصم من المخزون',
+    'Cost price (IQD)': 'سعر الكلفة (د.ع)',
+    'Selling price (IQD)': 'سعر البيع (د.ع)',
+    'COST PRICE (IQD)': 'سعر الكلفة (د.ع)',
+    'e.g. White, Beige…': 'مثال: أبيض، بيج…',
+    'e.g. 2m, Heavy…': 'مثال: ٢ متر، ثقيل…',
+    'e.g. SK-001': 'مثال: SK-001',
+    'e.g. BLK-RED-M': 'مثال: BLK-RED-M',
+
+    // ── Warehouse dashboard and supply ──────────────────────────────────
+    '▲ View history above': '▲ عرض السجل أعلاه',
+    'Unit price / Price': 'سعر الوحدة',
+    'Pay →': 'دفع ←',
+    // Headings that shipped bilingual — in Arabic only the Arabic half is wanted.
+    'Financial Summary / الملخص المالي': 'الملخص المالي',
+    'Items Supplied / الأصناف المورَّدة': 'الأصناف المورَّدة',
+    'Paid / المدفوع': 'المدفوع',
+    'Remaining debt / المتبقي': 'الدين المتبقي',
+    'Type / نوع': 'النوع',
+    'المجموع / Total': 'المجموع',
+    'الوحدة / Unit': 'الوحدة',
+
+    // ── Retail clients ──────────────────────────────────────────────────
+    'الحساب / Account': 'الحساب',
+    'القياس / Measurements': 'القياس',
+    'المواد / Material': 'المواد',
+    'حسابات العمال / Worker accounts': 'حسابات العمال',
+    'سعر التوصيل / Delivery': 'سعر التوصيل',
+    'ملاحظات / Note': 'ملاحظات',
+
+    // ── Retail POS and orders ───────────────────────────────────────────
+    'اسم الشركة / Supplier name': 'اسم الشركة',
+    'Supplier / Company': 'المورّد / الشركة',
+    'Unit price ($)': 'سعر الوحدة ($)',
+    '✓ Confirm Order': '✓ تأكيد الطلب',
+    '✓ Order confirmed — included in grand total': '✓ تم تأكيد الطلب — مُدرج في المجموع الكلي',
+    '⚠ Not confirmed — not included in grand total': '⚠ غير مؤكد — غير مُدرج في المجموع الكلي',
+    '? not found': '؟ غير موجود',
+    '✗ out': '✗ نافد',
+
+    // ── Category management ─────────────────────────────────────────────
+    '⚙️ Manage Categories': '⚙️ إدارة الفئات',
+    '📊 Dashboard': '📊 لوحة التحكم',
+    '📦 Inventory Sales': '📦 مبيعات المخزن',
+    '🚪 Logout': '🚪 تسجيل الخروج',
+    '1. Add Main Category (الفئة الرئيسية)': '١. إضافة فئة رئيسية',
+    '2. Add Subcategory (الماركة / النوع)': '٢. إضافة فئة فرعية (الماركة / النوع)',
+    'Current Categories in System': 'الفئات الحالية في النظام',
+    'Save Category': 'حفظ الفئة',
+    'Save Subcategory': 'حفظ الفئة الفرعية',
+    'Select Main Category': 'اختر الفئة الرئيسية',
+    'Warehouse (Main)': 'المخزن (الرئيسي)',
+
+    // ── Page titles (browser tab) ───────────────────────────────────────
+    'Login - Curtains Management System': 'تسجيل الدخول - نظام إدارة الستائر',
+    'Settings - Curtains Management System': 'الإعدادات - نظام إدارة الستائر',
+    'Store Inventory - Curtains Management System': 'مخزون المتجر - نظام إدارة الستائر',
+    'Retail Clients - Curtains Management System': 'عملاء التجزئة - نظام إدارة الستائر',
+    'Retail Dashboard - Curtains Management System': 'لوحة التجزئة - نظام إدارة الستائر',
+    'Retail Debts - Curtains Management System': 'ديون التجزئة - نظام إدارة الستائر',
+    'Retail Expenses - Curtains Management System': 'مصاريف التجزئة - نظام إدارة الستائر',
+    'Retail Orders - Curtains Management System': 'طلبات التجزئة - نظام إدارة الستائر',
+    'Retail POS - Curtains Management System': 'نقطة بيع التجزئة - نظام إدارة الستائر',
+    'Retail Reports - Curtains Management System': 'تقارير التجزئة - نظام إدارة الستائر',
+    'Transfer Stock - Curtains Management System': 'نقل المخزون - نظام إدارة الستائر',
+    'Manage Categories - Curtains ERP': 'إدارة الفئات - نظام إدارة الستائر',
+    'Warehouse Overview — Curtains Management System': 'نظرة عامة على المخزن - نظام إدارة الستائر',
+    'Inventory — Warehouse': 'المخزون — المخزن',
+    'Debts — Warehouse': 'الديون — المخزن',
+    'Reports — Warehouse': 'التقارير — المخزن',
+    'New Supply — Warehouse': 'توريد جديد — المخزن',
+    'POS Supply — Warehouse': 'نقطة التوريد — المخزن',
+    'Store Accounts — Warehouse': 'حسابات المتاجر — المخزن',
+    'Supply History — Warehouse': 'سجل التوريد — المخزن'
   }
 };
 
@@ -610,6 +1021,15 @@ function translatePlaceholder(value, language) {
   return translations[language] && translations[language][value.trim()] ? translations[language][value.trim()] : value;
 }
 
+// Caches the English original on the element so switching back and forth
+// doesn't translate an already-translated string.
+function translateAttribute(node, attr, cacheKey, language) {
+  const current = node.getAttribute && node.getAttribute(attr);
+  if (!current) return;
+  if (!node.dataset[cacheKey]) node.dataset[cacheKey] = current;
+  node.setAttribute(attr, translateText(node.dataset[cacheKey], language));
+}
+
 function translateNode(node, language) {
   if (node.nodeType === Node.TEXT_NODE) {
     const original = originalTextNodes.get(node) || node.textContent;
@@ -629,32 +1049,86 @@ function translateNode(node, language) {
     node.placeholder = translatePlaceholder(node.dataset.i18nOriginalPlaceholder, language);
   }
 
+  // Screen-reader names and tooltips are user-facing too, so they have to
+  // follow the language like any other label.
+  translateAttribute(node, 'title', 'i18nOriginalTitle', language);
+  translateAttribute(node, 'aria-label', 'i18nOriginalAriaLabel', language);
+
   Array.from(node.childNodes).forEach(child => translateNode(child, language));
 }
 
-/* The switcher styles live in css/style.css, which the retail and warehouse
-   shells don't load — so ship a self-contained copy. */
-function ensureLanguageSwitcherStyles() {
-  if (document.getElementById('cms-lang-styles')) return;
+/* Topbar controls are injected by script, so they can't live in the page
+   stylesheets — the retail and warehouse shells don't load css/style.css at
+   all. One definition here is shared by the language switcher, the currency
+   toggle and the icon buttons so they stay visually identical.
+
+   Exposed on window because js/ui.js mounts its controls from the same system
+   and must not ship a second, drifting copy. */
+function cmsEnsureControlStyles() {
+  if (document.getElementById('cms-control-styles')) return;
   const style = document.createElement('style');
-  style.id = 'cms-lang-styles';
+  style.id = 'cms-control-styles';
   style.textContent = `
-#languageSwitcher{display:inline-flex;align-items:center;gap:4px;padding:3px;background:rgba(0,0,0,.06);border-radius:999px;flex-shrink:0}
-#languageSwitcher button{min-height:32px;min-width:44px;padding:6px 12px;border:none;border-radius:999px;background:transparent;color:inherit;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;opacity:.7}
-#languageSwitcher button.active{background:#fffdf6;color:#1a3d2b;opacity:1}
-#languageSwitcher button:focus-visible{outline:2px solid #c4a24d;outline-offset:2px}
-@media(pointer:coarse){#languageSwitcher button{min-height:44px}}
-@media print{#languageSwitcher{display:none!important}}`;
+:root{--cms-ctl-h:36px;--cms-ctl-ink:#1a3d2b;--cms-ctl-ring:#2d6a47}
+@media(pointer:coarse){:root{--cms-ctl-h:44px}}
+
+/* Segmented control: language, currency. */
+.cms-seg{display:inline-flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:rgba(15,45,30,.07);flex-shrink:0;box-sizing:border-box}
+.cms-seg *{box-sizing:border-box}
+.cms-seg__label{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.6;padding:0 6px 0 8px;white-space:nowrap;color:var(--cms-ctl-ink)}
+.cms-seg button{height:var(--cms-ctl-h);min-width:48px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#41594c;font-family:inherit;font-size:12px;font-weight:700;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;transition:background-color .15s ease,color .15s ease}
+.cms-seg button:hover{background:rgba(15,45,30,.08);color:var(--cms-ctl-ink)}
+.cms-seg button[aria-pressed="true"],.cms-seg button.active{background:#fff;color:var(--cms-ctl-ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.cms-seg button:focus-visible{outline:2px solid var(--cms-ctl-ring);outline-offset:2px}
+
+/* Dark topbars (landing, login) need the track and text inverted, otherwise
+   the inherited ink is near-black on a near-black bar. */
+.cms-seg[data-surface="dark"]{background:rgba(255,255,255,.13)}
+.cms-seg[data-surface="dark"] .cms-seg__label{color:rgba(255,255,255,.7)}
+.cms-seg[data-surface="dark"] button{color:rgba(255,255,255,.8)}
+.cms-seg[data-surface="dark"] button:hover{background:rgba(255,255,255,.14);color:#fff}
+.cms-seg[data-surface="dark"] button[aria-pressed="true"],.cms-seg[data-surface="dark"] button.active{background:#fff;color:#14301f}
+.cms-seg[data-surface="dark"] button:focus-visible{outline-color:#fff}
+
+/* Square icon button: calculator, sidebar toggle. */
+.cms-iconbtn{height:var(--cms-ctl-h);width:var(--cms-ctl-h);display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:10px;background:rgba(15,45,30,.07);color:var(--cms-ctl-ink);cursor:pointer;padding:0;flex-shrink:0;box-sizing:border-box;transition:background-color .15s ease,color .15s ease}
+.cms-iconbtn:hover{background:rgba(15,45,30,.14)}
+.cms-iconbtn:active{background:rgba(15,45,30,.2)}
+.cms-iconbtn:focus-visible{outline:2px solid var(--cms-ctl-ring);outline-offset:2px}
+.cms-iconbtn svg{width:19px;height:19px;display:block;pointer-events:none}
+.cms-iconbtn[data-surface="dark"]{background:rgba(255,255,255,.13);color:#fff}
+.cms-iconbtn[data-surface="dark"]:hover{background:rgba(255,255,255,.22)}
+.cms-iconbtn[data-surface="dark"]:focus-visible{outline-color:#fff}
+
+@media(prefers-reduced-motion:reduce){.cms-seg button,.cms-iconbtn{transition:none}}
+@media print{.cms-seg,.cms-iconbtn{display:none!important}}`;
   document.head.appendChild(style);
 }
+window.cmsEnsureControlStyles = cmsEnsureControlStyles;
+
+/* Walks up for the first opaque background and decides whether the control is
+   sitting on a dark bar, so one component works on both shells. */
+function cmsIsDarkSurface(el) {
+  let node = el;
+  while (node && node !== document.documentElement) {
+    const parts = (getComputedStyle(node).backgroundColor || '').match(/[\d.]+/g);
+    if (parts && parts.length >= 3 && (parts.length < 4 || parseFloat(parts[3]) > 0.5)) {
+      const [r, g, b] = parts.map(Number);
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 140;
+    }
+    node = node.parentElement;
+  }
+  return false;
+}
+window.cmsIsDarkSurface = cmsIsDarkSurface;
 
 function addLanguageSwitcher() {
   if (document.getElementById('languageSwitcher')) return;
-  ensureLanguageSwitcherStyles();
+  cmsEnsureControlStyles();
 
   const switcher = document.createElement('div');
   switcher.id = 'languageSwitcher';
-  switcher.className = 'language-switcher no-print';
+  switcher.className = 'cms-seg language-switcher no-print';
   switcher.setAttribute('role', 'group');
   switcher.setAttribute('aria-label', 'Language');
   switcher.innerHTML = `
@@ -679,7 +1153,16 @@ function addLanguageSwitcher() {
   } else if (loginCard) {
     loginCard.prepend(switcher);
   }
+
+  // Must run after mounting: the host's background is what decides the variant.
+  if (switcher.parentElement && cmsIsDarkSurface(switcher.parentElement)) {
+    switcher.setAttribute('data-surface', 'dark');
+  }
 }
+
+// The tab title lives in <head>, which translateNode never reaches because it
+// only walks <body>. Remember the English original so switching back restores it.
+let originalTitle = null;
 
 function applyLanguage() {
   const language = getLanguage();
@@ -687,6 +1170,9 @@ function applyLanguage() {
   document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
   document.body.classList.toggle('ltr', language !== 'ar');
   document.body.classList.toggle('rtl', language === 'ar');
+
+  if (originalTitle === null) originalTitle = document.title;
+  document.title = translateText(originalTitle, language);
 
   addLanguageSwitcher();
 
