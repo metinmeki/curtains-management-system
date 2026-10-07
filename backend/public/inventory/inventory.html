@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory — Warehouse</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ar-9">
 </head>
 <body>
 <div class="wh-layout">
@@ -45,8 +45,15 @@
         </div>
     </div>
 
-    <div style="flex:1;overflow-y:auto;">
+    <div style="flex:1;overflow-y:auto;min-height:0;">
     <div class="wh-page">
+
+        <!-- Capital tied up in stock -->
+        <div class="inv-capital">
+            <div class="inv-capital-label">Stock value (cost)</div>
+            <div class="inv-capital-value" id="kpiStockValue">0 IQD</div>
+            <div class="inv-capital-note">Cost price × quantity in stock — not selling price</div>
+        </div>
 
         <!-- KPI -->
         <div class="inv-kpi">
@@ -57,24 +64,24 @@
         </div>
 
         <!-- Item groups -->
-        <div class="wh-section">Stock by Item / المخزون حسب الصنف</div>
+        <div class="wh-section">Stock by item</div>
         <div id="itemGroupsContainer"></div>
 
         <!-- Movement history -->
-        <div class="wh-section">Stock Movements / سجل الحركة</div>
+        <div class="wh-section">Stock movements</div>
         <div class="mov-table-wrap">
             <div class="mov-filter">
-                <select id="movFilterItem" onchange="renderMovHistory()">
+                <select id="movFilterItem" aria-label="Filter by item" onchange="renderMovHistory()">
                     <option value="">All items</option>
                 </select>
-                <select id="movFilterType" onchange="renderMovHistory()">
+                <select id="movFilterType" aria-label="Filter by movement type" onchange="renderMovHistory()">
                     <option value="">All types</option>
                     <option value="add">Add</option>
                     <option value="deduct">Deduct</option>
                     <option value="set">Set quantity</option>
                     <option value="supply">Supply to store</option>
                 </select>
-                <input type="date" id="movFilterDate" oninput="renderMovHistory()">
+                <input type="date" id="movFilterDate" aria-label="Filter by date" oninput="renderMovHistory()">
                 <button class="wh-btn wh-btn-sm wh-btn-outline" onclick="clearMovFilters()">Clear</button>
             </div>
             <table class="mov-table">
@@ -94,8 +101,8 @@
 
 </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=wh-2"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -234,7 +241,7 @@ function saveNewVariant(itemName) {
 
     if (variants[itemName].some(v => v.code === code)) {
         if (codeEl) { codeEl.style.borderColor='#ef4444'; codeEl.focus(); }
-        alert('A variant with this code already exists for ' + itemName);
+        showToast('A variant with this code already exists for ' + itemName, 'error');
         return;
     }
 
@@ -258,8 +265,8 @@ function saveNewVariant(itemName) {
 
 // ─── Delete variant ───────────────────────────────────────────────────────────
 
-function deleteVariant(itemName, variantId) {
-    if (!confirm('Delete this variant? Stock data will be lost.')) return;
+async function deleteVariant(itemName, variantId) {
+    if (!await cmsConfirm('Delete this variant? Stock data will be lost.', { okText: 'Delete', danger: true })) return;
     const variants = getVariants();
     if (variants[itemName]) {
         variants[itemName] = variants[itemName].filter(v => v.id !== variantId);
@@ -332,7 +339,7 @@ function saveEdit(itemName, variantId) {
     if (!v) return;
 
     if (list.some(x => x.id !== variantId && x.code === newCode)) {
-        alert('Another variant already uses this code.'); return;
+        showToast('Another variant already uses this code.', 'error'); return;
     }
 
     v.code  = newCode;
@@ -372,7 +379,7 @@ function renderVariantCard(itemName, v, unit, step) {
             <div class="variant-photo" title="Click to change photo">
                 ${photoHtml}
                 <div class="variant-photo-overlay">📷 Change photo</div>
-                <input type="file" accept="image/*" onchange="onVariantPhotoChange('${esc(v.id)}', this)">
+                <input type="file" accept="image/*" aria-label="Upload photo" onchange="onVariantPhotoChange('${esc(v.id)}', this)">
             </div>
             <div class="variant-body">
                 ${v.code
@@ -395,14 +402,14 @@ function renderVariantCard(itemName, v, unit, step) {
             <div class="variant-panel ${isAdjOpen?'open':''}">
                 <div class="form-group">
                     <label>Action</label>
-                    <select id="adjType_${esc(v.id)}">
+                    <select id="adjType_${esc(v.id)}" aria-label="Adjustment type">
                         <option value="add">Add to stock</option>
                         <option value="deduct">Deduct from stock</option>
                         <option value="set">Set exact quantity</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Quantity (${esc(unit)})</label>
+                    <label>${ta('Quantity')} (${esc(unit)})</label>
                     <input id="adjQty_${esc(v.id)}" type="number" min="0" step="${step}" placeholder="0">
                 </div>
                 <div class="form-group">
@@ -426,7 +433,7 @@ function renderVariantCard(itemName, v, unit, step) {
                     <div class="photo-upload-box" style="height:70px;">
                         <span class="pu-icon">📷</span>
                         <span class="pu-label">Click to upload new photo</span>
-                        <input type="file" accept="image/*" onchange="saveEditPhoto('${esc(v.id)}', this)">
+                        <input type="file" accept="image/*" aria-label="Replace photo" onchange="saveEditPhoto('${esc(v.id)}', this)">
                     </div>
                 </div>
                 <div class="form-group">
@@ -442,7 +449,7 @@ function renderVariantCard(itemName, v, unit, step) {
                     <input id="editSize_${esc(v.id)}" type="text" value="${esc(v.size||'')}" placeholder="e.g. 2m, Heavy…">
                 </div>
                 <div class="form-group">
-                    <label>Min. level (${esc(unit)})</label>
+                    <label>${ta('Min. level')} (${esc(unit)})</label>
                     <input id="editMin_${esc(v.id)}" type="number" min="0" step="${step}" value="${minQty}">
                 </div>
                 <div class="panel-btns">
@@ -468,14 +475,14 @@ function renderItemGroup(item) {
 
     const addForm = `
         <div class="add-variant-form ${isAdding?'open':''}" id="addForm_${esc(item.name)}">
-            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:12px;">New variant for ${esc(item.name)}</div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:12px;">${ta('New variant for')} ${esc(item.name)}</div>
             <div class="add-variant-form-grid">
                 <div class="form-group">
                     <label>Code <span style="color:#ef4444;">*</span></label>
                     <input id="addCode_${esc(item.name)}" type="text" placeholder="e.g. SK-001" autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label>Initial stock (${esc(item.unit)})</label>
+                    <label>${ta('Initial stock')} (${esc(item.unit)})</label>
                     <input id="addQty_${esc(item.name)}" type="number" min="0" step="${item.step}" placeholder="0">
                 </div>
                 <div class="form-group">
@@ -487,7 +494,7 @@ function renderItemGroup(item) {
                     <input id="addSize_${esc(item.name)}" type="text" placeholder="e.g. 2m, Heavy…">
                 </div>
                 <div class="form-group">
-                    <label>Min. level (${esc(item.unit)})</label>
+                    <label>${ta('Min. level')} (${esc(item.unit)})</label>
                     <input id="addMin_${esc(item.name)}" type="number" min="0" step="${item.step}" placeholder="10" value="10">
                 </div>
                 <div class="form-group">
@@ -509,7 +516,7 @@ function renderItemGroup(item) {
                     ${addPhotoPreview}
                     <span class="pu-icon">📷</span>
                     <span class="pu-label">Click to upload photo<br>(optional)</span>
-                    <input type="file" accept="image/*" onchange="onAddPhoto('${esc(item.name)}', this)">
+                    <input type="file" accept="image/*" aria-label="Add photo" onchange="onAddPhoto('${esc(item.name)}', this)">
                 </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:12px;">
@@ -527,7 +534,7 @@ function renderItemGroup(item) {
                 <div class="item-group-icon">${esc(initials)}</div>
                 <div>
                     <div class="item-group-title">${esc(item.name)}</div>
-                    <div class="item-group-meta">${variants.length} variant${variants.length!==1?'s':''} &nbsp;·&nbsp; ${esc(item.unit)}</div>
+                    <div class="item-group-meta">${variants.length} ${ta(variants.length!==1?'variants':'variant')} &nbsp;·&nbsp; ${esc(item.unit)}</div>
                 </div>
                 <div class="item-group-right">
                     <span class="item-group-total">${totalQty.toLocaleString('en-US').replace(/,/g,'.')} ${esc(item.unit)}</span>
@@ -557,9 +564,13 @@ function toggleGroup(itemName) {
 function renderKPI() {
     const variants = getVariants();
     let total = 0, low = 0, crit = 0;
+    // Money tied up in stock, valued at cost price rather than selling price,
+    // so the figure is what was actually spent to buy what is on the shelf.
+    let stockValue = 0;
     for (const itemName in variants) {
         (variants[itemName] || []).forEach(v => {
             total++;
+            stockValue += Number(v.qty||0) * Number(v.costPrice||0);
             const s = itemStatus(Number(v.qty||0), Number(v.minQty||10));
             if (s === 'low') low++;
             if (s === 'critical' || s === 'empty') crit++;
@@ -568,6 +579,8 @@ function renderKPI() {
     document.getElementById('kpiVariants').textContent = total;
     document.getElementById('kpiLow').textContent      = low;
     document.getElementById('kpiCritical').textContent = crit;
+    document.getElementById('kpiStockValue').textContent =
+        Math.round(stockValue).toLocaleString() + ' IQD';
 
     const today = todayVal();
     const movToday = getMov().filter(m => String(m.date||'').slice(0,10) === today).length;
@@ -607,12 +620,12 @@ function renderMovHistory() {
             <tr>
                 <td style="font-size:12px;color:#64748b;">${fmtDate}</td>
                 <td style="font-weight:700;color:#0f172a;">${esc(m.item)}</td>
-                <td style="color:#c4a24d;font-weight:800;">${esc(m.code||'—')}</td>
+                <td style="color:#2d6a47;font-weight:800;">${esc(m.code||'—')}</td>
                 <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#f1f5f9;color:#374151;">${TYPE_LABEL[m.type]||esc(m.type)}</span></td>
                 <td class="mov-delta ${cls}">${sign}${Number(delta).toLocaleString('en-US').replace(/,/g,'.')}</td>
                 <td style="color:#94a3b8;font-size:12px;">${typeof m.prevQty==='number'?Number(m.prevQty).toLocaleString('en-US').replace(/,/g,'.'):esc(String(m.prevQty||'—'))}</td>
                 <td style="color:#94a3b8;font-size:12px;">${typeof m.nextQty==='number'?Number(m.nextQty).toLocaleString('en-US').replace(/,/g,'.'):esc(String(m.nextQty||'—'))}</td>
-                <td style="font-size:12px;color:#c4a24d;">${esc(m.ref||'—')}</td>
+                <td style="font-size:12px;color:#2d6a47;">${esc(m.ref||'—')}</td>
                 <td style="font-size:12px;color:#94a3b8;">${esc(m.note||'—')}</td>
             </tr>
         `;
@@ -650,13 +663,14 @@ window.addEventListener('load', async () => {
             ]);
             if (vRes.ok) { const r = await vRes.json(); if (r.data && typeof r.data === 'object') _whVariants = r.data; }
             if (mRes.ok) { const r = await mRes.json(); if (Array.isArray(r.data)) _whMov = r.data; }
-        } catch(e) {}
+        } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     }
     populateItemFilter();
     renderAll();
     renderMovHistory();
 });
 </script>
-<script src="../js/i18n.js?v=arabic-en-2"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 </body>
 </html>

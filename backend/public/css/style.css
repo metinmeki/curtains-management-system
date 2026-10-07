@@ -7,21 +7,21 @@
 
 
 :root {
-    --sidebar-bg: #2c1a0e;
-    --sidebar-hover: #3d2412;
+    --sidebar-bg: #1a2e1f;
+    --sidebar-hover: #1a3d2b;
     --sidebar-text: #f7f3e8;
-    --primary-color: #3d2412;
-    --primary-hover: #2c1a0c;
+    --primary-color: #1a3d2b;
+    --primary-hover: #143024;
     --danger-color: #b4534a;
     --success-color: #1a5252;
     --warning-color: #c79543;
     --accent-color: #1a5252;
-    --bg-light: #f5f0d5;
+    --bg-light: #f7faf8;
     --surface-color: #fffdf6;
     --surface-soft: #f0e8d0;
     --border-color: #ddd0b5;
     --text-dark: #1a0e06;
-    --text-gray: #6b5a4a;
+    --text-gray: #6b7c73;
 }
 
 
@@ -63,7 +63,7 @@ html {
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     background:
-        radial-gradient(circle at top left, rgba(196, 162, 77, 0.12), transparent 34%),
+        radial-gradient(circle at top left, rgba(45,106,71, 0.12), transparent 34%),
         var(--bg-light);
     color: var(--text-dark);
     line-height: 1.6;
@@ -110,12 +110,14 @@ button {
 .layout {
     display: flex;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
 .layout.full-page {
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 /* Sidebar */
@@ -736,6 +738,17 @@ textarea {
    RESPONSIVE — Tablet & Mobile
 ═══════════════════════════════════════════════════════════════ */
 
+/* Respect users who have asked for less animation. */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .store-card:hover { transform: none; }
+}
+
 /* Touch devices — bigger tap targets & prevent iOS zoom on inputs */
 @media (pointer: coarse) {
     .btn { min-height: 42px; }
@@ -887,7 +900,8 @@ textarea {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #2c1a0e 0%, #3d2412 50%, #2c1a0e 100%);
+    min-height: 100dvh;
+    background: linear-gradient(135deg, #1a2e1f 0%, #1a3d2b 50%, #1a2e1f 100%);
     padding: 24px;
 }
 
