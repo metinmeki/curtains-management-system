@@ -546,7 +546,8 @@
                 sale.remaining_amount = Math.max(sale.total_amount - (paid - amount), 0);
                 sale.refunded_amount  = saleRefunded(sale) + amount;
                 sale.refunded_profit  = num(sale.refunded_profit) + refundedProfitFor(sale, amount, originalTotal);
-                sale.payment_status   = sale.remaining_amount === 0 ? 'full' : (sale.paid_amount > 0 ? 'partial' : 'unpaid');
+                // Mirror the DB enum exactly: full | debt | partial.
+                sale.payment_status   = sale.remaining_amount === 0 ? 'full' : (sale.paid_amount > 0 ? 'partial' : 'debt');
             }
 
             sale.payments = sale.payments || [];

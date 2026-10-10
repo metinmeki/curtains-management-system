@@ -227,7 +227,9 @@ class RetailSaleController extends Controller
         $newTotal     = max(round($oldTotal - $amount, 2), 0);
         $newRemaining = max(round($newTotal - $newPaid, 2), 0);
         $newRefunded  = round(floatval($sale->refunded_amount ?? 0) + $amount, 2);
-        $newStatus    = $newRemaining == 0 ? 'full' : ($newPaid > 0 ? 'partial' : 'unpaid');
+        // payment_status is an enum of full|debt|partial — 'unpaid' is not a
+        // member and the write fails the CHECK constraint.
+        $newStatus    = $newRemaining == 0 ? 'full' : ($newPaid > 0 ? 'partial' : 'debt');
 
         /* Margin given back, in proportion to the share of the sale refunded.
            Not the refund amount itself: the goods return to stock carrying
