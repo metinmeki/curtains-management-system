@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Curtains Management System</title>
-    <link rel="stylesheet" href="css/style.css?v=ar-9">
+    <link rel="stylesheet" href="css/style.css?v=ar-10">
 </head>
 <body class="ltr">
     <nav class="navbar">
@@ -20,8 +20,14 @@
             </div>
         </div>
     </nav>
-    <main style="max-width:600px;margin:40px auto;padding:0 24px;">
-        <h1 style="font-size:24px;font-weight:800;margin-bottom:24px;">Settings</h1>
+    <main style="max-width:680px;margin:40px auto;padding:0 24px 80px;">
+        <h1 style="font-size:24px;font-weight:800;margin-bottom:6px;">Settings</h1>
+        <p style="color:var(--text-gray);font-size:14px;margin:0 0 24px;">System-wide options. Changes apply to every till and device.</p>
+
+        <div id="notAdmin" class="alert alert-danger" role="alert" style="display:none;margin-bottom:20px;">
+            Only an admin can change system settings. You can view them, but saving is disabled.
+        </div>
+
         <div class="card">
             <div class="card-header"><h2 class="card-title">Currency Exchange Rate</h2></div>
             <div class="card-body">
@@ -41,12 +47,86 @@
                 </div>
             </div>
         </div>
+
+        <!-- ── Defaults for new devices ── -->
+        <div class="card" style="margin-top:20px;">
+            <div class="card-header"><h2 class="card-title">Defaults for new devices</h2></div>
+            <div class="card-body">
+                <p style="color:var(--text-gray);font-size:14px;margin-bottom:20px;">
+                    What a till starts with before anyone changes it on that device. Existing devices keep their own choice.
+                </p>
+                <div class="form-group">
+                    <label for="defaultLanguage">Default language</label>
+                    <select id="defaultLanguage">
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="defaultCurrency">Default display currency</label>
+                    <select id="defaultCurrency">
+                        <option value="IQD">IQD — Iraqi dinar</option>
+                        <option value="USD">USD — US dollar</option>
+                    </select>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                    <button class="btn btn-primary" onclick="saveDefaults()" id="saveDefaultsBtn">Save defaults</button>
+                    <span id="defaultsMessage" role="status" style="font-size:13px;color:#2f7d5b;display:none;">✓ Saved</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Destructive, kept last and visually separated ── -->
+        <div class="card" style="margin-top:28px;border:1px solid #efd9d6;">
+            <div class="card-header" style="background:#fdf6f5;border-bottom:1px solid #efd9d6;">
+                <h2 class="card-title" style="color:#b4534a;">Reset trading data</h2>
+            </div>
+            <div class="card-body">
+                <p style="color:var(--text-gray);font-size:14px;margin-bottom:6px;">
+                    Clears sales, payments, refunds, expenses, orders and transfers so a store can start a clean period.
+                </p>
+                <!-- One text node: an inline <strong> would split the sentence
+                     into fragments that no dictionary key can match. -->
+                <p style="font-size:13px;color:#31533f;background:#eef5e8;border-radius:8px;padding:10px 12px;margin-bottom:18px;font-weight:600;">Kept: stores, users, clients, categories, inventory items and current stock levels. The shop stays set up and ready to trade.</p>
+
+                <div class="form-group">
+                    <label for="resetScope">What to clear</label>
+                    <select id="resetScope" onchange="loadResetPreview()">
+                        <option value="">All stores — whole system</option>
+                    </select>
+                </div>
+
+                <div id="resetPreview" style="font-size:13px;color:#6b7c73;background:#faf8f8;border:1px solid #efd9d6;border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+                    Checking…
+                </div>
+
+                <div class="form-group">
+                    <label for="resetConfirm">Type RESET to enable the button</label>
+                    <input id="resetConfirm" autocomplete="off" placeholder="RESET" oninput="syncResetButton()">
+                </div>
+
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="btn btn-danger" id="resetBtn" onclick="runReset()" disabled>Permanently clear data</button>
+                    <span id="resetMessage" role="status" style="font-size:13px;display:none;"></span>
+                </div>
+                <p style="font-size:12px;color:#b4534a;margin:12px 0 0;">
+                    This cannot be undone. Take a database backup first if the figures still matter.
+                </p>
+            </div>
+        </div>
     </main>
-    <script src="js/api.js?v=ar-9"></script>
+    <script src="js/api.js?v=ar-10"></script>
     <script>
         if (!checkAuth()) window.location.href = "index.html";
         const user = getUser();
         if (user) { document.getElementById("userName").textContent = user.name; document.getElementById("userAvatar").textContent = user.name.charAt(0).toUpperCase(); }
+
+        // Defined per-page across this codebase rather than shared, so the
+        // store names coming back from the API are escaped here too.
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c =>
+                ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+        }
 
         // Same separator convention as every amount elsewhere in the app.
         function fmtRate(n) {
@@ -93,9 +173,144 @@
             }
         }
 
+        // ── Admin gate ───────────────────────────────────────────────────────
+        // The API enforces this too; hiding the controls only saves the admin
+        // from a rejection they could not have predicted.
+        const isAdmin = !!(user && user.role === 'admin');
+        if (!isAdmin) {
+            document.getElementById('notAdmin').style.display = 'block';
+            ['saveRateBtn','saveDefaultsBtn','resetBtn','exchangeRate','defaultLanguage','defaultCurrency','resetScope','resetConfirm']
+                .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+        }
+
+        function authHeaders() {
+            return { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/json', 'Content-Type': 'application/json' };
+        }
+
+        // ── Defaults ─────────────────────────────────────────────────────────
+        async function loadDefaults() {
+            try {
+                const res = await fetch(API_BASE_URL + '/settings/app', { headers: authHeaders() });
+                if (!res.ok) return;
+                const body = await res.json();
+                const s = (body && body.data) || {};
+                if (s.default_language) document.getElementById('defaultLanguage').value = s.default_language;
+                if (s.default_currency) document.getElementById('defaultCurrency').value = s.default_currency;
+            } catch (e) { /* page still usable without them */ }
+        }
+
+        async function saveDefaults() {
+            const btn = document.getElementById('saveDefaultsBtn');
+            btn.disabled = true;
+            const original = btn.textContent;
+            btn.textContent = 'Saving…';
+            try {
+                const res = await fetch(API_BASE_URL + '/settings/app', {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({
+                        default_language: document.getElementById('defaultLanguage').value,
+                        default_currency: document.getElementById('defaultCurrency').value
+                    })
+                });
+                if (!res.ok) {
+                    const b = await res.json().catch(() => null);
+                    throw new Error((b && b.message) || 'The defaults were not saved.');
+                }
+                const msg = document.getElementById('defaultsMessage');
+                msg.style.display = 'inline';
+                setTimeout(() => msg.style.display = 'none', 2500);
+            } catch (e) {
+                showToast(e.message || 'The defaults were not saved.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = original;
+            }
+        }
+
+        // ── Reset ────────────────────────────────────────────────────────────
+        async function populateStores() {
+            const sel = document.getElementById('resetScope');
+            try {
+                const res = await fetch(API_BASE_URL + '/stores', { headers: authHeaders() });
+                if (!res.ok) return;
+                const body = await res.json();
+                (body.data || []).forEach(s => {
+                    sel.insertAdjacentHTML('beforeend',
+                        `<option value="${s.id}">${esc(s.name)} — this store only</option>`);
+                });
+            } catch (e) { /* all-stores option still works */ }
+        }
+
+        // Real counts, so nobody is asked to confirm a deletion they can't see.
+        async function loadResetPreview() {
+            const box = document.getElementById('resetPreview');
+            const scope = document.getElementById('resetScope').value;
+            box.textContent = 'Checking…';
+            try {
+                const url = API_BASE_URL + '/settings/reset/preview' + (scope ? ('?store_id=' + encodeURIComponent(scope)) : '');
+                const res = await fetch(url, { headers: authHeaders() });
+                if (!res.ok) { box.textContent = 'Could not read the current totals.'; return; }
+                const body = await res.json();
+                const d = body.data || {};
+                const total = (d.sales||0) + (d.expenses||0) + (d.orders||0) + (d.transfers||0);
+                box.innerHTML = total === 0
+                    ? 'Nothing to clear for this scope.'
+                    : `Will permanently delete — <strong>${d.sales||0}</strong> sales (with their payments and refunds), ` +
+                      `<strong>${d.expenses||0}</strong> expenses, <strong>${d.orders||0}</strong> orders, ` +
+                      `<strong>${d.transfers||0}</strong> transfers.`;
+            } catch (e) {
+                box.textContent = 'Could not read the current totals.';
+            }
+        }
+
+        function syncResetButton() {
+            if (!isAdmin) return;
+            document.getElementById('resetBtn').disabled =
+                document.getElementById('resetConfirm').value.trim() !== 'RESET';
+        }
+
+        async function runReset() {
+            const scope = document.getElementById('resetScope').value;
+            const label = scope
+                ? document.getElementById('resetScope').selectedOptions[0].textContent
+                : 'every store in the system';
+            if (!await cmsConfirm(`Permanently clear trading data for ${label}? This cannot be undone.`, { danger: true })) return;
+
+            const btn = document.getElementById('resetBtn');
+            const msg = document.getElementById('resetMessage');
+            btn.disabled = true;
+            const original = btn.textContent;
+            btn.textContent = 'Clearing…';
+            try {
+                const res = await fetch(API_BASE_URL + '/settings/reset', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ store_id: scope || null, confirm: 'RESET' })
+                });
+                const body = await res.json().catch(() => null);
+                if (!res.ok) throw new Error((body && body.message) || 'The reset did not run.');
+                const c = (body && body.cleared) || {};
+                msg.textContent = `✓ Cleared ${c.sales||0} sales, ${c.expenses||0} expenses, ${c.orders||0} orders, ${c.transfers||0} transfers.`;
+                msg.style.color = '#2f7d5b';
+                msg.style.display = 'inline';
+                document.getElementById('resetConfirm').value = '';
+                loadResetPreview();
+            } catch (e) {
+                msg.textContent = e.message || 'The reset did not run.';
+                msg.style.color = '#b4534a';
+                msg.style.display = 'inline';
+            } finally {
+                btn.textContent = original;
+                syncResetButton();
+            }
+        }
+
         loadRate();
+        loadDefaults();
+        if (isAdmin) { populateStores().then(loadResetPreview); }
     </script>
-    <script src="js/i18n.js?v=ar-9"></script>
-<script src="js/ui.js?v=ar-9"></script>
+    <script src="js/i18n.js?v=ar-10"></script>
+<script src="js/ui.js?v=ar-10"></script>
 </body>
 </html>

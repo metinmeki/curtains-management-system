@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\CashierController;
 use App\Http\Controllers\Api\StoreTransferController;
 use App\Http\Controllers\Api\AppSettingController;
+use App\Http\Controllers\Api\SystemResetController;
 
 Route::post("/auth/login", [AuthController::class, "login"]);
 Route::post("/auth/cashier-login", [AuthController::class, "cashierLogin"]);
@@ -32,9 +33,13 @@ Route::get("/cashiers", [CashierController::class, "index"]);
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/user", function (Request $request) { return $request->user(); });
 
-    // System settings (exchange rate). Read by all, written by admin only.
+    // System settings (exchange rate, defaults). Read by all, written by admin only.
     Route::get("/settings/app", [AppSettingController::class, "index"]);
     Route::put("/settings/app", [AppSettingController::class, "update"]);
+
+    // Destructive: clears trading history. Admin-only, enforced in the controller.
+    Route::get("/settings/reset/preview", [SystemResetController::class, "preview"]);
+    Route::post("/settings/reset", [SystemResetController::class, "reset"]);
 
     // Item types � global catalog with cost & selling prices
     Route::get("/item-types", [ItemTypeController::class, "index"]);
