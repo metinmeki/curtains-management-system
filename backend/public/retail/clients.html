@@ -509,6 +509,14 @@
             if (!confirmed) return;
 
             const token = getToken();
+
+            /* Captured before anything is mutated. Proportions must be taken
+               against the sale as originally sold, not the already-reduced
+               total: line profit and line quantities never shrink, so dividing
+               by the current total makes each later partial refund give back
+               too much — two 25% refunds on 100,000 would return 25% then 33%. */
+            const originalTotal = num(sale.total_amount ?? sale.total) + saleRefunded(sale);
+
             if (token && token !== 'demo-frontend-token') {
                 try {
                     const res = await fetch(`${API_BASE_URL}/retail/sales/${sale.id}/refund`, {
@@ -534,14 +542,14 @@
                 sale.paid_amount      = paid - amount;
                 sale.remaining_amount = Math.max((total - amount) - (paid - amount), 0);
                 sale.refunded_amount  = saleRefunded(sale) + amount;
-                sale.refunded_profit  = num(sale.refunded_profit) + refundedProfitFor(sale, amount, total);
+                sale.refunded_profit  = num(sale.refunded_profit) + refundedProfitFor(sale, amount, originalTotal);
                 sale.payment_status   = sale.remaining_amount === 0 ? 'full' : (sale.paid_amount > 0 ? 'partial' : 'unpaid');
             }
 
             sale.payments = sale.payments || [];
             sale.payments.push({ date: new Date().toISOString().slice(0,10), amount: -amount, note: note || ta('Refund'), refund: true });
 
-            const restocked = restockRefundedItems(sale, amount, note);
+            const restocked = restockRefundedItems(sale, amount, originalTotal, note);
 
             renderClients();
             const refreshed = window.clientAccounts.findIndex(c => c.key === client.key);
@@ -562,14 +570,14 @@
         }
 
         /* A refund is entered as money, not as line quantities, so stock goes
-           back in proportion to the refunded share of the sale. A full refund
-           therefore returns exactly what went out. Returns how many lines moved. */
-        function restockRefundedItems(sale, amount, note) {
+           back in proportion to the refunded share of the sale. originalTotal is
+           the pre-refund sale value, passed in rather than derived, so repeated
+           partial refunds stay proportional to the original quantities.
+           Returns how many lines moved. */
+        function restockRefundedItems(sale, amount, originalTotal, note) {
             const items = sale.items || [];
             if (!items.length || typeof returnVariantStock !== 'function') return 0;
-
-            const originalTotal = num(sale.total_amount ?? sale.total) + amount;
-            if (originalTotal <= 0) return 0;
+            if (!(originalTotal > 0)) return 0;
             const share = Math.min(amount / originalTotal, 1);
 
             let moved = 0;
