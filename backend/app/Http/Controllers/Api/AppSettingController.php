@@ -30,14 +30,27 @@ class AppSettingController extends Controller
             ], 403);
         }
 
+        // Every key is optional so a section of the settings page can save on
+        // its own without having to resend the values it does not own.
         $validated = $request->validate([
-            'usd_to_iqd_rate' => 'required|numeric|min:1|max:1000000',
+            'usd_to_iqd_rate'  => 'sometimes|numeric|min:1|max:1000000',
+            'default_language' => 'sometimes|in:en,ar',
+            'default_currency' => 'sometimes|in:IQD,USD',
         ]);
 
-        DB::table('app_settings')->updateOrInsert(
-            ['key' => 'usd_to_iqd_rate'],
-            ['value' => (string) $validated['usd_to_iqd_rate'], 'updated_at' => now(), 'created_at' => now()]
-        );
+        if (empty($validated)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'No recognised settings were supplied.',
+            ], 422);
+        }
+
+        foreach ($validated as $key => $value) {
+            DB::table('app_settings')->updateOrInsert(
+                ['key' => $key],
+                ['value' => (string) $value, 'updated_at' => now(), 'created_at' => now()]
+            );
+        }
 
         return response()->json([
             'status' => 'success',
