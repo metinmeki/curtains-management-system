@@ -538,9 +538,12 @@
             } else {
                 // Demo/local: mirror exactly what the API would have done.
                 const total = num(sale.total_amount ?? sale.total);
-                sale.total_amount     = total - amount;
+                // Clamped for the same reason as the API: pay() does not cap a
+                // payment at the sale total, so an over-paid sale must not end
+                // up with a negative value after a refund.
+                sale.total_amount     = Math.max(total - amount, 0);
                 sale.paid_amount      = paid - amount;
-                sale.remaining_amount = Math.max((total - amount) - (paid - amount), 0);
+                sale.remaining_amount = Math.max(sale.total_amount - (paid - amount), 0);
                 sale.refunded_amount  = saleRefunded(sale) + amount;
                 sale.refunded_profit  = num(sale.refunded_profit) + refundedProfitFor(sale, amount, originalTotal);
                 sale.payment_status   = sale.remaining_amount === 0 ? 'full' : (sale.paid_amount > 0 ? 'partial' : 'unpaid');
