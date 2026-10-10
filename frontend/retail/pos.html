@@ -130,21 +130,33 @@
                         </div>
                     </div>
                     <div class="no-print" style="padding:14px 18px;border-top:1px solid rgba(27,61,46,0.1);background:var(--receipt-cream);">
-                        <span class="group-caption" style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">Measurements</span>
-                        <div class="measure-grid">
-                            <div>
-                                <label for="saleWidth" class="measure-label">Width (cm)</label>
-                                <input id="saleWidth" class="measure-input quick-number" type="number" min="0" step="0.5" placeholder="0" onfocus="selectNumber(this)">
-                            </div>
-                            <div>
-                                <label for="saleLength" class="measure-label">Length (cm)</label>
-                                <input id="saleLength" class="measure-input quick-number" type="number" min="0" step="0.5" placeholder="0" onfocus="selectNumber(this)">
-                            </div>
-                            <div>
-                                <label for="saleDetails" class="measure-label">Details</label>
-                                <textarea id="saleDetails" class="measure-input" rows="3" placeholder="Write measurements and details here…"></textarea>
-                            </div>
+                        <label style="display:block;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#1b3d2e;opacity:0.6;margin-bottom:6px;">تفاصيل / Measurements</label>
+                        <div class="table-wrapper">
+                            <table class="measure-sheet">
+                                <colgroup>
+                                    <col style="width:36px;">
+                                    <col style="width:24%;">
+                                    <col style="width:14%;">
+                                    <col style="width:14%;">
+                                    <col style="width:10%;">
+                                    <col>
+                                    <col style="width:44px;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>المكان / Room</th>
+                                        <th>العرض / Width</th>
+                                        <th>الارتفاع / Height</th>
+                                        <th>العدد / Qty</th>
+                                        <th>ملاحظات / Notes</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="measureRows"></tbody>
+                            </table>
                         </div>
+                        <button class="btn btn-secondary btn-small" style="margin-top:8px;font-size:11px;" onclick="addMeasureRow()">+ Add row (سطر)</button>
                     </div>
 
                     <!-- ── ORDER SECTION (collapsible, multi-card) ── -->
@@ -237,6 +249,7 @@
                         <button class="btn btn-success btn-block" id="submitSaleBtn" onclick="submitSale()">Add sale</button>
                         <button class="btn btn-gold btn-block" id="submitPendingBtn" style="margin-top:10px;" onclick="submitSale('pending')">⏳ Save as pending (awaiting supplier call)</button>
                         <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="printReceipt()">Print receipt</button>
+                        <button class="btn btn-secondary btn-block" id="quotePdfBtn" style="margin-top:10px;" onclick="downloadQuotePdf()">PDF quote for client (عرض سعر)</button>
                         <div id="submitMessage" class="alert alert-success" role="status" style="display:none;margin-top:16px;"></div>
                     </div>
                 </aside>
@@ -249,6 +262,7 @@
 
     <script src="../js/api.js?v=ar-9"></script>
     <script src="../js/demo-data.js?v=ar-9"></script>
+    <script src="../js/vendor/html2pdf.bundle.min.js"></script>
     <script>
         if (!checkAuth()) throw new Error('Not authenticated');
         if (!getStoreId()) window.location.href = '../landing.html';
@@ -645,9 +659,7 @@
             document.getElementById('discountNote').value = '';
             document.getElementById('paidAmount').value = 0;
             document.getElementById('debtNote').value = '';
-            document.getElementById('saleDetails').value = '';
-            document.getElementById('saleWidth').value = '';
-            document.getElementById('saleLength').value = '';
+            resetMeasureSheet();
 
             // Reset order section
             document.getElementById('posOrderCards').innerHTML = '';
@@ -736,9 +748,7 @@
                 // supplier, status tracks the money.
                 approvalStatus,
                 note: document.getElementById('debtNote').value,
-                saleDetails: document.getElementById('saleDetails').value,
-                saleWidth:  document.getElementById('saleWidth').value,
-                saleLength: document.getElementById('saleLength').value,
+                saleDetails: measurementsText(),
                 items: data.items,
                 workerAccounts: data.workerAccounts
             };
@@ -848,9 +858,7 @@
             const date  = document.getElementById('saleDate').value || '';
             const name  = document.getElementById('clientName').value || '-';
             const phone = document.getElementById('clientPhone').value || '-';
-            const details = document.getElementById('saleDetails').value || '';
-            const width   = document.getElementById('saleWidth').value || '';
-            const length  = document.getElementById('saleLength').value || '';
+            const measures = getMeasurements();
 
             return `
                 <div style="text-align:center;color:#1f315f;">
@@ -866,8 +874,12 @@
                 <p>Subtotal: ${money(data.saleTotal)}</p>
                 <p>Discount: ${money(discount)}</p>
                 <p>Total: ${money(finalTotal)}</p>
-                ${(width || length) ? `<p class="print-measure">القياس / Size: <strong>${esc(width || '—')} × ${esc(length || '—')} cm</strong> (العرض × الطول / W × L)</p>` : ''}
-                ${details ? `<p>Measurements: ${esc(details)}</p>` : ''}
+                ${measures.length ? `
+                <p>تفاصيل / Measurements</p>
+                <table class="print-order-table">
+                    <thead><tr><th>#</th><th>المكان</th><th>العرض</th><th>الارتفاع</th><th>العدد</th><th>ملاحظات</th></tr></thead>
+                    <tbody>${measures.map((m, i) => `<tr><td>${i + 1}</td><td>${esc(m.room)}</td><td>${esc(m.width)}</td><td>${esc(m.height)}</td><td>${esc(m.qty)}</td><td>${esc(m.note)}</td></tr>`).join('')}</tbody>
+                </table>` : ''}
             `;
         }
 
@@ -877,6 +889,229 @@
             document.body.classList.add('printing-order');
             window.print();
             setTimeout(() => document.body.classList.remove('printing-order'), 200);
+        }
+
+        // ─── MEASUREMENTS SHEET (spreadsheet-style grid) ────────────────────────
+
+        const MEASURE_FIELDS = ['room', 'width', 'height', 'qty', 'note'];
+
+        function addMeasureRow(afterRow = null) {
+            const row = document.createElement('tr');
+            row.className = 'measure-row';
+            row.innerHTML = `
+                <td class="measure-num"></td>
+                <td><input class="m-room"></td>
+                <td><input class="m-width" inputmode="decimal"></td>
+                <td><input class="m-height" inputmode="decimal"></td>
+                <td><input class="m-qty" inputmode="numeric"></td>
+                <td><input class="m-note"></td>
+                <td class="receipt-action-cell">
+                    <button class="btn btn-danger btn-small receipt-action-btn delete-row-btn" title="Delete row" tabindex="-1" onclick="deleteMeasureRow(this)">×</button>
+                </td>
+            `;
+            if (afterRow) afterRow.insertAdjacentElement('afterend', row);
+            else document.getElementById('measureRows').appendChild(row);
+            renumberMeasureRows();
+            return row;
+        }
+
+        function deleteMeasureRow(button) {
+            const rows = document.querySelectorAll('.measure-row');
+            const row = button.closest('tr');
+            if (rows.length <= 1) {
+                row.querySelectorAll('input').forEach(input => { input.value = ''; });
+                return;
+            }
+            row.remove();
+            renumberMeasureRows();
+        }
+
+        function renumberMeasureRows() {
+            document.querySelectorAll('.measure-row').forEach((row, i) => {
+                row.querySelector('.measure-num').textContent = i + 1;
+            });
+        }
+
+        function resetMeasureSheet() {
+            document.getElementById('measureRows').innerHTML = '';
+            for (let i = 0; i < 3; i++) addMeasureRow();
+        }
+
+        // Spreadsheet keys: Enter / ArrowDown go to the cell below (adding a row at the end), ArrowUp goes up
+        document.getElementById('measureRows').addEventListener('keydown', e => {
+            const input = e.target.closest('input');
+            if (!input || !['Enter', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
+            e.preventDefault();
+            const row = input.closest('tr');
+            const cls = input.className;
+            let target = e.key === 'ArrowUp' ? row.previousElementSibling : row.nextElementSibling;
+            if (!target && e.key !== 'ArrowUp') target = addMeasureRow(row);
+            if (target) target.querySelector('.' + cls).focus();
+        });
+
+        function getMeasurements() {
+            return [...document.querySelectorAll('.measure-row')].map(row => {
+                const m = {};
+                MEASURE_FIELDS.forEach(f => { m[f] = row.querySelector('.m-' + f).value.trim(); });
+                return m;
+            }).filter(m => MEASURE_FIELDS.some(f => m[f]));
+        }
+
+        // Saved as plain text (one line per row) so sale history and debts pages show it as-is
+        function measurementsText() {
+            return getMeasurements().map((m, i) => {
+                const size = [m.width, m.height].filter(Boolean).join(' × ');
+                const parts = [m.room, size, m.qty ? 'العدد ' + m.qty : '', m.note].filter(Boolean);
+                return `${i + 1}. ${parts.join(' — ')}`;
+            }).join('\n');
+        }
+
+        resetMeasureSheet();
+
+        // ─── CLIENT QUOTE PDF (sent before payment) ─────────────────────────────
+
+        function quoteHtml() {
+            const data = getInvoiceData();
+            const discount   = Math.min(Number(document.getElementById('discountAmount').value || 0), data.saleTotal);
+            const finalTotal = Math.max(data.saleTotal - discount, 0);
+            const date    = document.getElementById('saleDate').value || todayInputValue();
+            const name    = document.getElementById('clientName').value || '-';
+            const phone   = document.getElementById('clientPhone').value || '-';
+            const measures = getMeasurements();
+            const items   = data.items.filter(item => item.quantity > 0 || item.saleTotal > 0);
+
+            // Only confirmed order cards count toward the client total (same rule as calculateInvoice)
+            const orders = getPosOrdersData().filter(o => o.card.dataset.confirmed === 'true' && (o.items.length || o.total > 0));
+            const orderTotal = orders.reduce((s, o) => s + o.total, 0);
+            const grandTotal = finalTotal + orderTotal;
+
+            const green = '#1b3d2e', gold = '#b89a3a', line = 'rgba(27,61,46,0.18)';
+            const th = `style="background:${green};color:#fff;padding:9px 6px;font-size:12px;font-weight:700;border:1px solid ${green};"`;
+            const td = `style="padding:8px 6px;font-size:12px;border:1px solid ${line};text-align:center;"`;
+            const sumRow = (label, value, strong) => `
+                <tr>
+                    <td style="padding:7px 10px;font-size:${strong ? 15 : 13}px;${strong ? `font-weight:800;background:${green};color:#fff;` : ''}">${label}</td>
+                    <td style="padding:7px 10px;font-size:${strong ? 15 : 13}px;text-align:left;direction:ltr;${strong ? `font-weight:800;background:${green};color:#fff;` : 'font-weight:700;'}">${value}</td>
+                </tr>`;
+
+            const itemRows = items.length
+                ? items.map((item, i) => `<tr>
+                    <td ${td}>${i + 1}</td>
+                    <td ${td}>${esc(item.material)}</td>
+                    <td ${td}>${esc(item.code || '-')}</td>
+                    <td ${td}>${esc(item.quantity)}</td>
+                    <td ${td}>${money(item.price)}</td>
+                    <td ${td}><strong>${money(item.saleTotal)}</strong></td>
+                    <td ${td}>${esc(item.note || '')}</td>
+                </tr>`).join('')
+                : `<tr><td ${td} colspan="7">-</td></tr>`;
+
+            const orderBlock = orders.length ? `
+                <div style="margin-top:18px;font-weight:800;font-size:13px;color:${green};">طلبية / Order items</div>
+                <table style="width:100%;border-collapse:collapse;margin-top:6px;">
+                    <thead><tr><th ${th}>المواد</th><th ${th}>كود</th><th ${th}>الكمية</th><th ${th}>السعر</th><th ${th}>المجموع</th></tr></thead>
+                    <tbody>${orders.map(o => o.items.map(it => `<tr>
+                        <td ${td}>${esc(it.itemType)}</td><td ${td}>${esc(it.code || '-')}</td><td ${td}>${esc(it.quantity)}</td>
+                        <td ${td}>${money(it.price)}</td><td ${td}><strong>${money(it.lineTotal)}</strong></td></tr>`).join('')
+                        + (o.delivery > 0 ? `<tr><td ${td} colspan="4">توصيل / Delivery</td><td ${td}><strong>${money(o.delivery)}</strong></td></tr>` : '')
+                    ).join('')}</tbody>
+                </table>` : '';
+
+            return `
+            <div style="width:760px;padding:28px 30px;background:#fff;color:#1f2937;font-family:'Segoe UI',Tahoma,Arial,sans-serif;direction:rtl;">
+                <div style="background:linear-gradient(135deg,#163329,#245f49);color:#fff;border-radius:10px;padding:22px 24px;text-align:center;">
+                    <div style="font-size:30px;font-weight:900;letter-spacing:6px;direction:ltr;">DLOVAN PARDA</div>
+                    <div style="font-size:20px;font-weight:700;margin-top:4px;color:#e9d9a6;">دلوفان للستائر</div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-bottom:12px;border-bottom:2px solid ${gold};">
+                    <div>
+                        <div style="font-size:22px;font-weight:900;color:${green};">عرض سعر</div>
+                        <div style="font-size:12px;font-weight:700;color:${gold};direction:ltr;text-align:right;">QUOTATION</div>
+                    </div>
+                    <div style="font-size:13px;line-height:1.8;text-align:left;direction:ltr;">
+                        <div><strong>Date:</strong> ${esc(date)}</div>
+                        <div><strong>Client:</strong> ${esc(name)}</div>
+                        <div><strong>Phone:</strong> ${esc(phone)}</div>
+                    </div>
+                </div>
+
+                <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+                    <thead><tr>
+                        <th ${th}>#</th><th ${th}>المواد</th><th ${th}>كود</th><th ${th}>متر / نافذة</th>
+                        <th ${th}>السعر</th><th ${th}>المجموع</th><th ${th}>ملاحظات</th>
+                    </tr></thead>
+                    <tbody>${itemRows}</tbody>
+                </table>
+
+                ${orderBlock}
+
+                <table style="width:320px;border-collapse:collapse;margin-top:18px;margin-right:auto;border:1px solid ${line};">
+                    ${sumRow('المجموع / Subtotal', money(data.saleTotal))}
+                    ${discount > 0 ? sumRow('الخصم / Discount', '- ' + money(discount)) : ''}
+                    ${orders.length ? sumRow('طلبية / Orders', money(orderTotal)) : ''}
+                    ${sumRow('المجموع الكلي / Total', money(grandTotal), true)}
+                </table>
+
+                ${measures.length ? `
+                <div style="margin-top:18px;font-weight:800;font-size:13px;color:${green};">تفاصيل / Measurements</div>
+                <table style="width:100%;border-collapse:collapse;margin-top:6px;">
+                    <thead><tr><th ${th}>#</th><th ${th}>المكان</th><th ${th}>العرض</th><th ${th}>الارتفاع</th><th ${th}>العدد</th><th ${th}>ملاحظات</th></tr></thead>
+                    <tbody>${measures.map((m, i) => `<tr>
+                        <td ${td}>${i + 1}</td><td ${td}>${esc(m.room)}</td><td ${td}>${esc(m.width)}</td>
+                        <td ${td}>${esc(m.height)}</td><td ${td}>${esc(m.qty)}</td><td ${td}>${esc(m.note)}</td></tr>`).join('')}</tbody>
+                </table>` : ''}
+
+                <div style="margin-top:26px;padding-top:10px;border-top:1px solid ${line};text-align:center;font-size:12px;color:#6b7280;">
+                    هذا عرض سعر وليس فاتورة نهائية · This is a price quote, not a final receipt
+                </div>
+            </div>`;
+        }
+
+        async function downloadQuotePdf() {
+            calculateInvoice();
+            const data = getInvoiceData();
+            const msg = document.getElementById('submitMessage');
+            if (data.saleTotal <= 0) {
+                msg.textContent = 'Add at least one item with quantity and price before creating the quote.';
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+                return;
+            }
+            if (typeof html2pdf === 'undefined') {
+                msg.textContent = 'PDF library failed to load. Use "Print receipt" and choose "Save as PDF" instead.';
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('quotePdfBtn');
+            const label = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Creating PDF...';
+
+            const holder = document.createElement('div');
+            holder.innerHTML = quoteHtml();
+            const date = document.getElementById('saleDate').value || todayInputValue();
+            const client = (document.getElementById('clientName').value || 'client').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '-');
+
+            try {
+                await html2pdf().set({
+                    margin: [6, 6, 6, 6],
+                    filename: `Dlovan-Parda-Quote-${client}-${date}.pdf`,
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                }).from(holder.firstElementChild).save();
+            } catch (e) {
+                msg.textContent = 'Could not create the PDF: ' + (e && e.message ? e.message : e);
+                msg.className = 'alert alert-danger';
+                msg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = label;
+            }
         }
 
         // ─── ORDER SECTION (multi-card) ──────────────────────────────────────────

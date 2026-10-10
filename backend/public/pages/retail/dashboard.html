@@ -425,7 +425,7 @@
         let stores = {};
 
         function checkAuth() {
-            const token = getToken();
+            const token = localStorage.getItem('auth_token');
             if (!token) {
                 window.location.href = '../../index.html';
                 return false;
@@ -457,7 +457,7 @@
             contentState.style.display = 'none';
 
             try {
-                const token = getToken();
+                const token = localStorage.getItem('auth_token');
                 const queryParams = new URLSearchParams();
                 queryParams.append('date_filter', currentFilter);
 
@@ -607,7 +607,7 @@
         }
 
         function logout() {
-            const token = getToken();
+            const token = localStorage.getItem('auth_token');
             if (token) {
                 fetch(`${API_URL}/auth/logout`, {
                     method: 'POST',
@@ -616,8 +616,8 @@
                         'Accept': 'application/json'
                     }
                 }).finally(() => {
-                    removeToken();
-                    removeUser();
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
                     window.location.href = '../../index.html';
                 });
             }

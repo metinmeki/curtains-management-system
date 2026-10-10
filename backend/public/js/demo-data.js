@@ -1,10 +1,12 @@
 const DEMO_CURRENCY = 'IQD';
 
+// Both delegate to api.js so the rate and the display currency have exactly
+// one owner. api.js is always loaded before this file.
 function _getCurrencyRate() {
-    return parseFloat(localStorage.getItem('usd_to_iqd_rate') || 1480);
+    return getExchangeRate();
 }
 function _getDisplayCurrency() {
-    return localStorage.getItem('display_currency') || 'IQD';
+    return getDisplayCurrency();
 }
 const RETAIL_SALES_STORAGE_VERSION = 'v2';
 const RETAIL_EXPENSES_STORAGE_VERSION = 'v1';
@@ -78,7 +80,7 @@ async function loadRetailDataFromDB(storeId) {
     if (sRes.ok) { const r = await sRes.json(); if (Array.isArray(r.data)) _storeSales    = r.data; }
     if (eRes.ok) { const r = await eRes.json(); if (Array.isArray(r.data)) _storeExpenses = r.data; }
     if (oRes.ok) { const r = await oRes.json(); if (Array.isArray(r.data)) _storeOrders   = r.data; }
-  } catch(e) {}
+  } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
 }
 
 function getWorkerAccountTotals() {
@@ -126,14 +128,9 @@ function esc(v) {
   });
 }
 
+// Single formatter for the whole app — see formatCurrency in api.js.
 function money(value) {
-  const num = Math.round(Number(value || 0));
-  if (_getDisplayCurrency() === 'USD') {
-    const rate = _getCurrencyRate();
-    const usd = rate > 0 ? num / rate : 0;
-    return '$' + usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-  return num.toLocaleString('en-US').replace(/,/g, '.') + ' IQD';
+  return formatCurrency(value);
 }
 
 function statusBadge(status) {
@@ -335,7 +332,7 @@ async function loadInvFromDB(storeId, callback) {
     if (iRes.ok) { const r = await iRes.json(); if (Array.isArray(r.data)) _invItems = r.data; }
     if (sRes.ok) { const r = await sRes.json(); if (r.data && typeof r.data === 'object') _invStock[String(storeId)] = r.data; }
     if (cRes.ok) { const r = await cRes.json(); if (Array.isArray(r.data)) _invCategories = r.data; }
-  } catch(e) {}
+  } catch(e) { console.warn('Load failed; showing cached or empty data', e); }
   if (callback) callback();
 }
 
@@ -346,6 +343,31 @@ function addInvMovement(mov, storeId) {
   if (!_invMovements[sid]) _invMovements[sid] = [];
   _invMovements[sid].unshift({ id: Date.now() + Math.random(), date: new Date().toISOString(), ...mov });
   _invMovements[sid] = _invMovements[sid].slice(0, 1000);
+}
+
+/* Mirror of deductVariantStock, for goods coming back on a refund. Logged as
+   its own movement type so the history shows a return rather than looking like
+   an unexplained manual adjustment. */
+function returnVariantStock(variantId, qty, storeId, reason, saleRef) {
+  const stock = getStoreStock(storeId);
+  const current = stock[String(variantId)] || 0;
+  const back = Math.max(0, Number(qty) || 0);
+  const next = current + back;
+  stock[String(variantId)] = next;
+  saveStoreStock(storeId, stock);
+
+  const variant = getInvVariants().find(v => String(v.id) === String(variantId));
+  addInvMovement({
+    variantId: String(variantId),
+    variantCode: variant ? variant.code : '',
+    variantName: variant ? variant.name : '',
+    type: 'return',
+    delta: back,
+    prevQty: current,
+    nextQty: next,
+    reason: reason || 'Refund',
+    ref: saleRef || ''
+  }, storeId);
 }
 
 function deductVariantStock(variantId, qty, storeId, reason, saleRef) {

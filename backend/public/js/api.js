@@ -260,16 +260,82 @@ function removeStoreSelection() {
     localStorage.removeItem('store_name');
 }
 
+// ── Exchange rate ─────────────────────────────────────────────────────────────
+// The rate is owned by the server so every device agrees on it. localStorage is
+// only a cache for offline/first-paint use — never the source of truth.
+const RATE_CACHE_KEY = 'usd_to_iqd_rate';
+
+function getExchangeRate() {
+    const cached = parseFloat(localStorage.getItem(RATE_CACHE_KEY));
+    return cached > 0 ? cached : null;
+}
+
+// True when we have never successfully read the rate from the server. Callers
+// that convert to USD use this to warn instead of quietly inventing a number.
+function isExchangeRateKnown() {
+    return getExchangeRate() !== null;
+}
+
+async function loadExchangeRate() {
+    const token = getToken();
+    if (!token || token === 'demo-frontend-token') return getExchangeRate();
+    try {
+        const res = await fetch(`${API_BASE_URL}/settings/app`, {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+            const r = await res.json();
+            const rate = parseFloat(r.data && r.data.usd_to_iqd_rate);
+            if (rate > 0) {
+                localStorage.setItem(RATE_CACHE_KEY, String(rate));
+                document.dispatchEvent(new CustomEvent('cms:rate-loaded', { detail: { rate } }));
+                return rate;
+            }
+        }
+    } catch (e) {
+        console.warn('Exchange rate unavailable, using cached value', e);
+    }
+    return getExchangeRate();
+}
+
+async function saveExchangeRate(rate) {
+    const token = getToken();
+    const res = await fetch(`${API_BASE_URL}/settings/app`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ usd_to_iqd_rate: rate })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.message || 'The server rejected the new rate.');
+    localStorage.setItem(RATE_CACHE_KEY, String(rate));
+    document.dispatchEvent(new CustomEvent('cms:rate-loaded', { detail: { rate: Number(rate) } }));
+    return body;
+}
+
 // ── Format Helpers ────────────────────────────────────────────────────────────
+function getDisplayCurrency() {
+    return localStorage.getItem('display_currency') || 'IQD';
+}
+
+// Canonical money formatter for the whole app. IQD uses dot thousand
+// separators (local convention); USD uses standard comma/decimal.
 function formatCurrency(value) {
     const num = Math.round(Number(value || 0));
-    const cur = localStorage.getItem('display_currency') || 'IQD';
-    if (cur === 'USD') {
-        const rate = parseFloat(localStorage.getItem('usd_to_iqd_rate') || 1480);
-        const usd = rate > 0 ? num / rate : 0;
-        return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usd);
+    if (getDisplayCurrency() === 'USD') {
+        const rate = getExchangeRate();
+        if (!rate) return '— USD';
+        return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num / rate);
     }
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num) + ' IQD';
+    return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num) + ' IQD';
+}
+
+// Formats a value that is already denominated in USD (supplier orders).
+function formatUSD(value) {
+    return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0));
 }
 
 function formatDate(dateString) {

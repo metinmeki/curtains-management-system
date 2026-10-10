@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Inventory - Curtains Management System</title>
-    <link rel="stylesheet" href="rt-style.css?v=1">
+    <link rel="stylesheet" href="rt-style.css?v=ar-9">
     <style>
         .inv-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
         .inv-stat { border-radius: 10px; padding: 16px 18px; border: none; color: #fff; }
@@ -132,7 +132,7 @@
     </aside>
     <div class="rt-main">
         <div class="rt-topbar">
-            <button class="rt-menu-btn" onclick="toggleSidebar()">☰</button>
+            <button type="button" class="cms-iconbtn rt-menu-btn" aria-label="Open menu" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
             <span class="rt-topbar-title">Store Inventory</span>
             <div class="rt-topbar-right">
                 <span class="scope-pill">Track each store item by code and quantity. POS sales deduct stock by code.</span>
@@ -155,6 +155,13 @@
                 </div>
             </div>
 
+            <!-- Capital tied up in stock -->
+            <div class="inv-capital">
+                <div class="inv-capital-label">Stock value (cost)</div>
+                <div class="inv-capital-value" id="statStockValue">0 IQD</div>
+                <div class="inv-capital-note">Cost price × quantity in stock — not selling price</div>
+            </div>
+
             <!-- Stats -->
             <div class="inv-stats" id="invStats">
                 <div class="inv-stat"><div class="inv-stat-label" id="statLabel1">Total codes</div><div class="inv-stat-value" id="statCodes">0</div></div>
@@ -169,12 +176,12 @@
                     <input id="searchInput" type="text" placeholder="Search by name or code…" oninput="renderAll()">
                 </div>
                 <div class="form-group">
-                    <select id="filterCategory" onchange="renderAll()">
+                    <select id="filterCategory" aria-label="Filter by category" onchange="renderAll()">
                         <option value="">All categories</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <select id="filterStatus" onchange="renderAll()">
+                    <select id="filterStatus" aria-label="Filter by status" onchange="renderAll()">
                         <option value="">All status</option>
                         <option value="in">In Stock</option>
                         <option value="low">Low Stock</option>
@@ -254,7 +261,7 @@
             <input type="hidden" id="itemEditId">
             <div class="form-group">
                 <label>Category</label>
-                <select id="itemCategorySelect"></select>
+                <select id="itemCategorySelect" aria-label="Category"></select>
             </div>
             <div class="form-group"><label>Item name</label><input id="itemName" placeholder="e.g. Blackout Curtain"></div>
             <div class="form-group"><label>Description (optional)</label><input id="itemDesc" placeholder="Short description"></div>
@@ -278,11 +285,11 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Category</label>
-                    <select id="variantCategorySelect" onchange="populateVariantItems()"></select>
+                    <select id="variantCategorySelect" aria-label="Category" onchange="populateVariantItems()"></select>
                 </div>
                 <div class="form-group">
                     <label>Item</label>
-                    <select id="variantItemSelect" onchange="updateVariantQtyLabel()"></select>
+                    <select id="variantItemSelect" aria-label="Item" onchange="updateVariantQtyLabel()"></select>
                 </div>
             </div>
             <div class="form-grid">
@@ -309,11 +316,11 @@
             </div>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Cost price (ما اشتريناه) IQD</label>
+                    <label>Cost price IQD</label>
                     <input id="variantCostPrice" type="number" min="0" step="1" value="0" placeholder="5000">
                 </div>
                 <div class="form-group">
-                    <label>Selling price (ما بعناه) IQD</label>
+                    <label>Selling price IQD</label>
                     <input id="variantSellingPrice" type="number" min="0" step="1" value="0" placeholder="6000">
                 </div>
             </div>
@@ -347,7 +354,7 @@
             </div>
             <div class="form-group">
                 <label>Action</label>
-                <select id="adjustType" onchange="updateAdjustLabel()">
+                <select id="adjustType" aria-label="Adjustment type" onchange="updateAdjustLabel()">
                     <option value="add">Add stock</option>
                     <option value="remove">Remove stock</option>
                     <option value="set">Set exact quantity</option>
@@ -403,8 +410,8 @@
     </div>
 </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=inv-1"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
     if (!checkAuth()) throw new Error('Not authenticated');
     if (!getStoreId()) window.location.href = '../landing.html';
@@ -461,6 +468,17 @@
     }
 
     // ─── Stats ───────────────────────────────────────────────────
+    // Money tied up in stock, valued at cost price rather than selling price,
+    // so the figure is what was actually spent to buy what is on the shelf.
+    // Stays on the whole store even when an item or variant is selected below,
+    // since the four cards under it get repurposed by those selections.
+    function renderStockValue() {
+        const total = getInvVariants().reduce((sum, v) =>
+            sum + getVariantQty(v.id, STORE_ID) * Number(v.costPrice || 0), 0);
+        document.getElementById('statStockValue').textContent =
+            Math.round(total).toLocaleString() + ' IQD';
+    }
+
     function renderStats() {
         const variants = getInvVariants();
         let totalQty = 0, low = 0, out = 0;
@@ -692,6 +710,7 @@
 
     function renderAll() {
         renderStats();
+        renderStockValue();
         populateCategoryFilter();
         if (currentView === 'hierarchy') renderHierarchy();
         else renderTable();
@@ -764,7 +783,7 @@
 
     function saveCategory() {
         const name = document.getElementById('catName').value.trim();
-        if (!name) { alert(ta('Category name is required.')); return; }
+        if (!name) { showToast('Category name is required.', 'error'); return; }
         const id = document.getElementById('catEditId').value;
         const cats = getInvCategories();
         if (id) {
@@ -826,8 +845,8 @@
     function saveItem() {
         const name = document.getElementById('itemName').value.trim();
         const catId = document.getElementById('itemCategorySelect').value;
-        if (!name) { alert(ta('Item name is required.')); return; }
-        if (!catId) { alert(ta('Please select a category.')); return; }
+        if (!name) { showToast('Item name is required.', 'error'); return; }
+        if (!catId) { showToast('Please select a category.', 'error'); return; }
         const id = document.getElementById('itemEditId').value;
         const items = getInvItems();
         if (id) {
@@ -931,14 +950,14 @@
         const name = document.getElementById('variantName').value.trim();
         const code = document.getElementById('variantCode').value.trim();
         const itemId = document.getElementById('variantItemSelect').value;
-        if (!name) { alert(ta('Variant name is required.')); return; }
-        if (!code) { alert(ta('Code / SKU is required.')); return; }
-        if (!itemId) { alert(ta('Please select an item.')); return; }
+        if (!name) { showToast('Variant name is required.', 'error'); return; }
+        if (!code) { showToast('Code / SKU is required.', 'error'); return; }
+        if (!itemId) { showToast('Please select an item.', 'error'); return; }
 
         const editId = document.getElementById('variantEditId').value;
         const variants = getInvVariants();
         const dup = variants.find(v => v.code && v.code.toLowerCase() === code.toLowerCase() && String(v.id) !== editId);
-        if (dup) { alert(ta('This code is already used by another variant.')); return; }
+        if (dup) { showToast('This code is already used by another variant.', 'error'); return; }
 
         const qty = Math.max(0, Number(document.getElementById('variantQty').value) || 0);
         const minQty = Math.max(0, Number(document.getElementById('variantMinQty').value) || 5);
@@ -1120,10 +1139,11 @@
     populateCategorySelects();
     renderAll();
 </script>
-<script src="../js/i18n.js?v=inv-1"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 <script>if(typeof getActiveCashier==="function"&&getActiveCashier()){var b=document.getElementById("switchWorkspaceBtn");if(b)b.style.display="none";}</script>
 <div id="sidebarOverlay" class="rt-sidebar-overlay" onclick="toggleSidebar()"></div>
 <script>function toggleSidebar(){document.querySelector('.rt-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}</script>
-<script src="calculator.js"></script>
+<script src="calculator.js?v=ar-9"></script>
 </body>
 </html>

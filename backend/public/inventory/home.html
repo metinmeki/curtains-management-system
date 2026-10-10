@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warehouse Overview — Curtains Management System</title>
-    <link rel="stylesheet" href="wh-style.css?v=1">
+    <link rel="stylesheet" href="wh-style.css?v=ar-9">
     <style>
         /* ── Page background ────────────────────────────────────────── */
         .wh-page { background: transparent; }
@@ -20,18 +20,18 @@
         .kpi-card .k-sub   { color:rgba(255,255,255,.7); }
         /* Stock row */
         .kpi-row .kpi-card:nth-child(1) { background: linear-gradient(135deg,#1a3d2b,#2d6a47); }
-        .kpi-row .kpi-card:nth-child(2) { background: linear-gradient(135deg,#7a5c10,#c4a24d); }
+        .kpi-row .kpi-card:nth-child(2) { background: linear-gradient(135deg,#7a5c10,#2d6a47); }
         .kpi-row .kpi-card:nth-child(3) { background: linear-gradient(135deg,#8b1a1a,#c0392b); }
         /* Finance row */
         .kpi-row-finance .kpi-card:nth-child(1) { background: linear-gradient(135deg,#1a3d2b,#2d9e66); }
         .kpi-row-finance .kpi-card:nth-child(2) { background: linear-gradient(135deg,#0d6b3f,#16a168); }
         .kpi-row-finance .kpi-card:nth-child(3) { background: linear-gradient(135deg,#8b1a1a,#c0392b); }
-        .kpi-row-finance .kpi-card:nth-child(4) { background: linear-gradient(135deg,#5c4a10,#c4a24d); }
-        .kpi-row-finance .kpi-card:nth-child(5) { background: linear-gradient(135deg,#3d2b0a,#a8872e); }
-        .kpi-row-finance .kpi-card:nth-child(6) { background: linear-gradient(135deg,#1a3d2b,#c4a24d); }
+        .kpi-row-finance .kpi-card:nth-child(4) { background: linear-gradient(135deg,#5c4a10,#2d6a47); }
+        .kpi-row-finance .kpi-card:nth-child(5) { background: linear-gradient(135deg,#3d2b0a,#245a3a); }
+        .kpi-row-finance .kpi-card:nth-child(6) { background: linear-gradient(135deg,#1a3d2b,#2d6a47); }
         .kpi-row-finance { grid-template-columns: repeat(3,1fr); }
         .kpi-card.red   { background: linear-gradient(135deg,#8b1a1a,#c0392b) !important; }
-        .kpi-card.gold  { background: linear-gradient(135deg,#7a5c10,#c4a24d) !important; }
+        .kpi-card.gold  { background: linear-gradient(135deg,#7a5c10,#2d6a47) !important; }
         .kpi-card.green { background: linear-gradient(135deg,#1a3d2b,#2d9e66) !important; }
         .kpi-card .k-value { color:#fff !important; }
         .kpi-row-label { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
@@ -45,8 +45,8 @@
         }
         .stock-card-head h3, .stores-card-head h3, .mov-card-head h3, .tx-card-head h3 { color:#fff; }
         .stores-card-head p { color:rgba(255,255,255,.65); }
-        .mov-card-head a, .tx-card-head a, .dash-link { color:#c4a24d !important; font-weight:800; }
-        .stock-card-head a { color:#c4a24d; font-weight:800; text-decoration:none; }
+        .mov-card-head a, .tx-card-head a, .dash-link { color:#2d6a47 !important; font-weight:800; }
+        .stock-card-head a { color:#2d6a47; font-weight:800; text-decoration:none; }
 
         /* ── Cards — subtle shadow, rounded ─────────────────────────── */
         .stock-card, .stores-card, .mov-card, .tx-card {
@@ -81,7 +81,7 @@
         .store-row-name { color:#1a3d2b; font-size:14px; }
         .store-debt-bar  { background:#f0ede8; border-radius:4px; height:5px; overflow:hidden; margin-top:8px; }
         .store-debt-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#c0392b,#e74c3c); }
-        .store-stat label { color:#475569; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+        .store-stat label, .store-stat .stat-caption { color:#475569; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
         .store-stat strong { font-size:13px; font-weight:800; color:#1a3d2b; display:block; margin-top:2px; }
         .debt-col strong { color:#c0392b !important; }
 
@@ -105,7 +105,7 @@
         /* ── Section label ───────────────────────────────────────────── */
         .wh-section { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
             color:#1a3d2b; margin:24px 0 12px; padding-left:4px;
-            border-left:3px solid #c4a24d; padding-left:10px; }
+            border-left:3px solid #2d6a47; padding-left:10px; }
 
         /* ── Responsive ──────────────────────────────────────────────── */
         @media(max-width:1000px){ .kpi-row{grid-template-columns:repeat(3,1fr);} .dash-grid{grid-template-columns:1fr;} }
@@ -151,7 +151,7 @@
         </div>
     </div>
 
-    <div style="flex:1;overflow-y:auto;">
+    <div style="flex:1;overflow-y:auto;min-height:0;">
     <div class="wh-page">
 
         <div class="wh-page-header">
@@ -224,8 +224,8 @@
 
 </div><!-- /.wh-layout -->
 
-<script src="../js/api.js"></script>
-<script src="../js/demo-data.js?v=wh-2"></script>
+<script src="../js/api.js?v=ar-9"></script>
+<script src="../js/demo-data.js?v=ar-9"></script>
 <script>
 if (!checkAuth()) { window.location.href = '../index.html'; throw new Error('Not authenticated'); }
 loadShell('Warehouse');
@@ -306,7 +306,7 @@ function renderKPI(){
     const netProfit = grossProfit - totalRemaining;
 
     const stockKpis = [
-        { label:'Total variants',   value: totalVariants,        sub: totalItems+' item types' },
+        { label:'Total variants',   value: totalVariants,        sub: totalItems+' '+ta('item types') },
         { label:'Low stock',        value: lowCount,             sub:'Below minimum'           },
         { label:'Empty / Critical', value: criticalCount,        sub:'Needs restock'           },
     ];
@@ -383,19 +383,19 @@ function renderStoreBalances(){
             <div class="store-row">
                 <div class="store-row-top">
                     <span class="store-row-name">${esc(store.name)}</span>
-                    <span style="font-size:11px;color:#94a3b8;">${st.count} tx</span>
+                    <span style="font-size:11px;color:#94a3b8;">${st.count} ${ta('tx')}</span>
                 </div>
                 <div class="store-row-stats">
                     <div class="store-stat">
-                        <label>Supplied</label>
+                        <span class="stat-caption">Supplied</span>
                         <strong>${hasData?money(st.total):'—'}</strong>
                     </div>
                     <div class="store-stat">
-                        <label>Paid</label>
+                        <span class="stat-caption">Paid</span>
                         <strong style="color:#10b981;">${hasData?money(st.paid):'—'}</strong>
                     </div>
                     <div class="store-stat debt-col">
-                        <label>Debt</label>
+                        <span class="stat-caption">Debt</span>
                         <strong>${hasData?money(st.remaining):'—'}</strong>
                     </div>
                 </div>
@@ -483,7 +483,7 @@ window.addEventListener('load', async ()=>{
                 paid:parseFloat(s.paid||0), remaining:parseFloat(s.remaining||0),
                 status:s.status, items:s.items||[], storeName: 'Store '+s.store_id
             })); }
-        }catch(e){}
+        }catch(e) { console.warn('Load failed; showing cached or empty data', e); }
     }
     renderKPI();
     renderStockTable();
@@ -492,6 +492,7 @@ window.addEventListener('load', async ()=>{
     renderRecentTx();
 });
 </script>
-<script src="../js/i18n.js?v=arabic-en-2"></script>
+<script src="../js/i18n.js?v=ar-9"></script>
+<script src="../js/ui.js?v=ar-9"></script>
 </body>
 </html>

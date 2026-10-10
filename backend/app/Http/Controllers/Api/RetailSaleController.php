@@ -220,19 +220,31 @@ class RetailSaleController extends Controller
         }
 
         $oldTotal     = floatval($sale->total_amount);
-        $newPaid      = round($paid - $amount, 2);
-        $newTotal     = round($oldTotal - $amount, 2);
+        $newPaid = round($paid - $amount, 2);
+        // pay() does not cap a payment at the sale total, so a client can be
+        // over-paid. Refunding that overpayment must not drive the sale value
+        // below zero, which would corrupt revenue and profit reporting.
+        $newTotal     = max(round($oldTotal - $amount, 2), 0);
         $newRemaining = max(round($newTotal - $newPaid, 2), 0);
         $newRefunded  = round(floatval($sale->refunded_amount ?? 0) + $amount, 2);
-        $newStatus    = $newRemaining == 0 ? 'full' : ($newPaid > 0 ? 'partial' : 'unpaid');
+        // payment_status is an enum of full|debt|partial — 'unpaid' is not a
+        // member and the write fails the CHECK constraint.
+        $newStatus    = $newRemaining == 0 ? 'full' : ($newPaid > 0 ? 'partial' : 'debt');
 
         /* Margin given back, in proportion to the share of the sale refunded.
            Not the refund amount itself: the goods return to stock carrying
-           their cost, so only the profit on them is lost. */
-        $share        = $oldTotal > 0 ? min($amount / $oldTotal, 1) : 0;
-        $lineProfit   = (float)DB::table('retail_sale_items')->where('sale_id', $saleId)->sum('profit_amount');
-        $profitBack   = round($lineProfit * $share, 2);
-        $newRefProfit = round(floatval($sale->refunded_profit ?? 0) + $profitBack, 2);
+           their cost, so only the profit on them is lost.
+
+           The denominator is the sale as originally sold — current total plus
+           everything already refunded. profit_amount never shrinks, so dividing
+           by the already-reduced total would over-credit every later partial
+           refund (two 25% refunds on 100,000 would take 25% then 33%). */
+        $alreadyRefunded = floatval($sale->refunded_amount ?? 0);
+        $originalTotal   = $oldTotal + $alreadyRefunded;
+        $share           = $originalTotal > 0 ? min($amount / $originalTotal, 1) : 0;
+        $lineProfit      = (float)DB::table('retail_sale_items')->where('sale_id', $saleId)->sum('profit_amount');
+        $profitBack      = round($lineProfit * $share, 2);
+        $newRefProfit    = round(floatval($sale->refunded_profit ?? 0) + $profitBack, 2);
 
         $payments   = json_decode($sale->payments ?? '[]', true) ?: [];
         $payments[] = [

@@ -7,7 +7,13 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Login - Curtains Management System</title>
-    <link rel="stylesheet" href="css/style.css?v=mobile-1">
+    <link rel="stylesheet" href="css/style.css?v=ar-9">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a3d2b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CMS">
     <style>
         .login-tabs { display:flex; gap:0; margin-bottom:24px; border:1px solid var(--border-color); border-radius:8px; overflow:hidden; }
         .login-tab  { flex:1; padding:10px; font-size:13px; font-weight:700; cursor:pointer; background:var(--surface-soft); color:var(--text-gray); border:none; transition:background 0.15s,color 0.15s; }
@@ -15,13 +21,14 @@
         .login-panel { display:none; }
         .login-panel.active { display:block; }
         .login-errors { color:#991b1b; font-size:13px; margin-top:8px; display:none; }
-        .login-demo-hint { background-color:#eef5e8; color:#31533f; padding:14px; border-radius:8px; margin-top:20px; font-size:13px; text-align:left; border:1px solid #c9dcbf; }
-        body.dark .login-demo-hint { background:#1a2e22; color:#8da898; border-color:#2e4a3c; }
-        .pin-input { letter-spacing:6px; font-size:20px; font-weight:700; text-align:center; }
-        .cashier-select-row { display:flex; align-items:center; gap:10px; background:var(--surface-soft); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s; }
+.pin-input { letter-spacing:6px; font-size:20px; font-weight:700; text-align:center; }
+        .cashier-select-row { display:flex; align-items:center; gap:10px; width:100%; text-align:left; font-family:inherit; background:var(--surface-soft); border:1px solid var(--border-color); border-radius:8px; padding:10px 14px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s; min-height:56px; }
         .cashier-select-row:hover { border-color:var(--primary-color); }
         .cashier-select-row.selected { border-color:var(--primary-color); background:rgba(47,125,91,0.08); }
+        .cashier-select-row:focus-visible { outline:3px solid var(--primary-color); outline-offset:2px; }
+        body.rtl .cashier-select-row { text-align:right; }
         .cashier-avatar { width:36px; height:36px; border-radius:50%; background:var(--primary-color); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; flex-shrink:0; }
+        .cashier-row-text { display:flex; flex-direction:column; }
         .cashier-row-name { font-weight:700; font-size:14px; color:var(--text-dark); }
         .cashier-row-store { font-size:12px; color:var(--text-gray); }
         #noCashiersMsg { text-align:center; color:var(--text-gray); font-size:13px; padding:16px; }
@@ -30,8 +37,7 @@
 <body class="ltr">
     <div class="login-container">
         <div class="login-card">
-            <div class="login-logo">CMS</div>
-            <h1 class="login-title">Curtains Management System</h1>
+            <div class="login-logo">DLOVAN PARDA</div>
             <p class="login-subtitle">Sign in to your account</p>
 
             <!-- Tabs -->
@@ -43,25 +49,22 @@
             <!-- Admin panel -->
             <div class="login-panel active" id="panel-admin">
                 <form id="loginForm">
-                    <div id="successMessage" class="alert alert-success" style="display:none;">
+                    <div id="successMessage" class="alert alert-success" role="status" style="display:none;">
                         Login successful. Redirecting…
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" value="admin@curtains.com" required>
+                        <input type="email" id="email" name="email" placeholder="admin@example.com" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" name="password" value="admin123" required>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
                     </div>
                     <div id="adminError" class="alert alert-danger" style="display:none;"></div>
                     <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
                         <span id="btnText">Login as Admin</span>
                         <span id="btnLoader" style="display:none;"><span class="spinner" style="width:16px;height:16px;border-width:2px;margin:0;"></span></span>
                     </button>
-                    <div class="login-demo-hint">
-                        <strong>Demo access:</strong><br>Email: admin@curtains.com<br>Password: admin123
-                    </div>
                 </form>
             </div>
 
@@ -70,17 +73,17 @@
                 <div id="noCashiersMsg" style="display:none;">No cashiers have been added yet.<br>Ask your admin to add you from the main page.</div>
                 <div id="cashierList"></div>
                 <div class="form-group" id="pinGroup" style="display:none;margin-top:16px;">
-                    <label>PIN for <span id="selectedCashierName" style="color:var(--primary-color);"></span></label>
+                    <label for="cashierPin">PIN for <span id="selectedCashierName" style="color:var(--primary-color);"></span></label>
                     <input id="cashierPin" type="password" inputmode="numeric" maxlength="4" class="pin-input" placeholder="••••" autocomplete="off">
                 </div>
-                <div id="cashierError" class="alert alert-danger" style="display:none;margin-top:8px;"></div>
+                <div id="cashierError" class="alert alert-danger" role="alert" style="display:none;margin-top:8px;"></div>
                 <button class="btn btn-primary btn-block" id="cashierLoginBtn" style="display:none;margin-top:12px;" onclick="cashierLogin()">Enter as Cashier</button>
             </div>
         </div>
     </div>
 
 
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=ar-9"></script>
     <script>
         function esc(v) {
             return String(v == null ? '' : v).replace(/[&<>"']/g, function(c) {
@@ -92,15 +95,27 @@
         let _storeNames = {};
         let selectedCashier = null;
 
+        let _cashierLoadFailed = false;
+
         async function loadCashiersFromDB() {
+            _cashierLoadFailed = false;
             try {
-                const res = await fetch('http://127.0.0.1:8000/api/cashiers', { headers: { 'Accept': 'application/json' } });
-                if (res.ok) { const r = await res.json(); if (Array.isArray(r.data)) _cashiers = r.data; }
-            } catch(e) {}
+                const res = await fetch(`${API_BASE_URL}/cashiers`, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const r = await res.json();
+                if (Array.isArray(r.data)) _cashiers = r.data;
+            } catch(e) {
+                // An empty list and an unreachable server look identical to the
+                // user otherwise — "no cashiers yet" would be a lie.
+                console.error('Could not load cashiers', e);
+                _cashierLoadFailed = true;
+            }
             try {
-                const res = await fetch('http://127.0.0.1:8000/api/stores', { headers: { 'Accept': 'application/json' } });
+                const res = await fetch(`${API_BASE_URL}/stores`, { headers: { 'Accept': 'application/json' } });
                 if (res.ok) { const r = await res.json(); if (Array.isArray(r.data)) r.data.forEach(s => { _storeNames[String(s.id)] = s.name; }); }
-            } catch(e) {}
+            } catch(e) {
+                console.warn('Could not load store names; falling back to defaults', e);
+            }
         }
 
         function switchTab(tab) {
@@ -112,6 +127,7 @@
 
         function getStoreLabel(storeId) {
             const defaults = { '1':'Store 1','2':'Store 2','3':'Store 3','4':'Store 4' };
+            if (storeId === 0 || storeId === '0') return 'Warehouse';
             if (!storeId) return 'Any store';
             return _storeNames[String(storeId)] || defaults[String(storeId)] || 'Store ' + storeId;
         }
@@ -119,18 +135,30 @@
         function renderCashierList() {
             const list = document.getElementById('cashierList');
             const empty = document.getElementById('noCashiersMsg');
-            if (!_cashiers.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+            if (!_cashiers.length) {
+                list.innerHTML = '';
+                empty.innerHTML = _cashierLoadFailed
+                    ? 'Cannot reach the server, so the cashier list could not be loaded.<br>Check the connection and try again.'
+                    : 'No cashiers have been added yet.<br>Ask your admin to add you from the main page.';
+                empty.style.display = 'block';
+                return;
+            }
             empty.style.display = 'none';
-            list.innerHTML = _cashiers.map(c => `
-                <div class="cashier-select-row ${selectedCashier && String(selectedCashier.id) === String(c.id) ? 'selected' : ''}"
-                     onclick="selectCashier('${esc(String(c.id))}')">
-                    <div class="cashier-avatar">${esc(c.name.charAt(0).toUpperCase())}</div>
-                    <div>
-                        <div class="cashier-row-name">${esc(c.name)}</div>
-                        <div class="cashier-row-store">${esc(getStoreLabel(c.store_id))}</div>
-                    </div>
-                </div>
-            `).join('');
+            // Real <button>s inside a radiogroup: the picker used to be clickable
+            // divs, which made cashier sign-in impossible without a mouse.
+            list.innerHTML = '<div role="radiogroup" aria-label="Choose your name">' + _cashiers.map(c => {
+                const isSel = !!(selectedCashier && String(selectedCashier.id) === String(c.id));
+                return `
+                <button type="button" class="cashier-select-row ${isSel ? 'selected' : ''}"
+                        role="radio" aria-checked="${isSel}"
+                        onclick="selectCashier('${esc(String(c.id))}')">
+                    <span class="cashier-avatar" aria-hidden="true">${esc(c.name.charAt(0).toUpperCase())}</span>
+                    <span class="cashier-row-text">
+                        <span class="cashier-row-name">${esc(c.name)}</span>
+                        <span class="cashier-row-store">${esc(getStoreLabel(c.store_id))}</span>
+                    </span>
+                </button>`;
+            }).join('') + '</div>';
         }
 
         function selectCashier(id) {
@@ -149,10 +177,11 @@
             const pin = document.getElementById('cashierPin').value.trim();
             const errEl = document.getElementById('cashierError');
             errEl.style.display = 'none';
-            const storeId = selectedCashier.store_id || 1;
+            const isWarehouse = selectedCashier.store_id === 0;
+            const storeId = isWarehouse ? 0 : (selectedCashier.store_id || 1);
             const storeName = getStoreLabel(storeId);
             try {
-                const res = await fetch('http://127.0.0.1:8000/api/auth/cashier-login', {
+                const res = await fetch(`${API_BASE_URL}/auth/cashier-login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({ name: selectedCashier.name, pin: pin || '0000', store_id: storeId })
@@ -161,9 +190,15 @@
                 if (res.ok && data.data?.token) {
                     localStorage.setItem('auth_token', data.data.token);
                     localStorage.setItem('cms_active_cashier', JSON.stringify({ id: selectedCashier.id, name: selectedCashier.name, storeId: Number(storeId) }));
-                    localStorage.setItem('store_id', String(storeId));
-                    localStorage.setItem('store_name', storeName);
-                    window.location.href = 'retail/pos.html';
+                    if (isWarehouse) {
+                        localStorage.removeItem('store_id');
+                        localStorage.setItem('store_name', storeName);
+                        window.location.href = 'inventory/dashboard.html';
+                    } else {
+                        localStorage.setItem('store_id', String(storeId));
+                        localStorage.setItem('store_name', storeName);
+                        window.location.href = 'retail/pos.html';
+                    }
                 } else {
                     errEl.textContent = 'Incorrect PIN or server error.';
                     errEl.style.display = 'block';
@@ -219,6 +254,10 @@
         }
 
     </script>
-    <script src="js/i18n.js?v=arabic-en-2"></script>
+    <script src="js/i18n.js?v=ar-9"></script>
+<script src="js/ui.js?v=ar-9"></script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(()=>console.log("SW registered")).catch(e=>console.log("SW error",e));}</script>
 </body>
 </html>
+
+
